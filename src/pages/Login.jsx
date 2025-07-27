@@ -72,17 +72,18 @@ const Login = () => {
             <form onSubmit={handleLogin} className="space-y-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  이메일
+                  아이디/이메일
                 </label>
                 <div className="mt-1">
                   <input
                     id="email"
                     name="email"
-                    type="email"
+                    type="text"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="이메일 또는 아이디"
                   />
                 </div>
               </div>
