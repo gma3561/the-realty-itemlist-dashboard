@@ -36,7 +36,7 @@ const Login = () => {
         localStorage.setItem('hardcoded-admin', JSON.stringify(adminUser));
         
         // 수동으로 auth 상태 업데이트 (context에서 처리)
-        window.location.href = '/';
+        window.location.href = '/the-realty-itemlist-dashboard/';
         return;
       }
       

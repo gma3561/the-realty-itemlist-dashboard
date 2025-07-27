@@ -1,130 +1,176 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import PropertyFilter from '../components/property/PropertyFilter';
-import Button from '../components/common/Button';
 import { useQuery } from 'react-query';
-import { supabase } from '../services/supabase';
-import { PlusCircle, Search, RefreshCw } from 'lucide-react';
+import { PlusCircle, Search, RefreshCw, Building2, MapPin, Calendar, DollarSign } from 'lucide-react';
 
 const PropertyList = () => {
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState({
+    search: '',
+    status: '',
+    type: ''
+  });
   
-  // 매물 목록 조회 쿼리
-  const fetchProperties = async () => {
-    let query = supabase.from('properties').select(`
-      *,
-      property_type:property_types(name),
-      property_status:property_statuses(name),
-      transaction_type:transaction_types(name),
-      manager:users(name, email)
-    `);
-    
-    // 필터 적용
-    if (filters.propertyTypeId) {
-      query = query.eq('property_type_id', filters.propertyTypeId);
-    }
-    
-    if (filters.propertyStatusId) {
-      query = query.eq('property_status_id', filters.propertyStatusId);
-    }
-    
-    if (filters.transactionTypeId) {
-      query = query.eq('transaction_type_id', filters.transactionTypeId);
-    }
-    
-    if (filters.location) {
-      query = query.ilike('location', `%${filters.location}%`);
-    }
-    
-    if (filters.propertyName) {
-      query = query.ilike('property_name', `%${filters.propertyName}%`);
-    }
-    
-    if (filters.minPrice) {
-      query = query.gte('price', filters.minPrice);
-    }
-    
-    if (filters.maxPrice) {
-      query = query.lte('price', filters.maxPrice);
-    }
-    
-    if (filters.managerId) {
-      query = query.eq('manager_id', filters.managerId);
-    }
-    
-    query = query.order('created_at', { ascending: false });
-    
-    const { data, error } = await query;
-    
-    if (error) throw error;
-    return data || [];
-  };
-  
-  const { data: properties, isLoading, isError, error, refetch } = useQuery(
-    ['properties', filters],
-    fetchProperties,
+  // 임시 매물 데이터 (실제로는 Supabase에서 가져올 예정)
+  const mockProperties = [
     {
-      keepPreviousData: true,
+      id: 1,
+      property_name: '래미안 아파트 101동 1503호',
+      location: '서울시 강남구 삼성동',
+      property_type: '아파트',
+      transaction_type: '매매',
+      price: 2500000000,
+      status: '거래가능',
+      manager_name: '관리자',
+      created_at: '2025-01-15',
+      supply_area_sqm: 84.56
+    },
+    {
+      id: 2,
+      property_name: '힐스테이트 오피스텔 A동 205호',
+      location: '서울시 서초구 서초동',
+      property_type: '오피스텔',
+      transaction_type: '전세',
+      price: 800000000,
+      status: '거래가능',
+      manager_name: '관리자',
+      created_at: '2025-01-14',
+      supply_area_sqm: 32.15
+    },
+    {
+      id: 3,
+      property_name: '신축 빌라 3층',
+      location: '서울시 마포구 합정동',
+      property_type: '빌라/연립',
+      transaction_type: '월세',
+      price: 50000000,
+      status: '거래완료',
+      manager_name: '관리자',
+      created_at: '2025-01-13',
+      supply_area_sqm: 65.23
     }
-  );
-  
-  const handleFilter = (newFilters) => {
-    setFilters(newFilters);
+  ];
+
+  // 필터된 매물 목록
+  const filteredProperties = mockProperties.filter(property => {
+    const matchesSearch = !filters.search || 
+      property.property_name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      property.location.toLowerCase().includes(filters.search.toLowerCase());
+    
+    const matchesStatus = !filters.status || property.status === filters.status;
+    const matchesType = !filters.type || property.property_type === filters.type;
+    
+    return matchesSearch && matchesStatus && matchesType;
+  });
+
+  const formatPrice = (price) => {
+    if (price >= 100000000) {
+      return `${(price / 100000000).toFixed(1)}억원`;
+    } else if (price >= 10000) {
+      return `${(price / 10000).toFixed(0)}만원`;
+    }
+    return `${price.toLocaleString()}원`;
   };
-  
+
+  const formatArea = (sqm) => {
+    const pyeong = (sqm * 0.3025).toFixed(1);
+    return `${sqm}㎡ (${pyeong}평)`;
+  };
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">매물 목록</h1>
-        <Link to="/properties/new">
-          <Button>
-            <PlusCircle className="w-4 h-4 mr-2" />
-            새 매물 등록
-          </Button>
+    <div className="space-y-6">
+      {/* 헤더 */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">매물 목록</h1>
+          <p className="text-gray-600">등록된 매물을 관리하고 조회할 수 있습니다.</p>
+        </div>
+        <Link
+          to="/properties/new"
+          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <PlusCircle className="w-5 h-5 mr-2" />
+          새 매물 등록
         </Link>
       </div>
-      
-      <div className="mb-6">
-        <PropertyFilter onFilter={handleFilter} />
-      </div>
-      
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="p-4 border-b flex justify-between items-center">
-          <div className="text-gray-700">
-            <Search className="w-4 h-4 inline mr-2" />
-            검색 결과: {isLoading ? '로딩 중...' : properties?.length || 0}개
+
+      {/* 필터 섹션 */}
+      <div className="bg-white shadow rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">필터 및 검색</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              검색
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="매물명, 지역 검색"
+                value={filters.search}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
           </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isLoading}
-          >
-            <RefreshCw className={`w-4 h-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
-            새로고침
-          </Button>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              진행상태
+            </label>
+            <select
+              value={filters.status}
+              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">전체</option>
+              <option value="거래가능">거래가능</option>
+              <option value="거래완료">거래완료</option>
+              <option value="거래보류">거래보류</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              매물종류
+            </label>
+            <select
+              value={filters.type}
+              onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">전체</option>
+              <option value="아파트">아파트</option>
+              <option value="오피스텔">오피스텔</option>
+              <option value="빌라/연립">빌라/연립</option>
+              <option value="단독주택">단독주택</option>
+            </select>
+          </div>
+          
+          <div className="flex items-end">
+            <button
+              onClick={() => setFilters({ search: '', status: '', type: '' })}
+              className="w-full px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            >
+              <RefreshCw className="w-4 h-4 mr-2 inline" />
+              초기화
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 매물 목록 */}
+      <div className="bg-white shadow rounded-lg">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-medium text-gray-900">
+            매물 목록 ({filteredProperties.length}건)
+          </h2>
         </div>
         
-        {isLoading ? (
-          <div className="p-8 text-center">
-            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-500">매물 정보를 불러오는 중...</p>
-          </div>
-        ) : isError ? (
-          <div className="p-8 text-center text-red-500">
-            <p>오류가 발생했습니다: {error.message}</p>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => refetch()}
-              className="mt-2"
-            >
-              다시 시도
-            </Button>
-          </div>
-        ) : properties?.length === 0 ? (
+        {filteredProperties.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
-            <p>매물 정보가 없습니다</p>
+            <Building2 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <p className="text-lg font-medium mb-2">매물이 없습니다</p>
+            <p className="text-sm">새로운 매물을 등록해보세요.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -132,16 +178,13 @@ const PropertyList = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    매물명
+                    매물정보
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    소재지
+                    위치
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    종류
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    거래유형
+                    거래정보
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     가격
@@ -150,61 +193,75 @@ const PropertyList = () => {
                     상태
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    담당자
+                    등록일
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    작업
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {properties.map((property) => (
-                  <tr 
-                    key={property.id}
-                    className="hover:bg-gray-50 cursor-pointer"
-                    onClick={() => {
-                      window.location.href = `/properties/${property.id}`;
-                    }}
-                  >
+                {filteredProperties.map((property) => (
+                  <tr key={property.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {property.property_name}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {property.building} {property.unit}
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {property.property_name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {property.property_type} • {formatArea(property.supply_area_sqm)}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{property.location}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {property.property_type?.name || '-'}
+                      <div className="flex items-center text-sm text-gray-900">
+                        <MapPin className="w-4 h-4 mr-1 text-gray-400" />
+                        {property.location}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {property.transaction_type?.name || '-'}
+                        {property.transaction_type}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {property.price 
-                          ? new Intl.NumberFormat('ko-KR').format(property.price) + '원'
-                          : '-'}
+                      <div className="flex items-center text-sm font-medium text-gray-900">
+                        <DollarSign className="w-4 h-4 mr-1 text-gray-400" />
+                        {formatPrice(property.price)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${property.property_status?.name === '거래가능' 
-                          ? 'bg-green-100 text-green-800' 
-                          : property.property_status?.name === '거래완료' 
-                            ? 'bg-gray-100 text-gray-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}
-                      >
-                        {property.property_status?.name || '-'}
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        property.status === '거래가능'
+                          ? 'bg-green-100 text-green-800'
+                          : property.status === '거래완료'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {property.status}
                       </span>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Calendar className="w-4 h-4 mr-1" />
+                        {property.created_at}
+                      </div>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {property.manager?.name || '-'}
+                      <div className="flex space-x-2">
+                        <Link
+                          to={`/properties/${property.id}`}
+                          className="text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          상세
+                        </Link>
+                        <Link
+                          to={`/properties/${property.id}/edit`}
+                          className="text-green-600 hover:text-green-800 font-medium"
+                        >
+                          수정
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}
