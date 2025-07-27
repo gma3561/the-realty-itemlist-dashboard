@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>부동산 매물장 대시보드 문제 해결 가이드</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #0ea5e9;
+        }
+        .container {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        pre {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        code {
+            background-color: #f1f5f9;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .note {
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 12px;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 12px;
+            margin: 15px 0;
+        }
+        .success {
+            background-color: #dcfce7;
+            border-left: 4px solid #10b981;
+            padding: 12px;
+            margin: 15px 0;
+        }
+        ol li, ul li {
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8fafc;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        a {
+            color: #0ea5e9;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .step {
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 30px;
+        }
+        .step::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 35px;
+            height: 35px;
+            background-color: #0ea5e9;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>부동산 매물장 대시보드 문제 해결 가이드</h1>
+    
+    <div class="container">
+        <h2>데이터가 웹에 표시되지 않는 문제 해결</h2>
+        <p>CSV 파일을 변환하여 Supabase에 업로드했는데 웹 서비스에 데이터가 표시되지 않는 경우, 다음 단계를 통해 문제를 해결할 수 있습니다.</p>
+        
+        <div class="note">
+            <p>이 가이드는 "Could not find the 'property_status' column of 'properties' in the schema cache" 오류 및 기타 데이터 표시 문제를 해결하는 방법을 제공합니다.</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>주요 문제점 및 해결방법</h2>
+        
+        <div class="step">
+            <h3>Supabase 테이블 구조 확인 및 초기화</h3>
+            <p>먼저 Supabase 데이터베이스 테이블 구조가 올바르게 초기화되었는지 확인합니다.</p>
+            <ol>
+                <li><strong>initialize-database.html</strong> 파일을 열고 순서대로 버튼을 클릭하여 다음 단계를 수행합니다:
+                    <ul>
+                        <li>테이블 생성하기</li>
+                        <li>룩업 테이블 초기화</li>
+                        <li>테스트 매물 추가</li>
+                    </ul>
+                </li>
+                <li>이 과정에서 오류가 발생하면 상세 로그를 확인하여 문제를 파악합니다.</li>
+            </ol>
+            <div class="warning">
+                <p>테이블 생성 스크립트는 기존 테이블을 덮어쓰지 않습니다. 테이블이 이미 존재하면 "이미 존재함" 메시지가 표시될 수 있습니다.</p>
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>컬럼명 불일치 해결</h3>
+            <p>코드에서는 <code>property_status</code>, <code>property_type</code>, <code>transaction_type</code> 컬럼을 참조하지만, 실제 데이터베이스에는 <code>property_status_id</code>, <code>property_type_id</code>, <code>transaction_type_id</code> 컬럼이 있습니다.</p>
+            <p>이 문제를 해결하기 위해 다음 두 가지 방법 중 하나를 선택할 수 있습니다:</p>
+            
+            <h4>방법 1: 코드 수정 (권장)</h4>
+            <p><strong>fix-property-form.html</strong> 문서를 참조하여 다음 파일들을 수정합니다:</p>
+            <ul>
+                <li><code>src/components/property/PropertyForm.jsx</code></li>
+                <li><code>src/pages/PropertyList.jsx</code></li>
+                <li><code>src/pages/Dashboard.jsx</code></li>
+                <li><code>src/components/dashboard/PropertyStatsChart.jsx</code></li>
+            </ul>
+            <p>모든 <code>property_status</code>, <code>property_type</code>, <code>transaction_type</code> 참조를 <code>property_status_id</code>, <code>property_type_id</code>, <code>transaction_type_id</code>로 변경해야 합니다.</p>
+            
+            <h4>방법 2: 데이터베이스 구조 변경</h4>
+            <p>Supabase SQL 편집기를 사용하여 기존 테이블에 새 컬럼을 추가하고 트리거를 설정하여 데이터 동기화를 유지할 수 있습니다.</p>
+            <pre>
+-- 필요한 컬럼 추가
+ALTER TABLE IF EXISTS public.properties 
+  ADD COLUMN IF NOT EXISTS property_type TEXT,
+  ADD COLUMN IF NOT EXISTS transaction_type TEXT,
+  ADD COLUMN IF NOT EXISTS property_status TEXT;
+
+-- 트리거 함수 생성
+CREATE OR REPLACE FUNCTION update_property_type_text()
+RETURNS TRIGGER AS $$
+BEGIN
+  SELECT name INTO NEW.property_type FROM property_types WHERE id = NEW.property_type_id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_transaction_type_text()
+RETURNS TRIGGER AS $$
+BEGIN
+  SELECT name INTO NEW.transaction_type FROM transaction_types WHERE id = NEW.transaction_type_id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_property_status_text()
+RETURNS TRIGGER AS $$
+BEGIN
+  SELECT name INTO NEW.property_status FROM property_statuses WHERE id = NEW.property_status_id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 트리거 생성
+CREATE TRIGGER trg_update_property_type_text
+BEFORE INSERT OR UPDATE ON properties
+FOR EACH ROW WHEN (NEW.property_type_id IS NOT NULL)
+EXECUTE FUNCTION update_property_type_text();
+
+CREATE TRIGGER trg_update_transaction_type_text
+BEFORE INSERT OR UPDATE ON properties
+FOR EACH ROW WHEN (NEW.transaction_type_id IS NOT NULL)
+EXECUTE FUNCTION update_transaction_type_text();
+
+CREATE TRIGGER trg_update_property_status_text
+BEFORE INSERT OR UPDATE ON properties
+FOR EACH ROW WHEN (NEW.property_status_id IS NOT NULL)
+EXECUTE FUNCTION update_property_status_text();
+
+-- 기존 데이터 업데이트
+UPDATE properties p
+SET 
+  property_type = (SELECT name FROM property_types WHERE id = p.property_type_id),
+  transaction_type = (SELECT name FROM transaction_types WHERE id = p.transaction_type_id),
+  property_status = (SELECT name FROM property_statuses WHERE id = p.property_status_id)
+WHERE 
+  property_type IS NULL OR transaction_type IS NULL OR property_status IS NULL;</pre>
+        </div>
+        
+        <div class="step">
+            <h3>변환된 CSV 데이터 업로드</h3>
+            <p>CSV 데이터를 Supabase에 맞게 변환하여 업로드합니다.</p>
+            <ol>
+                <li><strong>convert-csv.html</strong> 파일을 열고 다음 단계를 수행합니다:
+                    <ul>
+                        <li>CSV 파일을 선택하고 "CSV 파일 로드" 버튼을 클릭합니다.</li>
+                        <li>"데이터 변환" 버튼을 클릭하여 Supabase 형식으로 변환합니다.</li>
+                        <li>"Supabase에 업로드" 버튼을 클릭하여 데이터를 업로드합니다.</li>
+                    </ul>
+                </li>
+                <li>업로드 과정에서 오류가 발생하면 로그를 확인하여 문제를 파악합니다.</li>
+            </ol>
+            <div class="note">
+                <p>CSV 파일의 인코딩이 EUC-KR이 아닌 경우, <code>reader.readAsText(file, 'EUC-KR')</code> 부분을 <code>reader.readAsText(file, 'UTF-8')</code>으로 변경할 수 있습니다.</p>
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>웹 서비스 빌드 및 배포</h3>
+            <p>변경사항을 적용한 후 웹 서비스를 다시 빌드하고 배포합니다.</p>
+            <ol>
+                <li>터미널에서 다음 명령을 실행합니다:</li>
+            </ol>
+            <pre>cd /Users/hasanghyeon/the-realty-itemlist-dashboard
+npm run build
+npm run deploy</pre>
+            <li>배포가 완료되면 웹사이트를 확인합니다: <a href="https://gma3561.github.io/the-realty-itemlist-dashboard/" target="_blank">https://gma3561.github.io/the-realty-itemlist-dashboard/</a></li>
+        </div>
+        
+        <div class="step">
+            <h3>로컬 테스트</h3>
+            <p>배포 전에 로컬에서 변경사항을 테스트하려면 다음 명령을 실행합니다:</p>
+            <pre>cd /Users/hasanghyeon/the-realty-itemlist-dashboard
+npm run dev</pre>
+            <p>그런 다음 브라우저에서 <a href="http://localhost:5173" target="_blank">http://localhost:5173</a>를 열어 변경사항을 확인합니다.</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>추가 문제 해결 방법</h2>
+        
+        <h3>브라우저 콘솔 오류 확인</h3>
+        <p>웹 페이지에서 데이터가 표시되지 않는 경우, 브라우저의 개발자 도구 콘솔(F12 키)을 열어 오류 메시지를 확인합니다. 일반적인 오류와 해결 방법은 다음과 같습니다:</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>오류 메시지</th>
+                    <th>해결 방법</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Could not find the 'property_status' column of 'properties' in the schema cache</td>
+                    <td>위의 "컬럼명 불일치 해결" 단계를 따릅니다.</td>
+                </tr>
+                <tr>
+                    <td>Error fetching properties: TypeError: Cannot read properties of undefined</td>
+                    <td>데이터 구조가 예상과 다릅니다. CSV 변환 과정에서 매핑이 올바른지 확인합니다.</td>
+                </tr>
+                <tr>
+                    <td>401 Unauthorized / 403 Forbidden</td>
+                    <td>Supabase API 키가 올바른지 확인하고 RLS(Row Level Security) 정책을 검토합니다.</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3>Supabase 데이터 직접 확인</h3>
+        <p>Supabase 대시보드(<a href="https://app.supabase.com" target="_blank">https://app.supabase.com</a>)에 로그인하여 데이터베이스 테이블을 직접 확인할 수 있습니다:</p>
+        <ol>
+            <li>Supabase 프로젝트를 선택합니다.</li>
+            <li>좌측 메뉴에서 "Table Editor"를 클릭합니다.</li>
+            <li>"properties" 테이블을 선택하여 데이터가 올바르게 업로드되었는지 확인합니다.</li>
+            <li>"property_types", "transaction_types", "property_statuses" 테이블에 참조 데이터가 있는지 확인합니다.</li>
+        </ol>
+        
+        <h3>매핑 테이블 확인</h3>
+        <p>convert-csv.html 파일에서 다음 매핑 테이블이 CSV 데이터와 일치하는지 확인합니다:</p>
+        <pre>
+// 매물 타입 매핑
+const propertyTypeMap = {
+    '아파트': 'apt',
+    '오피스텔': 'officetel',
+    '빌라/연립': 'villa',
+    '단독주택': 'house',
+    '상가': 'commercial',
+    '공동주택': 'villa' // 공동주택은 빌라/연립으로 매핑
+};
+
+// 거래 타입 매핑
+const transactionTypeMap = {
+    '매매': 'sale',
+    '전세': 'lease',
+    '월세': 'rent',
+    '월세/렌트': 'rent',
+    '렌트': 'rent',
+    '급매': 'sale'
+};
+
+// 매물 상태 매핑
+const propertyStatusMap = {
+    '거래가능': 'available',
+    '거래완료': 'completed',
+    '거래보류': 'reserved'
+};</pre>
+        <p>CSV 파일에 다른 값이 있는 경우 이 매핑 테이블을 업데이트해야 합니다.</p>
+    </div>
+    
+    <div class="container">
+        <h2>결론</h2>
+        <p>이 가이드를 따라 부동산 매물장 대시보드의 데이터 표시 문제를 해결할 수 있습니다. 주요 문제는 다음과 같습니다:</p>
+        <ol>
+            <li>데이터베이스 테이블 구조 초기화 및 참조 데이터 설정</li>
+            <li>컬럼명 불일치 해결 (코드 수정 또는 데이터베이스 구조 변경)</li>
+            <li>CSV 데이터 변환 및 업로드</li>
+            <li>웹 서비스 빌드 및 배포</li>
+        </ol>
+        <p>문제가 계속되면 추가 디버깅을 위해 브라우저 콘솔 오류와 Supabase 로그를 확인하세요.</p>
+        
+        <div class="success">
+            <p>위 단계를 모두 수행한 후 웹 서비스에서 데이터가 올바르게 표시되는지 확인하세요. 문제가 해결되었다면 축하합니다! 데이터 변환 및 업로드 과정이 성공적으로 완료되었습니다.</p>
+        </div>
+    </div>
+</body>
+</html>
