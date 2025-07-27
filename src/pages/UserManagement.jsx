@@ -41,7 +41,7 @@ const UserManagement = () => {
     }
   );
 
-  const isAdmin = currentUserData?.role === 'admin';
+  const isAdmin = currentUserData?.role === 'admin' || user?.role === 'admin';
 
   // 모든 사용자 조회
   const { data: users, isLoading } = useQuery(

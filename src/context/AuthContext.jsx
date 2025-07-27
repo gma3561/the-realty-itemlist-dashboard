@@ -14,6 +14,16 @@ export const AuthProvider = ({ children }) => {
       try {
         setLoading(true);
         
+        // 하드코딩된 관리자 계정 확인
+        const hardcodedAdmin = localStorage.getItem('hardcoded-admin');
+        if (hardcodedAdmin) {
+          const adminUser = JSON.parse(hardcodedAdmin);
+          setUser(adminUser);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+        
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.user) {
@@ -84,7 +94,12 @@ export const AuthProvider = ({ children }) => {
   const signOut = async () => {
     try {
       setLoading(true);
+      
+      // 하드코딩된 관리자 계정 로그아웃
+      localStorage.removeItem('hardcoded-admin');
+      
       await supabase.auth.signOut();
+      setUser(null);
     } catch (error) {
       console.error('Error signing out:', error);
       setError(error.message);

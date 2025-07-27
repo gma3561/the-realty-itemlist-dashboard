@@ -22,6 +22,24 @@ const Login = () => {
     setIsLoading(true);
     
     try {
+      // 하드코딩된 관리자 계정 확인
+      if (email === 'admin' && password === '12345') {
+        // 임시 관리자 사용자 객체 생성
+        const adminUser = {
+          id: 'admin-hardcoded',
+          email: 'admin',
+          role: 'admin',
+          name: '관리자'
+        };
+        
+        // 로컬 스토리지에 저장
+        localStorage.setItem('hardcoded-admin', JSON.stringify(adminUser));
+        
+        // 수동으로 auth 상태 업데이트 (context에서 처리)
+        window.location.href = '/';
+        return;
+      }
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
