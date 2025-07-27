@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Menu, X, User, LogOut, Home, FileText, Settings } from 'lucide-react';
+import { Menu, X, User, LogOut, Home, FileText, Settings, Users } from 'lucide-react';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,7 +16,7 @@ const Header = () => {
   const menuItems = [
     { path: '/', icon: Home, label: '대시보드' },
     { path: '/properties', icon: FileText, label: '매물 목록' },
-    { path: '/settings', icon: Settings, label: '설정' },
+    { path: '/users', icon: Users, label: '사용자 관리' },
   ];
 
   return (

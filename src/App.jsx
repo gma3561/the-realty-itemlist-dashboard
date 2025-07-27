@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import PropertyList from './pages/PropertyList';
 import PropertyDetail from './pages/PropertyDetail';
 import PropertyForm from './pages/PropertyForm';
+import UserManagement from './pages/UserManagement';
 import MainLayout from './components/layout/MainLayout';
 
 // 스타일
@@ -38,6 +39,7 @@ function App() {
               <Route path="/properties/new" element={<PropertyForm />} />
               <Route path="/properties/:id" element={<PropertyDetail />} />
               <Route path="/properties/:id/edit" element={<PropertyForm />} />
+              <Route path="/users" element={<UserManagement />} />
             </Route>
             
             <Route path="*" element={<Navigate to="/" replace />} />

@@ -17,14 +17,7 @@ export const AuthProvider = ({ children }) => {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.user) {
-          // 도메인 확인 (@the-realty.co.kr)
-          if (!session.user.email.endsWith('@the-realty.co.kr')) {
-            await supabase.auth.signOut();
-            setError('허용된 회사 이메일(@the-realty.co.kr)로만 로그인할 수 있습니다.');
-            setUser(null);
-            return;
-          }
-          
+          // MVP 버전에서는 도메인 확인 제거
           setUser(session.user);
           setError(null);
         } else {
@@ -44,14 +37,7 @@ export const AuthProvider = ({ children }) => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
-          // 도메인 확인 (@the-realty.co.kr)
-          if (!session.user.email.endsWith('@the-realty.co.kr')) {
-            await supabase.auth.signOut();
-            setError('허용된 회사 이메일(@the-realty.co.kr)로만 로그인할 수 있습니다.');
-            setUser(null);
-            return;
-          }
-          
+          // MVP 버전에서는 도메인 확인 제거
           setUser(session.user);
           setError(null);
         } else if (event === 'SIGNED_OUT') {
@@ -107,11 +93,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // 이메일 패스워드 로그인
+  const signInWithEmail = async (email, password) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error signing in with email:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     user,
     loading,
     error,
     signInWithGoogle,
+    signInWithEmail,
     signOut,
   };
 
