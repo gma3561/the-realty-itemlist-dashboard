@@ -19,7 +19,10 @@ const Dashboard = () => {
       id: 1,
       property_name: '래미안 아파트 101동 1503호',
       location: '서울시 강남구 삼성동',
-      price: 2500000000,
+      transaction_type: '매매',
+      sale_price: 2500000000,
+      lease_deposit: 0,
+      monthly_rent: 0,
       status: '거래가능',
       created_at: '2025-01-15'
     },
@@ -27,7 +30,10 @@ const Dashboard = () => {
       id: 2,
       property_name: '힐스테이트 오피스텔 A동 205호',
       location: '서울시 서초구 서초동',
-      price: 800000000,
+      transaction_type: '전세',
+      sale_price: 0,
+      lease_deposit: 800000000,
+      monthly_rent: 0,
       status: '거래가능',
       created_at: '2025-01-14'
     }
@@ -40,6 +46,19 @@ const Dashboard = () => {
       return `${(price / 10000).toFixed(0)}만원`;
     }
     return `${price.toLocaleString()}원`;
+  };
+
+  const getDisplayPrice = (property) => {
+    if (property.transaction_type === '매매') {
+      return formatPrice(property.sale_price);
+    } else if (property.transaction_type === '전세') {
+      return formatPrice(property.lease_deposit);
+    } else if (property.transaction_type === '월세') {
+      const deposit = formatPrice(property.lease_deposit);
+      const monthly = formatPrice(property.monthly_rent);
+      return `${deposit} / ${monthly}`;
+    }
+    return '-';
   };
   
   return (
@@ -161,7 +180,7 @@ const Dashboard = () => {
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-900">{property.property_name}</h3>
                       <p className="text-sm text-gray-600">{property.location}</p>
-                      <p className="text-sm font-medium text-blue-600">{formatPrice(property.price)}</p>
+                      <p className="text-sm font-medium text-blue-600">{getDisplayPrice(property)}</p>
                     </div>
                     <div className="text-right">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${

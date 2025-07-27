@@ -41,7 +41,10 @@ const PropertyForm = ({ isEditing = false }) => {
     property_type: id === '1' ? 'apt' : id === '2' ? 'officetel' : 'villa',
     transaction_type: id === '1' ? 'sale' : id === '2' ? 'lease' : 'rent',
     property_status: id === '1' ? 'available' : id === '2' ? 'available' : 'completed',
-    price: id === '1' ? 2500000000 : id === '2' ? 800000000 : 50000000,
+    // 거래유형별 가격 분리
+    sale_price: id === '1' ? 2500000000 : 0,
+    lease_deposit: id === '2' ? 800000000 : id === '3' ? 50000000 : 0,
+    monthly_rent: id === '3' ? 500000 : 0,
     supply_area_sqm: id === '1' ? 84.56 : id === '2' ? 32.15 : 65.23,
     private_area_sqm: id === '1' ? 59.82 : id === '2' ? 25.48 : 52.31,
     building: id === '1' ? '101동' : id === '2' ? 'A동' : '',
@@ -92,7 +95,10 @@ const PropertyForm = ({ isEditing = false }) => {
       location: mockProperty?.location || '',
       building: mockProperty?.building || '',
       unit: mockProperty?.unit || '',
-      price: mockProperty?.price || '',
+      // 거래유형별 가격 필드
+      sale_price: mockProperty?.sale_price || '',
+      lease_deposit: mockProperty?.lease_deposit || '',
+      monthly_rent: mockProperty?.monthly_rent || '',
       supply_area_sqm: mockProperty?.supply_area_sqm || '',
       private_area_sqm: mockProperty?.private_area_sqm || '',
       floor_info: mockProperty?.floor_info || '',
@@ -112,7 +118,22 @@ const PropertyForm = ({ isEditing = false }) => {
       property_type: Yup.string().required('매물종류는 필수 선택사항입니다'),
       property_status: Yup.string().required('진행상태는 필수 선택사항입니다'),
       transaction_type: Yup.string().required('거래유형은 필수 선택사항입니다'),
-      price: Yup.number().positive('유효한 금액을 입력하세요').required('금액은 필수 입력사항입니다'),
+      // 거래유형별 조건부 검증
+      sale_price: Yup.number().when('transaction_type', {
+        is: 'sale',
+        then: (schema) => schema.positive('유효한 매매가를 입력하세요').required('매매가는 필수 입력사항입니다'),
+        otherwise: (schema) => schema.nullable()
+      }),
+      lease_deposit: Yup.number().when('transaction_type', {
+        is: (val) => val === 'lease' || val === 'rent',
+        then: (schema) => schema.positive('유효한 보증금을 입력하세요').required('보증금은 필수 입력사항입니다'),
+        otherwise: (schema) => schema.nullable()
+      }),
+      monthly_rent: Yup.number().when('transaction_type', {
+        is: 'rent',
+        then: (schema) => schema.positive('유효한 월세를 입력하세요').required('월세는 필수 입력사항입니다'),
+        otherwise: (schema) => schema.nullable()
+      }),
       supply_area_sqm: Yup.number().positive('유효한 면적을 입력하세요'),
       private_area_sqm: Yup.number().positive('유효한 면적을 입력하세요')
     }),
@@ -298,23 +319,66 @@ const PropertyForm = ({ isEditing = false }) => {
                 )}
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  금액 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="price"
-                  value={formik.values.price}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="예: 25000000000"
-                />
-                {formik.touched.price && formik.errors.price && (
-                  <p className="mt-1 text-sm text-red-500">{formik.errors.price}</p>
-                )}
-              </div>
+              {/* 거래유형별 가격 필드 */}
+              {formik.values.transaction_type === 'sale' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    매매가 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="sale_price"
+                    value={formik.values.sale_price}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="예: 2500000000"
+                  />
+                  {formik.touched.sale_price && formik.errors.sale_price && (
+                    <p className="mt-1 text-sm text-red-500">{formik.errors.sale_price}</p>
+                  )}
+                </div>
+              )}
+              
+              {(formik.values.transaction_type === 'lease' || formik.values.transaction_type === 'rent') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    보증금 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="lease_deposit"
+                    value={formik.values.lease_deposit}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="예: 50000000"
+                  />
+                  {formik.touched.lease_deposit && formik.errors.lease_deposit && (
+                    <p className="mt-1 text-sm text-red-500">{formik.errors.lease_deposit}</p>
+                  )}
+                </div>
+              )}
+              
+              {formik.values.transaction_type === 'rent' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    월세 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="monthly_rent"
+                    value={formik.values.monthly_rent}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="예: 500000"
+                  />
+                  {formik.touched.monthly_rent && formik.errors.monthly_rent && (
+                    <p className="mt-1 text-sm text-red-500">{formik.errors.monthly_rent}</p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
           

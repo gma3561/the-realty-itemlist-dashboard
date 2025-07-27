@@ -18,7 +18,9 @@ const PropertyList = () => {
       location: '서울시 강남구 삼성동',
       property_type: '아파트',
       transaction_type: '매매',
-      price: 2500000000,
+      sale_price: 2500000000,
+      lease_deposit: 0,
+      monthly_rent: 0,
       status: '거래가능',
       manager_name: '관리자',
       created_at: '2025-01-15',
@@ -30,7 +32,9 @@ const PropertyList = () => {
       location: '서울시 서초구 서초동',
       property_type: '오피스텔',
       transaction_type: '전세',
-      price: 800000000,
+      sale_price: 0,
+      lease_deposit: 800000000,
+      monthly_rent: 0,
       status: '거래가능',
       manager_name: '관리자',
       created_at: '2025-01-14',
@@ -42,7 +46,9 @@ const PropertyList = () => {
       location: '서울시 마포구 합정동',
       property_type: '빌라/연립',
       transaction_type: '월세',
-      price: 50000000,
+      sale_price: 0,
+      lease_deposit: 50000000,
+      monthly_rent: 500000,
       status: '거래완료',
       manager_name: '관리자',
       created_at: '2025-01-13',
@@ -69,6 +75,19 @@ const PropertyList = () => {
       return `${(price / 10000).toFixed(0)}만원`;
     }
     return `${price.toLocaleString()}원`;
+  };
+
+  const getDisplayPrice = (property) => {
+    if (property.transaction_type === '매매') {
+      return formatPrice(property.sale_price);
+    } else if (property.transaction_type === '전세') {
+      return formatPrice(property.lease_deposit);
+    } else if (property.transaction_type === '월세') {
+      const deposit = formatPrice(property.lease_deposit);
+      const monthly = formatPrice(property.monthly_rent);
+      return `${deposit} / ${monthly}`;
+    }
+    return '-';
   };
 
   const formatArea = (sqm) => {
@@ -227,7 +246,7 @@ const PropertyList = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center text-sm font-medium text-gray-900">
                         <DollarSign className="w-4 h-4 mr-1 text-gray-400" />
-                        {formatPrice(property.price)}
+                        {getDisplayPrice(property)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

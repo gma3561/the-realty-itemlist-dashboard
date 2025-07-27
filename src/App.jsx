@@ -10,6 +10,7 @@ import PropertyList from './pages/PropertyList';
 import PropertyDetail from './pages/PropertyDetail';
 import PropertyForm from './pages/PropertyForm';
 import UserManagement from './pages/UserManagement';
+import CSVImport from './pages/CSVImport';
 import MainLayout from './components/layout/MainLayout';
 
 // 스타일
@@ -40,6 +41,7 @@ function App() {
               <Route path="/properties/:id" element={<PropertyDetail />} />
               <Route path="/properties/:id/edit" element={<PropertyForm />} />
               <Route path="/users" element={<UserManagement />} />
+              <Route path="/csv-import" element={<CSVImport />} />
             </Route>
             
             <Route path="*" element={<Navigate to="/" replace />} />
