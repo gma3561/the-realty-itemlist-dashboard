@@ -29,5 +29,5 @@ module.exports = defineConfig({
       }
     })
   ],
-  base: '/'
+  base: '/the-realty-itemlist-dashboard/'
 })
