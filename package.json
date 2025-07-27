@@ -3,6 +3,7 @@
   "homepage": "https://team.the-realty.co.kr",
   "version": "1.0.0",
   "private": true,
+  "type": "commonjs",
   "description": "부동산 중개사무소를 위한 팀 매물장 관리 시스템",
   "scripts": {
     "dev": "vite",
@@ -15,8 +16,8 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.7",
     "@supabase/auth-helpers-react": "^0.4.2",
+    "@supabase/supabase-js": "^2.39.7",
     "date-fns": "^3.6.0",
     "formik": "^2.4.5",
     "jwt-decode": "^4.0.0",
@@ -38,7 +39,7 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.34.0",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "gh-pages": "^6.1.1",
+    "gh-pages": "^6.3.0",
     "postcss": "^8.4.35",
     "vite": "^5.1.6",
     "vite-plugin-pwa": "^0.19.2",
