@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>데이터베이스 설정</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; max-width: 1000px; margin: 0 auto; background: #f5f5f5; }
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .status { padding: 15px; margin: 10px 0; border-radius: 8px; font-weight: bold; }
+        .success { background: #d4edda; color: #155724; border-left: 5px solid #28a745; }
+        .error { background: #f8d7da; color: #721c24; border-left: 5px solid #dc3545; }
+        .info { background: #d1ecf1; color: #0c5460; border-left: 5px solid #17a2b8; }
+        .warning { background: #fff3cd; color: #856404; border-left: 5px solid #ffc107; }
+        button { padding: 12px 20px; margin: 8px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
+        button:hover { background: #0056b3; transform: translateY(-1px); }
+        button:disabled { background: #6c757d; cursor: not-allowed; transform: none; }
+        .setup-card { background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 15px; }
+        .setup-card h3 { margin-top: 0; color: #495057; }
+        .log { background: #f8f9fa; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 12px; max-height: 300px; overflow-y: auto; margin: 15px 0; border: 1px solid #dee2e6; }
+        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; margin-right: 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛠️ 데이터베이스 설정 도구</h1>
+        
+        <div id="mainStatus" class="status info">
+            <div class="spinner"></div>
+            설정 도구 초기화 중...
+        </div>
+        
+        <div class="setup-card">
+            <h3>1️⃣ 기본 테이블 생성</h3>
+            <p>기본적인 테이블 구조를 생성합니다.</p>
+            <button id="createTablesBtn" onclick="createTables()">테이블 생성</button>
+            <div id="createTablesResult"></div>
+        </div>
+        
+        <div class="setup-card">
+            <h3>2️⃣ 초기 데이터 설정</h3>
+            <p>필수 코드 데이터를 등록합니다 (매물 유형, 거래 유형 등).</p>
+            <button id="setupInitialDataBtn" onclick="setupInitialData()">초기 데이터 설정</button>
+            <div id="setupInitialDataResult"></div>
+        </div>
+        
+        <div class="setup-card">
+            <h3>3️⃣ 스키마 수정</h3>
+            <p>필요한 컬럼을 추가하고 제약 조건을 완화합니다.</p>
+            <button id="modifySchemaBtn" onclick="modifySchema()">스키마 수정</button>
+            <div id="modifySchemaResult"></div>
+        </div>
+        
+        <div class="setup-card">
+            <h3>4️⃣ 연결 테스트</h3>
+            <p>모든 설정이 완료된 후 연결을 테스트합니다.</p>
+            <button id="testConnectionBtn" onclick="testConnection()">연결 테스트</button>
+            <div id="testConnectionResult"></div>
+        </div>
+        
+        <div>
+            <h3>📋 실행 로그</h3>
+            <div id="logContainer" class="log">실행 로그가 여기에 표시됩니다...\n</div>
+            <button onclick="clearLog()">로그 지우기</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js@2';
+
+        const supabaseUrl = 'https://qwxghpwasmvottahchky.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3eGdocHdhc212b3R0YWhjaGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5MTI3NTksImV4cCI6MjA2ODQ4ODc1OX0.4a1Oc66k9mGmXLoHmrKyZiVeZISpyzgq1BERrb_-8n8';
+        
+        const supabase = createClient(supabaseUrl, supabaseKey, {
+            auth: { persistSession: false },
+            global: {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': '*',
+                }
+            }
+        });
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('logContainer');
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : '🔍';
+            logElement.innerHTML += `[${timestamp}] ${prefix} ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`${prefix} ${message}`);
+        }
+
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('mainStatus');
+            statusDiv.innerHTML = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        function updateResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}" style="margin-top: 10px; font-size: 14px;">${content}</div>`;
+        }
+
+        async function createTables() {
+            const createTablesBtn = document.getElementById('createTablesBtn');
+            createTablesBtn.disabled = true;
+            
+            try {
+                log('🔄 테이블 생성 시작...');
+                updateResult('createTablesResult', '테이블 생성 중...', 'info');
+                
+                // uuid-ossp 확장 모듈 활성화
+                const { error: extError } = await supabase.rpc('extensions', {
+                    name: 'uuid-ossp'
+                });
+                
+                if (extError) {
+                    log(`⚠️ uuid-ossp 확장 모듈 활성화 실패 (무시 가능): ${extError.message}`, 'warning');
+                } else {
+                    log('✅ uuid-ossp 확장 모듈 활성화 성공', 'success');
+                }
+                
+                // 기본 테이블 생성
+                const tables = [
+                    {
+                        name: 'users',
+                        query: `CREATE TABLE IF NOT EXISTS public.users (
+                            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                            google_id TEXT UNIQUE,
+                            email TEXT UNIQUE NOT NULL,
+                            name TEXT,
+                            avatar_url TEXT,
+                            phone TEXT,
+                            role TEXT DEFAULT 'user',
+                            created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+                            updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+                            last_login TIMESTAMP WITH TIME ZONE,
+                            status TEXT DEFAULT 'active'
+                        );`
+                    },
+                    {
+                        name: 'property_types',
+                        query: `CREATE TABLE IF NOT EXISTS public.property_types (
+                            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                            name TEXT UNIQUE NOT NULL,
+                            created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+                            updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+                        );`
+                    },
+                    {
+                        name: 'property_statuses',
+                        query: `CREATE TABLE IF NOT EXISTS public.property_statuses (
+                            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                            name TEXT UNIQUE NOT NULL,
+                            created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+                            updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+                        );`
+                    },
+                    {
+                        name: 'transaction_types',
+                        query: `CREATE TABLE IF NOT EXISTS public.transaction_types (
+                            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                            name TEXT UNIQUE NOT NULL,
+                            created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+                            updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+                        );`
+                    },
+                    {
+                        name: 'properties',
+                        query: `CREATE TABLE IF NOT EXISTS public.properties (
+                            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                            manager_id TEXT,
+                            property_type TEXT,
+                            transaction_type TEXT,
+                            property_status TEXT,
+                            location TEXT,
+                            property_name TEXT,
+                            floor_info TEXT,
+                            rooms_bathrooms TEXT,
+                            direction TEXT,
+                            price NUMERIC,
+                            sale_price NUMERIC,
+                            lease_deposit NUMERIC,
+                            monthly_rent NUMERIC,
+                            maintenance_fee TEXT,
+                            supply_area_sqm NUMERIC,
+                            private_area_sqm NUMERIC,
+                            supply_area_pyeong NUMERIC,
+                            private_area_pyeong NUMERIC,
+                            special_notes TEXT,
+                            created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+                            updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+                        );`
+                    }
+                ];
+                
+                let successCount = 0;
+                let errorCount = 0;
+                
+                for (const table of tables) {
+                    try {
+                        log(`🔄 ${table.name} 테이블 생성 중...`);
+                        const { error } = await supabase.rpc('execute_sql', {
+                            sql: table.query
+                        });
+                        
+                        if (error) {
+                            log(`❌ ${table.name} 테이블 생성 실패: ${error.message}`, 'error');
+                            errorCount++;
+                        } else {
+                            log(`✅ ${table.name} 테이블 생성 성공`, 'success');
+                            successCount++;
+                        }
+                    } catch (err) {
+                        log(`❌ ${table.name} 테이블 생성 중 오류: ${err.message}`, 'error');
+                        errorCount++;
+                    }
+                }
+                
+                // 결과 표시
+                if (errorCount === 0) {
+                    updateResult('createTablesResult', `✅ 모든 테이블 생성 완료 (${successCount}개)`, 'success');
+                    updateStatus('테이블 생성 완료', 'success');
+                } else {
+                    updateResult('createTablesResult', `⚠️ 일부 테이블 생성 실패 (성공: ${successCount}, 실패: ${errorCount})`, 'warning');
+                    updateStatus('일부 테이블 생성 실패', 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ 테이블 생성 실패: ${error.message}`, 'error');
+                updateResult('createTablesResult', `❌ 테이블 생성 실패: ${error.message}`, 'error');
+                updateStatus('테이블 생성 실패', 'error');
+            } finally {
+                createTablesBtn.disabled = false;
+            }
+        }
+        
+        async function setupInitialData() {
+            const setupInitialDataBtn = document.getElementById('setupInitialDataBtn');
+            setupInitialDataBtn.disabled = true;
+            
+            try {
+                log('🔄 초기 데이터 설정 시작...');
+                updateResult('setupInitialDataResult', '초기 데이터 설정 중...', 'info');
+                
+                // 매물 종류 초기 데이터
+                const propertyTypes = [
+                    { name: '아파트' },
+                    { name: '주상복합' },
+                    { name: '빌라/연립' },
+                    { name: '오피스텔' },
+                    { name: '단독주택' },
+                    { name: '상가' },
+                    { name: '사무실' },
+                    { name: '빌딩' },
+                    { name: '재개발' },
+                    { name: '분양권' },
+                    { name: '기타' }
+                ];
+                
+                // 거래 유형 초기 데이터
+                const transactionTypes = [
+                    { name: '매매' },
+                    { name: '전세' },
+                    { name: '월세' },
+                    { name: '단기임대' },
+                    { name: '분양' }
+                ];
+                
+                // 매물 상태 초기 데이터
+                const propertyStatuses = [
+                    { name: '거래가능' },
+                    { name: '거래완료' },
+                    { name: '거래보류' },
+                    { name: '계약진행중' }
+                ];
+                
+                // 데이터 삽입 함수
+                async function insertData(tableName, data) {
+                    try {
+                        log(`🔄 ${tableName} 데이터 삽입 중... (${data.length}개)`);
+                        const { error } = await supabase.from(tableName).upsert(
+                            data.map(item => ({
+                                ...item,
+                                created_at: new Date(),
+                                updated_at: new Date()
+                            })),
+                            { onConflict: 'name' }
+                        );
+                        
+                        if (error) {
+                            log(`❌ ${tableName} 데이터 삽입 실패: ${error.message}`, 'error');
+                            return false;
+                        } else {
+                            log(`✅ ${tableName} 데이터 삽입 성공 (${data.length}개)`, 'success');
+                            return true;
+                        }
+                    } catch (err) {
+                        log(`❌ ${tableName} 데이터 삽입 중 오류: ${err.message}`, 'error');
+                        return false;
+                    }
+                }
+                
+                // 데이터 삽입 실행
+                const results = [
+                    await insertData('property_types', propertyTypes),
+                    await insertData('transaction_types', transactionTypes),
+                    await insertData('property_statuses', propertyStatuses)
+                ];
+                
+                // 관리자 사용자 생성
+                try {
+                    log('🔄 관리자 사용자 생성 중...');
+                    const { error } = await supabase.from('users').upsert([
+                        {
+                            id: '00000000-0000-0000-0000-000000000000',
+                            email: 'admin@the-realty.co.kr',
+                            name: '관리자',
+                            role: 'admin',
+                            status: 'active',
+                            created_at: new Date(),
+                            updated_at: new Date()
+                        }
+                    ], { onConflict: 'id' });
+                    
+                    if (error) {
+                        log(`❌ 관리자 사용자 생성 실패: ${error.message}`, 'error');
+                    } else {
+                        log('✅ 관리자 사용자 생성 성공', 'success');
+                        results.push(true);
+                    }
+                } catch (err) {
+                    log(`❌ 관리자 사용자 생성 중 오류: ${err.message}`, 'error');
+                    results.push(false);
+                }
+                
+                // 결과 표시
+                const successCount = results.filter(r => r).length;
+                if (successCount === results.length) {
+                    updateResult('setupInitialDataResult', '✅ 모든 초기 데이터 설정 완료', 'success');
+                    updateStatus('초기 데이터 설정 완료', 'success');
+                } else {
+                    updateResult('setupInitialDataResult', `⚠️ 일부 초기 데이터 설정 실패 (성공: ${successCount}, 실패: ${results.length - successCount})`, 'warning');
+                    updateStatus('일부 초기 데이터 설정 실패', 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ 초기 데이터 설정 실패: ${error.message}`, 'error');
+                updateResult('setupInitialDataResult', `❌ 초기 데이터 설정 실패: ${error.message}`, 'error');
+                updateStatus('초기 데이터 설정 실패', 'error');
+            } finally {
+                setupInitialDataBtn.disabled = false;
+            }
+        }
+        
+        async function modifySchema() {
+            const modifySchemaBtn = document.getElementById('modifySchemaBtn');
+            modifySchemaBtn.disabled = true;
+            
+            try {
+                log('🔄 스키마 수정 시작...');
+                updateResult('modifySchemaResult', '스키마 수정 중...', 'info');
+                
+                // RLS 정책 설정
+                const { error: rlsError } = await supabase.rpc('execute_sql', {
+                    sql: `
+                        ALTER TABLE IF EXISTS public.properties DISABLE ROW LEVEL SECURITY;
+                        ALTER TABLE IF EXISTS public.property_types DISABLE ROW LEVEL SECURITY;
+                        ALTER TABLE IF EXISTS public.property_statuses DISABLE ROW LEVEL SECURITY;
+                        ALTER TABLE IF EXISTS public.transaction_types DISABLE ROW LEVEL SECURITY;
+                        ALTER TABLE IF EXISTS public.users DISABLE ROW LEVEL SECURITY;
+                    `
+                });
+                
+                if (rlsError) {
+                    log(`⚠️ RLS 정책 수정 실패 (계속 진행): ${rlsError.message}`, 'warning');
+                } else {
+                    log('✅ RLS 정책 수정 성공', 'success');
+                }
+                
+                // 익명 사용자 권한 부여
+                const { error: grantError } = await supabase.rpc('execute_sql', {
+                    sql: `
+                        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon;
+                        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
+                        GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO anon;
+                        GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+                    `
+                });
+                
+                if (grantError) {
+                    log(`⚠️ 권한 부여 실패 (계속 진행): ${grantError.message}`, 'warning');
+                } else {
+                    log('✅ 권한 부여 성공', 'success');
+                }
+                
+                updateResult('modifySchemaResult', '✅ 스키마 수정 완료', 'success');
+                updateStatus('스키마 수정 완료', 'success');
+                
+            } catch (error) {
+                log(`❌ 스키마 수정 실패: ${error.message}`, 'error');
+                updateResult('modifySchemaResult', `❌ 스키마 수정 실패: ${error.message}`, 'error');
+                updateStatus('스키마 수정 실패', 'error');
+            } finally {
+                modifySchemaBtn.disabled = false;
+            }
+        }
+        
+        async function testConnection() {
+            const testConnectionBtn = document.getElementById('testConnectionBtn');
+            testConnectionBtn.disabled = true;
+            
+            try {
+                log('🔄 연결 테스트 시작...');
+                updateResult('testConnectionResult', '테스트 중...', 'info');
+                
+                // 테이블 존재 확인
+                const tables = ['properties', 'property_types', 'property_statuses', 'transaction_types', 'users'];
+                const tableResults = [];
+                
+                for (const table of tables) {
+                    const { data, error, count } = await supabase
+                        .from(table)
+                        .select('*', { count: 'exact' })
+                        .limit(1);
+                        
+                    if (error) {
+                        tableResults.push(`❌ ${table}: ${error.message}`);
+                    } else {
+                        tableResults.push(`✅ ${table}: ${count || 0}개 레코드`);
+                    }
+                }
+                
+                // 테스트 데이터 추가
+                const testProperty = {
+                    property_name: `테스트 매물 ${Date.now()}`,
+                    location: '서울시 테스트구 테스트동',
+                    property_type: '아파트',
+                    transaction_type: '매매',
+                    property_status: '거래가능',
+                    sale_price: 500000000,
+                    lease_deposit: 0,
+                    monthly_rent: 0,
+                    manager_id: 'admin'
+                };
+                
+                const { data: insertData, error: insertError } = await supabase
+                    .from('properties')
+                    .insert([testProperty])
+                    .select();
+                
+                if (insertError) {
+                    log(`❌ 테스트 데이터 추가 실패: ${insertError.message}`, 'error');
+                    tableResults.push(`❌ 테스트 데이터 추가: ${insertError.message}`);
+                } else {
+                    log(`✅ 테스트 데이터 추가 성공 (ID: ${insertData[0].id})`, 'success');
+                    tableResults.push(`✅ 테스트 데이터 추가: 성공 (ID: ${insertData[0].id})`);
+                }
+                
+                // 결과 표시
+                const hasErrors = tableResults.some(r => r.includes('❌'));
+                updateResult('testConnectionResult', tableResults.join('<br>'), hasErrors ? 'warning' : 'success');
+                updateStatus(hasErrors ? '일부 테스트 실패' : '모든 테스트 성공', hasErrors ? 'warning' : 'success');
+                
+            } catch (error) {
+                log(`❌ 연결 테스트 실패: ${error.message}`, 'error');
+                updateResult('testConnectionResult', `❌ 연결 테스트 실패: ${error.message}`, 'error');
+                updateStatus('연결 테스트 실패', 'error');
+            } finally {
+                testConnectionBtn.disabled = false;
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('logContainer').innerHTML = '';
+        }
+        
+        // 전역 함수 설정
+        window.createTables = createTables;
+        window.setupInitialData = setupInitialData;
+        window.modifySchema = modifySchema;
+        window.testConnection = testConnection;
+        window.clearLog = clearLog;
+        
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', () => {
+            log('🚀 데이터베이스 설정 도구 초기화 완료');
+            updateStatus('🟢 준비 완료 - 설정을 시작하세요', 'success');
+        });
+    </script>
+</body>
+</html>

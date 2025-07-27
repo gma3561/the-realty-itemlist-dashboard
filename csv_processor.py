@@ -7,8 +7,8 @@ import os
 from supabase import create_client, Client
 
 # Supabase 설정
-SUPABASE_URL = "https://mtgicixejxtidvskoyqy.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10Z2ljaXhlanh0aWR2c2tveXF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc1Mzk5MTAsImV4cCI6MjA1MzExNTkxMH0.hQy3fPt-YWYZXOWOAjGlFGNkP2NnmSDUhHvjEHo9BZg"
+SUPABASE_URL = "https://qwxghpwasmvottahchky.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3eGdocHdhc212b3R0YWhjaGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5MTI3NTksImV4cCI6MjA2ODQ4ODc1OX0.4a1Oc66k9mGmXLoHmrKyZiVeZISpyzgq1BERrb_-8n8"
 
 def normalize_property_type(prop_type):
     """매물종류 정규화"""
@@ -67,7 +67,7 @@ def normalize_status(status):
 def parse_price(price_text, transaction_type):
     """가격 파싱 및 거래유형별 분리"""
     if not price_text or pd.isna(price_text):
-        return {'sale_price': 0, 'lease_deposit': 0, 'monthly_rent': 0}
+        return {'sale_price': 0, 'lease_price': 0, 'price': 0}
     
     # 텍스트 정리
     price_text = str(price_text).replace(' ', '').replace(',', '')
@@ -100,22 +100,22 @@ def parse_price(price_text, transaction_type):
     if transaction_type == 'sale':
         # 매매: 단일 가격
         price = convert_korean_number(price_text)
-        return {'sale_price': price, 'lease_deposit': 0, 'monthly_rent': 0}
+        return {'sale_price': price, 'lease_price': 0, 'price': 0}
     elif transaction_type == 'lease':
         # 전세: 보증금만
         price = convert_korean_number(price_text)
-        return {'sale_price': 0, 'lease_deposit': price, 'monthly_rent': 0}
+        return {'sale_price': 0, 'lease_price': price, 'price': 0}
     elif transaction_type == 'rent':
         # 월세: 보증금/월세 형태
         if '/' in price_text:
             deposit, monthly = convert_korean_number(price_text)
-            return {'sale_price': 0, 'lease_deposit': deposit, 'monthly_rent': monthly}
+            return {'sale_price': 0, 'lease_price': deposit, 'price': monthly}
         else:
             # 월세만 있는 경우
             monthly = convert_korean_number(price_text)
-            return {'sale_price': 0, 'lease_deposit': 0, 'monthly_rent': monthly}
+            return {'sale_price': 0, 'lease_price': 0, 'price': monthly}
     
-    return {'sale_price': 0, 'lease_deposit': 0, 'monthly_rent': 0}
+    return {'sale_price': 0, 'lease_price': 0, 'price': 0}
 
 def parse_area(area_text):
     """면적 파싱"""
@@ -176,8 +176,8 @@ def process_csv_data():
                 'transaction_type': transaction_type,
                 'property_status': normalize_status(row.get('매물상태')),
                 'sale_price': price_data['sale_price'],
-                'lease_deposit': price_data['lease_deposit'],
-                'monthly_rent': price_data['monthly_rent'],
+                'lease_price': price_data['lease_price'],
+                'price': price_data['price'],
                 'building': str(row.get('동', '')).strip(),
                 'unit': str(row.get('호', '')).strip(),
                 'supply_area_sqm': supply_area,

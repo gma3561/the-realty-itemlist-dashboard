@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>테스트 데이터 추가</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #log { background: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace; height: 300px; overflow-y: auto; margin-top: 20px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>테스트 데이터 추가</h1>
+    <div id="status" class="status info">버튼을 클릭하여 테스트 데이터를 추가하세요.</div>
+    
+    <button onclick="addTestData()">여러 테스트 매물 추가</button>
+    <button onclick="getProperties()">매물 목록 조회</button>
+    <button onclick="addLookupData()">기초 코드 데이터 추가</button>
+    <button onclick="clearLog()">로그 지우기</button>
+    
+    <div id="log"></div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+
+        const supabaseUrl = 'https://qwxghpwasmvottahchky.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3eGdocHdhc212b3R0YWhjaGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5MTI3NTksImV4cCI6MjA2ODQ4ODc1OX0.4a1Oc66k9mGmXLoHmrKyZiVeZISpyzgq1BERrb_-8n8';
+        
+        // 서비스 롤 키로 클라이언트 생성
+        const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3eGdocHdhc212b3R0YWhjaGt5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjkxMjc1OSwiZXhwIjoyMDY4NDg4NzU5fQ.QvQ2axKYWWizJ6h_aefiAGKoGsF7dfOf1L0J3mVkAvU';
+        const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function updateStatus(message, isError = false) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = isError ? 'status error' : 'status success';
+        }
+
+        async function addLookupData() {
+            try {
+                updateStatus('기초 코드 데이터 추가 중...', false);
+                log('기초 코드 데이터 추가 시작...');
+
+                // 매물 종류 데이터
+                const propertyTypes = [
+                    { name: '아파트' },
+                    { name: '오피스텔' },
+                    { name: '빌라/연립' },
+                    { name: '단독주택' },
+                    { name: '상가' }
+                ];
+
+                // 매물 상태 데이터
+                const propertyStatuses = [
+                    { name: '거래가능' },
+                    { name: '거래완료' },
+                    { name: '거래보류' }
+                ];
+
+                // 거래 유형 데이터
+                const transactionTypes = [
+                    { name: '매매' },
+                    { name: '전세' },
+                    { name: '월세' }
+                ];
+
+                // 데이터 추가
+                const propertyTypesResult = await supabase
+                    .from('property_types')
+                    .upsert(propertyTypes, { onConflict: 'name' });
+                
+                if (propertyTypesResult.error) {
+                    log(`❌ 매물 종류 데이터 추가 실패: ${propertyTypesResult.error.message}`);
+                } else {
+                    log('✅ 매물 종류 데이터 추가 성공!');
+                }
+
+                const propertyStatusesResult = await supabase
+                    .from('property_statuses')
+                    .upsert(propertyStatuses, { onConflict: 'name' });
+                
+                if (propertyStatusesResult.error) {
+                    log(`❌ 매물 상태 데이터 추가 실패: ${propertyStatusesResult.error.message}`);
+                } else {
+                    log('✅ 매물 상태 데이터 추가 성공!');
+                }
+
+                const transactionTypesResult = await supabase
+                    .from('transaction_types')
+                    .upsert(transactionTypes, { onConflict: 'name' });
+                
+                if (transactionTypesResult.error) {
+                    log(`❌ 거래 유형 데이터 추가 실패: ${transactionTypesResult.error.message}`);
+                } else {
+                    log('✅ 거래 유형 데이터 추가 성공!');
+                }
+
+                updateStatus('기초 코드 데이터 추가 완료!', false);
+                
+            } catch (error) {
+                log(`❌ 오류: ${error.message}`);
+                updateStatus(`기초 코드 데이터 추가 실패: ${error.message}`, true);
+            }
+        }
+
+        async function addTestData() {
+            try {
+                updateStatus('테스트 데이터 추가 중...', false);
+                log('테스트 매물 데이터 추가 시작...');
+
+                // 테스트 데이터
+                const testData = [
+                    {
+                        property_name: '래미안 아파트 101동',
+                        location: '서울시 강남구 삼성동 123-45',
+                        property_type: '아파트',
+                        transaction_type: '매매',
+                        property_status: '거래가능',
+                        price: 1500000000,
+                        lease_price: 0,
+                        supply_area_sqm: 84.5,
+                        floor_info: '15층',
+                        rooms_bathrooms: '3룸 2욕실',
+                        direction: '남향',
+                        maintenance_fee: '25만원',
+                        special_notes: '신축, 역세권, 학군 좋음'
+                    },
+                    {
+                        property_name: '힐스테이트 오피스텔',
+                        location: '서울시 서초구 서초동 456-78',
+                        property_type: '오피스텔',
+                        transaction_type: '전세',
+                        property_status: '거래가능',
+                        price: 0,
+                        lease_price: 450000000,
+                        supply_area_sqm: 59.5,
+                        floor_info: '8층',
+                        rooms_bathrooms: '2룸 1욕실',
+                        direction: '동향',
+                        maintenance_fee: '15만원',
+                        special_notes: '역세권, 풀옵션'
+                    },
+                    {
+                        property_name: '한강뷰 빌라',
+                        location: '서울시 용산구 한남동 789-10',
+                        property_type: '빌라/연립',
+                        transaction_type: '월세',
+                        property_status: '거래가능',
+                        price: 50000000,
+                        lease_price: 2000000,
+                        supply_area_sqm: 110.5,
+                        floor_info: '3층',
+                        rooms_bathrooms: '4룸 2욕실',
+                        direction: '남서향',
+                        maintenance_fee: '10만원',
+                        special_notes: '한강뷰, 테라스, 주차 2대'
+                    },
+                    {
+                        property_name: '도심 단독주택',
+                        location: '서울시 종로구 북촌로 111-22',
+                        property_type: '단독주택',
+                        transaction_type: '매매',
+                        property_status: '거래보류',
+                        price: 2200000000,
+                        lease_price: 0,
+                        supply_area_sqm: 198.5,
+                        floor_info: '2층',
+                        rooms_bathrooms: '5룸 3욕실',
+                        direction: '남향',
+                        maintenance_fee: '없음',
+                        special_notes: '정원, 한옥스타일, 리모델링 완료'
+                    },
+                    {
+                        property_name: '강남 역세권 상가',
+                        location: '서울시 강남구 역삼동 123-45',
+                        property_type: '상가',
+                        transaction_type: '매매',
+                        property_status: '거래완료',
+                        price: 1800000000,
+                        lease_price: 0,
+                        supply_area_sqm: 95.5,
+                        floor_info: '1층',
+                        direction: '동향',
+                        maintenance_fee: '50만원',
+                        special_notes: '유동인구 많음, 프랜차이즈 입점 가능'
+                    }
+                ];
+
+                // 데이터 추가
+                const { data, error } = await supabase
+                    .from('properties')
+                    .insert(testData)
+                    .select();
+
+                if (error) {
+                    throw error;
+                }
+                
+                log(`✅ 테스트 매물 추가 성공! ${data.length}개 매물 추가됨`);
+                updateStatus(`테스트 매물 추가 완료! ${data.length}개 매물 추가됨`, false);
+                
+            } catch (error) {
+                log(`❌ 오류: ${error.message}`);
+                updateStatus(`테스트 데이터 추가 실패: ${error.message}`, true);
+            }
+        }
+
+        async function getProperties() {
+            try {
+                updateStatus('매물 목록 조회 중...', false);
+                log('매물 목록 조회 시작...');
+
+                const { data, error, count } = await supabase
+                    .from('properties')
+                    .select('*', { count: 'exact' });
+
+                if (error) {
+                    throw error;
+                }
+                
+                log(`✅ 매물 조회 성공! 총 ${count}개 매물`);
+                
+                if (data && data.length > 0) {
+                    data.forEach((property, index) => {
+                        log(`📋 매물 ${index + 1}: ${property.property_name} (${property.location})`);
+                    });
+                } else {
+                    log('❕ 매물 데이터가 없습니다.');
+                }
+                
+                updateStatus(`매물 목록 조회 완료! ${count}개 매물`, false);
+                
+            } catch (error) {
+                log(`❌ 오류: ${error.message}`);
+                updateStatus(`매물 목록 조회 실패: ${error.message}`, true);
+            }
+        }
+
+        // 전역 함수로 만들기
+        window.addTestData = addTestData;
+        window.getProperties = getProperties;
+        window.addLookupData = addLookupData;
+        window.clearLog = clearLog;
+    </script>
+</body>
+</html>

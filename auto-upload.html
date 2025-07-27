@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>자동 데이터 업로드</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Supabase 자동 데이터 업로드</h1>
+    <div id="status">준비 중...</div>
+    <div id="progress"></div>
+    <div id="log"></div>
+
+    <script>
+        // Supabase 설정
+        const SUPABASE_URL = 'https://mtgicixejxtidvskoyqy.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10Z2ljaXhlanh0aWR2c2tveXF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc1Mzk5MTAsImV4cCI6MjA1MzExNTkxMH0.hQy3fPt-YWYZXOWOAjGlFGNkP2NnmSDUhHvjEHo9BZg';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        const statusDiv = document.getElementById('status');
+        const progressDiv = document.getElementById('progress');
+        const logDiv = document.getElementById('log');
+        
+        function log(message) {
+            console.log(message);
+            logDiv.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function updateStatus(message) {
+            statusDiv.textContent = message;
+        }
+        
+        function updateProgress(current, total) {
+            progressDiv.textContent = `진행상황: ${current}/${total} (${Math.round(current/total*100)}%)`;
+        }
+        
+        async function uploadPropertiesToSupabase() {
+            try {
+                updateStatus('데이터 로드 중...');
+                log('🚀 매물 데이터 업로드 시작');
+                
+                // GitHub에서 데이터 로드
+                const response = await fetch('https://gma3561.github.io/the-realty-itemlist-dashboard/processed_properties.json');
+                if (!response.ok) {
+                    throw new Error('데이터 파일을 찾을 수 없습니다');
+                }
+                
+                const allProperties = await response.json();
+                log(`📊 총 ${allProperties.length}개 매물 데이터 로드 완료`);
+                
+                // 배치 단위로 업로드
+                const BATCH_SIZE = 30;
+                let uploadedCount = 0;
+                let failedCount = 0;
+                const errors = [];
+                
+                updateStatus('업로드 진행 중...');
+                
+                for (let i = 0; i < allProperties.length; i += BATCH_SIZE) {
+                    const batch = allProperties.slice(i, i + BATCH_SIZE);
+                    const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
+                    
+                    try {
+                        log(`📤 배치 ${batchNumber} 업로드 중... (${batch.length}개 매물)`);
+                        updateProgress(i, allProperties.length);
+                        
+                        const { data, error } = await supabase
+                            .from('properties')
+                            .insert(batch)
+                            .select();
+                            
+                        if (error) throw error;
+                        
+                        uploadedCount += batch.length;
+                        log(`✅ 배치 ${batchNumber} 완료: ${batch.length}개 업로드 (총 ${uploadedCount}개)`);
+                        
+                        // 배치 간 잠시 대기
+                        if (i + BATCH_SIZE < allProperties.length) {
+                            await new Promise(resolve => setTimeout(resolve, 200));
+                        }
+                        
+                    } catch (batchError) {
+                        log(`❌ 배치 ${batchNumber} 실패: ${batchError.message}`);
+                        failedCount += batch.length;
+                        errors.push(`배치 ${batchNumber}: ${batchError.message}`);
+                    }
+                }
+                
+                // 최종 결과
+                updateStatus('업로드 완료!');
+                updateProgress(allProperties.length, allProperties.length);
+                
+                log(`\\n🎉 업로드 완료!`);
+                log(`✅ 성공: ${uploadedCount}개`);
+                log(`❌ 실패: ${failedCount}개`);
+                
+                if (errors.length > 0) {
+                    log('❌ 오류 목록:');
+                    errors.forEach(error => log(`  - ${error}`));
+                }
+                
+                // 거래유형별 통계
+                const stats = {
+                    sale: allProperties.filter(p => p.transaction_type === 'sale').length,
+                    lease: allProperties.filter(p => p.transaction_type === 'lease').length,
+                    rent: allProperties.filter(p => p.transaction_type === 'rent').length
+                };
+                
+                log(`\\n📈 업로드된 매물 통계:`);
+                log(`- 매매: ${stats.sale}개`);
+                log(`- 전세: ${stats.lease}개`);
+                log(`- 월세: ${stats.rent}개`);
+                
+                return {
+                    total: allProperties.length,
+                    uploaded: uploadedCount,
+                    failed: failedCount,
+                    errors: errors
+                };
+                
+            } catch (error) {
+                log(`💥 업로드 실패: ${error.message}`);
+                updateStatus('업로드 실패');
+                throw error;
+            }
+        }
+        
+        // 페이지 로드시 자동 실행
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                uploadPropertiesToSupabase();
+            }, 1000);
+        });
+    </script>
+    
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        #status { 
+            font-size: 18px; 
+            font-weight: bold; 
+            margin: 20px 0; 
+        }
+        #progress { 
+            font-size: 16px; 
+            color: #666; 
+            margin: 10px 0; 
+        }
+        #log { 
+            background: #f5f5f5; 
+            border: 1px solid #ddd; 
+            padding: 10px; 
+            height: 400px; 
+            overflow-y: scroll; 
+            font-family: monospace; 
+            font-size: 12px; 
+        }
+        #log div { 
+            margin: 2px 0; 
+        }
+    </style>
+</body>
+</html>

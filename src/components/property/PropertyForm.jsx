@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabase';
+import { getLookupTables } from '../../services/propertyService';
 
 const PropertyForm = ({ isEditing = false }) => {
   const { id } = useParams();
@@ -15,26 +16,21 @@ const PropertyForm = ({ isEditing = false }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  // Mock data for property types, statuses, and transaction types
-  const propertyTypes = [
-    { id: 'apt', name: '아파트' },
-    { id: 'officetel', name: '오피스텔' },
-    { id: 'villa', name: '빌라/연립' },
-    { id: 'house', name: '단독주택' },
-    { id: 'commercial', name: '상가' }
-  ];
+  // 룩업 테이블 데이터 조회
+  const { data: lookupData, isLoading: isLookupLoading } = useQuery(
+    ['lookupTables'],
+    getLookupTables,
+    {
+      staleTime: 5 * 60 * 1000, // 5분간 캐시
+      onError: (err) => {
+        console.error('룩업 테이블 조회 실패:', err);
+      }
+    }
+  );
 
-  const propertyStatuses = [
-    { id: 'available', name: '거래가능' },
-    { id: 'reserved', name: '거래보류' },
-    { id: 'completed', name: '거래완료' }
-  ];
-
-  const transactionTypes = [
-    { id: 'sale', name: '매매' },
-    { id: 'lease', name: '전세' },
-    { id: 'rent', name: '월세' }
-  ];
+  const propertyTypes = lookupData?.propertyTypes || [];
+  const propertyStatuses = lookupData?.propertyStatuses || [];
+  const transactionTypes = lookupData?.transactionTypes || [];
 
   // 매물 상세 정보 조회 (수정 시)
   const { data: property, isLoading: isPropertyLoading } = useQuery(
@@ -121,8 +117,8 @@ const PropertyForm = ({ isEditing = false }) => {
       unit: property?.unit || '',
       // 거래유형별 가격 필드
       sale_price: property?.sale_price || '',
-      lease_deposit: property?.lease_deposit || '',
-      monthly_rent: property?.monthly_rent || '',
+      lease_price: property?.lease_price || '',
+      price: property?.price || '',
       supply_area_sqm: property?.supply_area_sqm || '',
       private_area_sqm: property?.private_area_sqm || '',
       floor_info: property?.floor_info || '',
@@ -148,12 +144,12 @@ const PropertyForm = ({ isEditing = false }) => {
         then: (schema) => schema.positive('유효한 매매가를 입력하세요').required('매매가는 필수 입력사항입니다'),
         otherwise: (schema) => schema.nullable()
       }),
-      lease_deposit: Yup.number().when('transaction_type', {
+      lease_price: Yup.number().when('transaction_type', {
         is: (val) => val === 'lease' || val === 'rent',
         then: (schema) => schema.positive('유효한 보증금을 입력하세요').required('보증금은 필수 입력사항입니다'),
         otherwise: (schema) => schema.nullable()
       }),
-      monthly_rent: Yup.number().when('transaction_type', {
+      price: Yup.number().when('transaction_type', {
         is: 'rent',
         then: (schema) => schema.positive('유효한 월세를 입력하세요').required('월세는 필수 입력사항입니다'),
         otherwise: (schema) => schema.nullable()
@@ -171,11 +167,13 @@ const PropertyForm = ({ isEditing = false }) => {
     return (sqm * 0.3025).toFixed(2);
   };
 
-  if (isEditing && isPropertyLoading) {
+  if ((isEditing && isPropertyLoading) || isLookupLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="ml-2 text-gray-600">매물 정보를 불러오는 중...</p>
+        <p className="ml-2 text-gray-600">
+          {isEditing ? '매물 정보를 불러오는 중...' : '시스템 데이터를 불러오는 중...'}
+        </p>
       </div>
     );
   }
@@ -380,15 +378,15 @@ const PropertyForm = ({ isEditing = false }) => {
                   </label>
                   <input
                     type="number"
-                    name="lease_deposit"
-                    value={formik.values.lease_deposit}
+                    name="lease_price"
+                    value={formik.values.lease_price}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="예: 50000000"
                   />
-                  {formik.touched.lease_deposit && formik.errors.lease_deposit && (
-                    <p className="mt-1 text-sm text-red-500">{formik.errors.lease_deposit}</p>
+                  {formik.touched.lease_price && formik.errors.lease_price && (
+                    <p className="mt-1 text-sm text-red-500">{formik.errors.lease_price}</p>
                   )}
                 </div>
               )}
@@ -400,15 +398,15 @@ const PropertyForm = ({ isEditing = false }) => {
                   </label>
                   <input
                     type="number"
-                    name="monthly_rent"
-                    value={formik.values.monthly_rent}
+                    name="price"
+                    value={formik.values.price}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="예: 500000"
                   />
-                  {formik.touched.monthly_rent && formik.errors.monthly_rent && (
-                    <p className="mt-1 text-sm text-red-500">{formik.errors.monthly_rent}</p>
+                  {formik.touched.price && formik.errors.price && (
+                    <p className="mt-1 text-sm text-red-500">{formik.errors.price}</p>
                   )}
                 </div>
               )}

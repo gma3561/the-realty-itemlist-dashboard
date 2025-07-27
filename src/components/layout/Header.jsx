@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Menu, X, User, LogOut, Home, FileText, Settings, Users, Upload } from 'lucide-react';
+import GlobalSearchBar from '../common/GlobalSearchBar';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -51,6 +52,11 @@ const Header = () => {
             </nav>
           </div>
           
+          {/* 중앙 검색 바 */}
+          <div className="hidden md:flex md:flex-1 md:justify-center md:max-w-lg md:mx-8">
+            <GlobalSearchBar />
+          </div>
+          
           <div className="flex items-center">
             {user && (
               <div className="hidden md:ml-4 md:flex md:items-center">
@@ -92,6 +98,11 @@ const Header = () => {
       {/* 모바일 메뉴 */}
       {isMenuOpen && (
         <div className="md:hidden">
+          {/* 모바일 검색 바 */}
+          <div className="px-4 pt-2 pb-3 border-b border-gray-200">
+            <GlobalSearchBar />
+          </div>
+          
           <div className="pt-2 pb-3 space-y-1">
             {menuItems.map((item) => (
               <Link

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lookup 테이블 초기화</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #log { background: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace; height: 300px; overflow-y: auto; margin-top: 20px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>Lookup 테이블 초기화</h1>
+    <div id="status" class="status info">버튼을 클릭하여 기초 코드 테이블을 초기화하세요.</div>
+    
+    <button onclick="initializePropertyTypes()">매물종류 초기화</button>
+    <button onclick="initializePropertyStatuses()">진행상태 초기화</button>
+    <button onclick="initializeTransactionTypes()">거래유형 초기화</button>
+    <button onclick="clearLog()">로그 지우기</button>
+    
+    <div id="log"></div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+
+        const supabaseUrl = 'https://qwxghpwasmvottahchky.supabase.co';
+        // 서비스 롤 키로 클라이언트 생성
+        const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3eGdocHdhc212b3R0YWhjaGt5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjkxMjc1OSwiZXhwIjoyMDY4NDg4NzU5fQ.QvQ2axKYWWizJ6h_aefiAGKoGsF7dfOf1L0J3mVkAvU';
+        const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function updateStatus(message, isError = false) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = isError ? 'status error' : 'status success';
+        }
+
+        async function initializePropertyTypes() {
+            try {
+                updateStatus('매물종류 초기화 중...', false);
+                log('매물종류 초기화 시작...');
+
+                // 매물종류 데이터
+                const propertyTypes = [
+                    { name: '아파트' },
+                    { name: '주상복합' },
+                    { name: '빌라/연립' },
+                    { name: '오피스텔' },
+                    { name: '단독주택' },
+                    { name: '타운하우스' },
+                    { name: '빌딩/건물' },
+                    { name: '사무실/상가' },
+                    { name: '상가주택' },
+                    { name: '원룸' },
+                    { name: '다가구' },
+                    { name: '한옥' },
+                    { name: '숙박/콘도' },
+                    { name: '전원/농가' },
+                    { name: '공장/창고' },
+                    { name: '재개발' },
+                    { name: '재건축' },
+                    { name: '아파트분양권' },
+                    { name: '주상복합분양권' },
+                    { name: '오피스텔분양권' },
+                    { name: '지식산업센터' },
+                    { name: '기타' }
+                ];
+
+                // 데이터 추가
+                const { data, error } = await supabase
+                    .from('property_types')
+                    .upsert(propertyTypes, { onConflict: 'name' })
+                    .select();
+
+                if (error) {
+                    throw error;
+                }
+                
+                log(`✅ 매물종류 초기화 성공! ${data?.length || 0}개 데이터 추가됨`);
+                updateStatus('매물종류 초기화 완료!', false);
+                
+            } catch (error) {
+                log(`❌ 오류: ${error.message}`);
+                updateStatus(`매물종류 초기화 실패: ${error.message}`, true);
+            }
+        }
+
+        async function initializePropertyStatuses() {
+            try {
+                updateStatus('진행상태 초기화 중...', false);
+                log('진행상태 초기화 시작...');
+
+                // 진행상태 데이터
+                const propertyStatuses = [
+                    { name: '거래가능' },
+                    { name: '거래완료' },
+                    { name: '거래보류' },
+                    { name: '거래유형추가' },
+                    { name: '공동중개요청' },
+                    { name: '거래철회' }
+                ];
+
+                // 데이터 추가
+                const { data, error } = await supabase
+                    .from('property_statuses')
+                    .upsert(propertyStatuses, { onConflict: 'name' })
+                    .select();
+
+                if (error) {
+                    throw error;
+                }
+                
+                log(`✅ 진행상태 초기화 성공! ${data?.length || 0}개 데이터 추가됨`);
+                updateStatus('진행상태 초기화 완료!', false);
+                
+            } catch (error) {
+                log(`❌ 오류: ${error.message}`);
+                updateStatus(`진행상태 초기화 실패: ${error.message}`, true);
+            }
+        }
+
+        async function initializeTransactionTypes() {
+            try {
+                updateStatus('거래유형 초기화 중...', false);
+                log('거래유형 초기화 시작...');
+
+                // 거래유형 데이터
+                const transactionTypes = [
+                    { name: '분양' },
+                    { name: '매매' },
+                    { name: '전세' },
+                    { name: '월세/렌트' },
+                    { name: '단기' }
+                ];
+
+                // 데이터 추가
+                const { data, error } = await supabase
+                    .from('transaction_types')
+                    .upsert(transactionTypes, { onConflict: 'name' })
+                    .select();
+
+                if (error) {
+                    throw error;
+                }
+                
+                log(`✅ 거래유형 초기화 성공! ${data?.length || 0}개 데이터 추가됨`);
+                updateStatus('거래유형 초기화 완료!', false);
+                
+            } catch (error) {
+                log(`❌ 오류: ${error.message}`);
+                updateStatus(`거래유형 초기화 실패: ${error.message}`, true);
+            }
+        }
+
+        // 전역 함수로 만들기
+        window.initializePropertyTypes = initializePropertyTypes;
+        window.initializePropertyStatuses = initializePropertyStatuses;
+        window.initializeTransactionTypes = initializeTransactionTypes;
+        window.clearLog = clearLog;
+    </script>
+</body>
+</html>

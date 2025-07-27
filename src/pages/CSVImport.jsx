@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useQueryClient } from 'react-query';
 import { supabase } from '../services/supabase';
+import { bulkUploadProperties } from '../services/propertyService';
 import { Upload, FileText, AlertCircle, CheckCircle, Download } from 'lucide-react';
 
 const CSVImport = () => {
@@ -78,7 +79,7 @@ const CSVImport = () => {
   };
 
   const parsePrice = (priceText, transactionType) => {
-    if (!priceText) return { sale_price: 0, lease_deposit: 0, monthly_rent: 0 };
+    if (!priceText) return { sale_price: 0, lease_price: 0, price: 0 };
     
     // 쉼표와 공백 제거
     const cleanPrice = priceText.replace(/[,\s]/g, '');
@@ -86,27 +87,27 @@ const CSVImport = () => {
     if (transactionType === 'sale') {
       // 매매: 단일 가격
       const price = parseInt(cleanPrice) || 0;
-      return { sale_price: price, lease_deposit: 0, monthly_rent: 0 };
+      return { sale_price: price, lease_price: 0, price: 0 };
     } else if (transactionType === 'lease') {
       // 전세: 보증금만
       const deposit = parseInt(cleanPrice) || 0;
-      return { sale_price: 0, lease_deposit: deposit, monthly_rent: 0 };
+      return { sale_price: 0, lease_price: deposit, price: 0 };
     } else if (transactionType === 'rent') {
       // 월세: 보증금/월세 형태
       if (cleanPrice.includes('/')) {
         const [deposit, monthly] = cleanPrice.split('/');
         return {
           sale_price: 0,
-          lease_deposit: parseInt(deposit) || 0,
-          monthly_rent: parseInt(monthly) || 0
+          lease_price: parseInt(deposit) || 0,
+          price: parseInt(monthly) || 0
         };
       } else {
         // 월세만 있는 경우
-        return { sale_price: 0, lease_deposit: 0, monthly_rent: parseInt(cleanPrice) || 0 };
+        return { sale_price: 0, lease_price: 0, price: parseInt(cleanPrice) || 0 };
       }
     }
     
-    return { sale_price: 0, lease_deposit: 0, monthly_rent: 0 };
+    return { sale_price: 0, lease_price: 0, price: 0 };
   };
 
   const processCSV = async () => {
@@ -208,52 +209,23 @@ const CSVImport = () => {
       const processedData = await response.json();
       console.log(`${processedData.length}개의 처리된 매물 데이터를 로드했습니다`);
       
-      // 배치 단위로 업로드 (한 번에 너무 많이 보내면 오류 발생 가능)
-      const BATCH_SIZE = 50;
-      let uploadedCount = 0;
-      let failedCount = 0;
-      const errors = [];
-      
-      for (let i = 0; i < processedData.length; i += BATCH_SIZE) {
-        const batch = processedData.slice(i, i + BATCH_SIZE);
-        
-        try {
-          console.log(`배치 ${Math.floor(i/BATCH_SIZE) + 1} 업로드 중... (${batch.length}개 매물)`);
-          
-          const { data, error } = await supabase
-            .from('properties')
-            .insert(batch)
-            .select();
-            
-          if (error) throw error;
-          
-          uploadedCount += batch.length;
-          console.log(`배치 ${Math.floor(i/BATCH_SIZE) + 1} 완료: ${batch.length}개 업로드 (총 ${uploadedCount}개)`);
-          
-          // 배치 간 잠시 대기 (API 제한 방지)
-          if (i + BATCH_SIZE < processedData.length) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-          }
-          
-        } catch (batchError) {
-          console.error(`배치 ${Math.floor(i/BATCH_SIZE) + 1} 실패:`, batchError);
-          failedCount += batch.length;
-          errors.push(`배치 ${Math.floor(i/BATCH_SIZE) + 1}: ${batchError.message}`);
-        }
-      }
+      // propertyService를 사용하여 일괄 업로드
+      const result = await bulkUploadProperties(processedData, user?.id || 'admin');
       
       // 업로드 완료 후 캐시 무효화
       queryClient.invalidateQueries(['properties']);
       
       setResults({
-        total: processedData.length,
-        processed: uploadedCount,
-        errors: errors,
+        total: result.totalCount,
+        processed: result.uploadedCount,
+        errors: result.errors,
         properties: processedData.slice(0, 5) // 처음 5개만 미리보기로 표시
       });
       
-      if (uploadedCount > 0) {
-        console.log(`✅ 업로드 완료! 총 ${uploadedCount}개 매물이 성공적으로 업로드되었습니다.`);
+      if (result.success && result.uploadedCount > 0) {
+        console.log(`✅ 업로드 완료! 총 ${result.uploadedCount}개 매물이 성공적으로 업로드되었습니다.`);
+      } else if (!result.success) {
+        throw new Error(`업로드 실패: ${result.errors.join(', ')}`);
       }
       
     } catch (err) {
@@ -417,8 +389,8 @@ const CSVImport = () => {
                     <div className="text-sm text-gray-600">
                       {property.location} | {property.transaction_type} | 
                       {property.transaction_type === 'sale' && property.sale_price > 0 && ` ${property.sale_price.toLocaleString()}원`}
-                      {property.transaction_type === 'lease' && property.lease_deposit > 0 && ` ${property.lease_deposit.toLocaleString()}원`}
-                      {property.transaction_type === 'rent' && ` ${property.lease_deposit.toLocaleString()}/${property.monthly_rent.toLocaleString()}원`}
+                      {property.transaction_type === 'lease' && property.lease_price > 0 && ` ${property.lease_price.toLocaleString()}원`}
+                      {property.transaction_type === 'rent' && ` ${property.lease_price.toLocaleString()}/${property.price.toLocaleString()}원`}
                     </div>
                   </div>
                 ))}

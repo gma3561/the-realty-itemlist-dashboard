@@ -4,6 +4,7 @@ import { useQuery } from 'react-query';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
 import { Building2, CheckCircle, Clock, PlusCircle, BarChart, TrendingUp } from 'lucide-react';
+import PropertyStatsChart from '../components/dashboard/PropertyStatsChart';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -71,10 +72,10 @@ const Dashboard = () => {
     if (transactionType === '매매') {
       return formatPrice(property.sale_price || 0);
     } else if (transactionType === '전세') {
-      return formatPrice(property.lease_deposit || 0);
+      return formatPrice(property.lease_price || 0);
     } else if (transactionType === '월세') {
-      const deposit = formatPrice(property.lease_deposit || 0);
-      const monthly = formatPrice(property.monthly_rent || 0);
+      const deposit = formatPrice(property.lease_price || 0);
+      const monthly = formatPrice(property.price || 0);
       return `${deposit} / ${monthly}`;
     }
     return '-';
@@ -250,6 +251,14 @@ const Dashboard = () => {
               📈 지난달 대비 신규 등록 매물이 <span className="font-semibold text-green-600">50% 증가</span>했습니다!
             </p>
           </div>
+        </div>
+      </div>
+      
+      {/* 상세 통계 차트 */}
+      <div className="mt-8">
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-semibold mb-6">매물 분석 대시보드</h2>
+          <PropertyStatsChart properties={properties} />
         </div>
       </div>
     </div>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실제 매물 데이터 업로드</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #log { background: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace; height: 300px; overflow-y: auto; margin-top: 20px; border: 1px solid #ddd; }
+        .progress-container { width: 100%; background-color: #f3f3f3; margin: 10px 0; }
+        .progress-bar { height: 20px; background-color: #4CAF50; width: 0%; text-align: center; line-height: 20px; color: white; }
+        .summary { background: #e9ecef; padding: 15px; border-radius: 5px; margin-top: 20px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>실제 매물 데이터 업로드</h1>
+    <div id="status" class="status info">먼저 <b>실제 데이터 확인</b> 버튼을 클릭하여 데이터를 검사하세요.</div>
+    
+    <div class="progress-container">
+        <div id="progressBar" class="progress-bar">0%</div>
+    </div>
+    
+    <button onclick="validateRealData()">실제 데이터 확인</button>
+    <button onclick="uploadRealData()">실제 데이터 업로드</button>
+    <button onclick="getProperties()">매물 목록 조회</button>
+    <button onclick="clearLog()">로그 지우기</button>
+    
+    <div id="summary" class="summary" style="display: none;"></div>
+    <div id="log"></div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+
+        const supabaseUrl = 'https://qwxghpwasmvottahchky.supabase.co';
+        // 서비스 롤 키로 클라이언트 생성
+        const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3eGdocHdhc212b3R0YWhjaGt5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjkxMjc1OSwiZXhwIjoyMDY4NDg4NzU5fQ.QvQ2axKYWWizJ6h_aefiAGKoGsF7dfOf1L0J3mVkAvU';
+        const supabase = createClient(supabaseUrl, serviceRoleKey);
+        let processedData = [];
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function updateStatus(message, isError = false) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = message;
+            statusDiv.className = isError ? 'status error' : 'status success';
+        }
+
+        function updateProgress(current, total) {
+            const percent = Math.round((current / total) * 100);
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = percent + '%';
+            progressBar.innerText = percent + '%';
+        }
+
+        function showSummary(data) {
+            const summaryDiv = document.getElementById('summary');
+            
+            // 데이터 통계
+            const propertyTypes = {};
+            const transactionTypes = {};
+            const propertyStatuses = {};
+            
+            data.forEach(property => {
+                // 매물종류 통계
+                if (!propertyTypes[property.property_type]) {
+                    propertyTypes[property.property_type] = 0;
+                }
+                propertyTypes[property.property_type]++;
+                
+                // 거래유형 통계
+                if (!transactionTypes[property.transaction_type]) {
+                    transactionTypes[property.transaction_type] = 0;
+                }
+                transactionTypes[property.transaction_type]++;
+                
+                // 매물상태 통계
+                if (!propertyStatuses[property.property_status]) {
+                    propertyStatuses[property.property_status] = 0;
+                }
+                propertyStatuses[property.property_status]++;
+            });
+            
+            // 통계 정보 HTML 생성
+            let html = `<h3>데이터 요약 (총 ${data.length}개 매물)</h3>`;
+            
+            // 매물종류 통계
+            html += '<h4>매물종류 분포</h4><ul>';
+            for (const [type, count] of Object.entries(propertyTypes)) {
+                html += `<li>${type}: ${count}개</li>`;
+            }
+            html += '</ul>';
+            
+            // 거래유형 통계
+            html += '<h4>거래유형 분포</h4><ul>';
+            for (const [type, count] of Object.entries(transactionTypes)) {
+                html += `<li>${type}: ${count}개</li>`;
+            }
+            html += '</ul>';
+            
+            // 매물상태 통계
+            html += '<h4>매물상태 분포</h4><ul>';
+            for (const [status, count] of Object.entries(propertyStatuses)) {
+                html += `<li>${status}: ${count}개</li>`;
+            }
+            html += '</ul>';
+            
+            // 샘플 데이터
+            html += '<h4>샘플 데이터 (처음 3개)</h4>';
+            for (let i = 0; i < Math.min(3, data.length); i++) {
+                const property = data[i];
+                html += `<div><b>${property.property_name}</b> (${property.location}) - ${property.property_type}, ${property.transaction_type}, ${property.property_status}</div>`;
+            }
+            
+            summaryDiv.innerHTML = html;
+            summaryDiv.style.display = 'block';
+        }
+
+        async function validateRealData() {
+            try {
+                updateStatus('실제 데이터 검증 중...', false);
+                log('실제 데이터 검증 시작...');
+                
+                // processed_properties.json 파일 로드
+                const response = await fetch('./processed_properties.json');
+                if (!response.ok) {
+                    throw new Error('processed_properties.json 파일을 찾을 수 없습니다');
+                }
+                
+                processedData = await response.json();
+                log(`📋 ${processedData.length}개의 데이터를 로드했습니다`);
+                
+                // 컬럼명 변환
+                const convertedData = processedData.map(property => {
+                    // price 필드 설정 (transaction_type에 따라)
+                    let price = 0;
+                    if (property.transaction_type === 'sale') {
+                        price = property.sale_price || 0;
+                    }
+                    
+                    // lease_price 필드 설정
+                    let lease_price = 0;
+                    if (property.transaction_type === 'lease') {
+                        lease_price = property.lease_deposit || 0;
+                    } else if (property.transaction_type === 'rent') {
+                        lease_price = property.lease_deposit || 0;
+                    }
+                    
+                    return {
+                        ...property,
+                        price: price,
+                        lease_price: lease_price,
+                        manager_id: 'admin'  // 기본 관리자 ID
+                    };
+                });
+                
+                processedData = convertedData;
+                showSummary(processedData);
+                
+                log('✅ 데이터 검증 완료!');
+                updateStatus(`데이터 검증 완료! ${processedData.length}개의 매물 데이터가 준비되었습니다.`, false);
+                
+            } catch (error) {
+                log(`❌ 오류: ${error.message}`);
+                updateStatus(`데이터 검증 실패: ${error.message}`, true);
+            }
+        }
+
+        async function uploadRealData() {
+            if (processedData.length === 0) {
+                updateStatus('먼저 "실제 데이터 확인" 버튼을 클릭하여 데이터를 로드하세요.', true);
+                return;
+            }
+            
+            try {
+                updateStatus('실제 데이터 업로드 중...', false);
+                log('실제 데이터 업로드 시작...');
+                
+                // 배치 크기 설정
+                const BATCH_SIZE = 50;
+                let successCount = 0;
+                let failedCount = 0;
+                const errors = [];
+                
+                // 배치 단위로 처리
+                for (let i = 0; i < processedData.length; i += BATCH_SIZE) {
+                    const batch = processedData.slice(i, i + BATCH_SIZE);
+                    const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
+                    
+                    try {
+                        log(`🔄 배치 ${batchNumber} 업로드 중... (${batch.length}개 매물)`);
+                        updateProgress(i, processedData.length);
+                        
+                        const { data, error } = await supabase
+                            .from('properties')
+                            .upsert(batch, { onConflict: ['property_name', 'location'] })
+                            .select();
+                            
+                        if (error) throw error;
+                        
+                        successCount += batch.length;
+                        log(`✅ 배치 ${batchNumber} 성공! (${batch.length}개 매물)`);
+                        
+                        // 배치 간 잠시 대기
+                        if (i + BATCH_SIZE < processedData.length) {
+                            await new Promise(resolve => setTimeout(resolve, 300));
+                        }
+                        
+                    } catch (batchError) {
+                        failedCount += batch.length;
+                        errors.push(`배치 ${batchNumber}: ${batchError.message}`);
+                        log(`❌ 배치 ${batchNumber} 실패: ${batchError.message}`);
+                    }
+                }
+                
+                updateProgress(processedData.length, processedData.length);
+                
+                // 결과 요약
+                const resultSummary = `
+                    <h3>업로드 결과</h3>
+                    <ul>
+                        <li>총 매물 수: ${processedData.length}개</li>
+                        <li>성공: ${successCount}개</li>
+                        <li>실패: ${failedCount}개</li>
+                    </ul>
+                `;
+                
+                if (errors.length > 0) {
+                    let errorsSummary = '<h4>오류 목록</h4><ul>';
+                    errors.forEach(error => {
+                        errorsSummary += `<li>${error}</li>`;
+                    });
+                    errorsSummary += '</ul>';
+                    
+                    document.getElementById('summary').innerHTML += errorsSummary;
+                }
+                
+                log(`✅ 업로드 완료! 성공: ${successCount}개, 실패: ${failedCount}개`);
+                updateStatus(`업로드 완료! 성공: ${successCount}개, 실패: ${failedCount}개`, successCount === 0);
+                
+            } catch (error) {
+                log(`❌ 오류: ${error.message}`);
+                updateStatus(`데이터 업로드 실패: ${error.message}`, true);
+            }
+        }
+
+        async function getProperties() {
+            try {
+                updateStatus('매물 목록 조회 중...', false);
+                log('매물 목록 조회 시작...');
+
+                const { data, error, count } = await supabase
+                    .from('properties')
+                    .select('*', { count: 'exact' })
+                    .limit(5);
+
+                if (error) {
+                    throw error;
+                }
+                
+                log(`✅ 매물 조회 성공! 총 ${count}개 매물`);
+                
+                if (data && data.length > 0) {
+                    data.forEach((property, index) => {
+                        log(`📋 매물 ${index + 1}: ${property.property_name} (${property.location})`);
+                    });
+                } else {
+                    log('❕ 매물 데이터가 없습니다.');
+                }
+                
+                updateStatus(`매물 목록 조회 완료! ${count}개 매물`, false);
+                
+            } catch (error) {
+                log(`❌ 오류: ${error.message}`);
+                updateStatus(`매물 목록 조회 실패: ${error.message}`, true);
+            }
+        }
+
+        // 전역 함수로 만들기
+        window.validateRealData = validateRealData;
+        window.uploadRealData = uploadRealData;
+        window.getProperties = getProperties;
+        window.clearLog = clearLog;
+    </script>
+</body>
+</html>
