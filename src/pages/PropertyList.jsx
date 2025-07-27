@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from 'react-query';
+import { supabase } from '../services/supabase';
 import { PlusCircle, Search, RefreshCw, Building2, MapPin, Calendar, DollarSign } from 'lucide-react';
 
 const PropertyList = () => {
@@ -10,60 +11,64 @@ const PropertyList = () => {
     type: ''
   });
   
-  // 임시 매물 데이터 (실제로는 Supabase에서 가져올 예정)
-  const mockProperties = [
-    {
-      id: 1,
-      property_name: '래미안 아파트 101동 1503호',
-      location: '서울시 강남구 삼성동',
-      property_type: '아파트',
-      transaction_type: '매매',
-      sale_price: 2500000000,
-      lease_deposit: 0,
-      monthly_rent: 0,
-      status: '거래가능',
-      manager_name: '관리자',
-      created_at: '2025-01-15',
-      supply_area_sqm: 84.56
+  // Supabase에서 매물 데이터 가져오기
+  const { data: properties = [], isLoading, error, refetch } = useQuery(
+    ['properties'],
+    async () => {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
+      return data;
     },
     {
-      id: 2,
-      property_name: '힐스테이트 오피스텔 A동 205호',
-      location: '서울시 서초구 서초동',
-      property_type: '오피스텔',
-      transaction_type: '전세',
-      sale_price: 0,
-      lease_deposit: 800000000,
-      monthly_rent: 0,
-      status: '거래가능',
-      manager_name: '관리자',
-      created_at: '2025-01-14',
-      supply_area_sqm: 32.15
-    },
-    {
-      id: 3,
-      property_name: '신축 빌라 3층',
-      location: '서울시 마포구 합정동',
-      property_type: '빌라/연립',
-      transaction_type: '월세',
-      sale_price: 0,
-      lease_deposit: 50000000,
-      monthly_rent: 500000,
-      status: '거래완료',
-      manager_name: '관리자',
-      created_at: '2025-01-13',
-      supply_area_sqm: 65.23
+      refetchOnWindowFocus: false,
     }
-  ];
+  );
+
+  // 타입 매핑 함수
+  const getDisplayPropertyType = (type) => {
+    const typeMap = {
+      'apt': '아파트',
+      'officetel': '오피스텔',
+      'villa': '빌라/연립',
+      'house': '단독주택',
+      'commercial': '상가'
+    };
+    return typeMap[type] || type;
+  };
+
+  const getDisplayTransactionType = (type) => {
+    const typeMap = {
+      'sale': '매매',
+      'lease': '전세',
+      'rent': '월세'
+    };
+    return typeMap[type] || type;
+  };
+
+  const getDisplayStatus = (status) => {
+    const statusMap = {
+      'available': '거래가능',
+      'reserved': '거래보류',
+      'completed': '거래완료'
+    };
+    return statusMap[status] || status;
+  };
 
   // 필터된 매물 목록
-  const filteredProperties = mockProperties.filter(property => {
+  const filteredProperties = properties.filter(property => {
     const matchesSearch = !filters.search || 
       property.property_name.toLowerCase().includes(filters.search.toLowerCase()) ||
       property.location.toLowerCase().includes(filters.search.toLowerCase());
     
-    const matchesStatus = !filters.status || property.status === filters.status;
-    const matchesType = !filters.type || property.property_type === filters.type;
+    const displayStatus = getDisplayStatus(property.property_status);
+    const displayType = getDisplayPropertyType(property.property_type);
+    
+    const matchesStatus = !filters.status || displayStatus === filters.status;
+    const matchesType = !filters.type || displayType === filters.type;
     
     return matchesSearch && matchesStatus && matchesType;
   });
@@ -78,13 +83,15 @@ const PropertyList = () => {
   };
 
   const getDisplayPrice = (property) => {
-    if (property.transaction_type === '매매') {
-      return formatPrice(property.sale_price);
-    } else if (property.transaction_type === '전세') {
-      return formatPrice(property.lease_deposit);
-    } else if (property.transaction_type === '월세') {
-      const deposit = formatPrice(property.lease_deposit);
-      const monthly = formatPrice(property.monthly_rent);
+    const transactionType = getDisplayTransactionType(property.transaction_type);
+    
+    if (transactionType === '매매') {
+      return formatPrice(property.sale_price || 0);
+    } else if (transactionType === '전세') {
+      return formatPrice(property.lease_deposit || 0);
+    } else if (transactionType === '월세') {
+      const deposit = formatPrice(property.lease_deposit || 0);
+      const monthly = formatPrice(property.monthly_rent || 0);
       return `${deposit} / ${monthly}`;
     }
     return '-';
@@ -112,8 +119,32 @@ const PropertyList = () => {
         </Link>
       </div>
 
-      {/* 필터 섹션 */}
-      <div className="bg-white shadow rounded-lg p-6">
+      {/* 로딩 및 에러 처리 */}
+      {isLoading && (
+        <div className="flex justify-center items-center h-64">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="ml-2 text-gray-600">매물 목록을 불러오는 중...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center">
+            <span className="text-red-600">매물 목록을 불러오는데 실패했습니다: {error.message}</span>
+            <button 
+              onClick={() => refetch()}
+              className="ml-4 px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+            >
+              다시 시도
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!isLoading && !error && (
+        <>
+          {/* 필터 섹션 */}
+          <div className="bg-white shadow rounded-lg p-6">
         <h2 className="text-lg font-medium text-gray-900 mb-4">필터 및 검색</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
@@ -228,7 +259,7 @@ const PropertyList = () => {
                           {property.property_name}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {property.property_type} • {formatArea(property.supply_area_sqm)}
+                          {getDisplayPropertyType(property.property_type)} • {formatArea(property.supply_area_sqm)}
                         </div>
                       </div>
                     </td>
@@ -240,7 +271,7 @@ const PropertyList = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {property.transaction_type}
+                        {getDisplayTransactionType(property.transaction_type)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -251,13 +282,13 @@ const PropertyList = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        property.status === '거래가능'
+                        getDisplayStatus(property.property_status) === '거래가능'
                           ? 'bg-green-100 text-green-800'
-                          : property.status === '거래완료'
+                          : getDisplayStatus(property.property_status) === '거래완료'
                           ? 'bg-blue-100 text-blue-800'
                           : 'bg-yellow-100 text-yellow-800'
                       }`}>
-                        {property.status}
+                        {getDisplayStatus(property.property_status)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -289,6 +320,8 @@ const PropertyList = () => {
           </div>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 };

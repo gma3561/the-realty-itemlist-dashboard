@@ -1,43 +1,41 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from 'react-query';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../services/supabase';
 import { Building2, CheckCircle, Clock, PlusCircle, BarChart, TrendingUp } from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuth();
   
-  // 임시 데이터 (실제로는 Supabase에서 가져올 예정)
-  const mockStats = {
-    totalProperties: 3,
-    completedDeals: 1,
-    inProgress: 2,
-    thisMonth: 3
+  // Supabase에서 매물 데이터 가져오기
+  const { data: properties = [], isLoading } = useQuery(
+    ['properties'],
+    async () => {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
+      return data;
+    }
+  );
+
+  // 통계 계산
+  const stats = {
+    totalProperties: properties.length,
+    completedDeals: properties.filter(p => p.property_status === 'completed').length,
+    inProgress: properties.filter(p => p.property_status === 'available').length,
+    thisMonth: properties.filter(p => {
+      const created = new Date(p.created_at);
+      const now = new Date();
+      return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+    }).length
   };
 
-  const recentProperties = [
-    {
-      id: 1,
-      property_name: '래미안 아파트 101동 1503호',
-      location: '서울시 강남구 삼성동',
-      transaction_type: '매매',
-      sale_price: 2500000000,
-      lease_deposit: 0,
-      monthly_rent: 0,
-      status: '거래가능',
-      created_at: '2025-01-15'
-    },
-    {
-      id: 2,
-      property_name: '힐스테이트 오피스텔 A동 205호',
-      location: '서울시 서초구 서초동',
-      transaction_type: '전세',
-      sale_price: 0,
-      lease_deposit: 800000000,
-      monthly_rent: 0,
-      status: '거래가능',
-      created_at: '2025-01-14'
-    }
-  ];
+  // 최근 매물 (상위 2개)
+  const recentProperties = properties.slice(0, 2);
 
   const formatPrice = (price) => {
     if (price >= 100000000) {
@@ -48,19 +46,49 @@ const Dashboard = () => {
     return `${price.toLocaleString()}원`;
   };
 
+  // 타입 매핑 함수
+  const getDisplayTransactionType = (type) => {
+    const typeMap = {
+      'sale': '매매',
+      'lease': '전세',
+      'rent': '월세'
+    };
+    return typeMap[type] || type;
+  };
+
+  const getDisplayStatus = (status) => {
+    const statusMap = {
+      'available': '거래가능',
+      'reserved': '거래보류',
+      'completed': '거래완료'
+    };
+    return statusMap[status] || status;
+  };
+
   const getDisplayPrice = (property) => {
-    if (property.transaction_type === '매매') {
-      return formatPrice(property.sale_price);
-    } else if (property.transaction_type === '전세') {
-      return formatPrice(property.lease_deposit);
-    } else if (property.transaction_type === '월세') {
-      const deposit = formatPrice(property.lease_deposit);
-      const monthly = formatPrice(property.monthly_rent);
+    const transactionType = getDisplayTransactionType(property.transaction_type);
+    
+    if (transactionType === '매매') {
+      return formatPrice(property.sale_price || 0);
+    } else if (transactionType === '전세') {
+      return formatPrice(property.lease_deposit || 0);
+    } else if (transactionType === '월세') {
+      const deposit = formatPrice(property.lease_deposit || 0);
+      const monthly = formatPrice(property.monthly_rent || 0);
       return `${deposit} / ${monthly}`;
     }
     return '-';
   };
   
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="ml-2 text-gray-600">대시보드를 불러오는 중...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* 환영 메시지 */}
@@ -78,7 +106,7 @@ const Dashboard = () => {
             </div>
             <div className="ml-4">
               <h2 className="font-semibold text-gray-600">총 매물 수</h2>
-              <p className="text-2xl font-bold text-gray-900">{mockStats.totalProperties}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalProperties}</p>
             </div>
           </div>
         </div>
@@ -90,7 +118,7 @@ const Dashboard = () => {
             </div>
             <div className="ml-4">
               <h2 className="font-semibold text-gray-600">거래 완료</h2>
-              <p className="text-2xl font-bold text-gray-900">{mockStats.completedDeals}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.completedDeals}</p>
             </div>
           </div>
         </div>
@@ -102,7 +130,7 @@ const Dashboard = () => {
             </div>
             <div className="ml-4">
               <h2 className="font-semibold text-gray-600">진행 중</h2>
-              <p className="text-2xl font-bold text-gray-900">{mockStats.inProgress}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.inProgress}</p>
             </div>
           </div>
         </div>
@@ -114,7 +142,7 @@ const Dashboard = () => {
             </div>
             <div className="ml-4">
               <h2 className="font-semibold text-gray-600">이번 달 등록</h2>
-              <p className="text-2xl font-bold text-gray-900">{mockStats.thisMonth}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.thisMonth}</p>
             </div>
           </div>
         </div>
@@ -184,13 +212,13 @@ const Dashboard = () => {
                     </div>
                     <div className="text-right">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        property.status === '거래가능'
+                        getDisplayStatus(property.property_status) === '거래가능'
                           ? 'bg-green-100 text-green-800'
                           : 'bg-yellow-100 text-yellow-800'
                       }`}>
-                        {property.status}
+                        {getDisplayStatus(property.property_status)}
                       </span>
-                      <p className="text-xs text-gray-500 mt-1">{property.created_at}</p>
+                      <p className="text-xs text-gray-500 mt-1">{new Date(property.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
                 </div>
@@ -205,15 +233,15 @@ const Dashboard = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
               <span className="text-sm font-medium text-gray-700">신규 등록 매물</span>
-              <span className="text-lg font-bold text-blue-600">3건</span>
+              <span className="text-lg font-bold text-blue-600">{stats.thisMonth}건</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
               <span className="text-sm font-medium text-gray-700">성사된 거래</span>
-              <span className="text-lg font-bold text-green-600">1건</span>
+              <span className="text-lg font-bold text-green-600">{stats.completedDeals}건</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
               <span className="text-sm font-medium text-gray-700">진행 중인 매물</span>
-              <span className="text-lg font-bold text-yellow-600">2건</span>
+              <span className="text-lg font-bold text-yellow-600">{stats.inProgress}건</span>
             </div>
           </div>
           

@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../services/supabase';
 
 const PropertyForm = ({ isEditing = false }) => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -33,84 +36,105 @@ const PropertyForm = ({ isEditing = false }) => {
     { id: 'rent', name: '월세' }
   ];
 
-  // Mock property data for editing
-  const mockProperty = isEditing && id ? {
-    id: parseInt(id),
-    property_name: id === '1' ? '래미안 아파트 101동 1503호' : id === '2' ? '힐스테이트 오피스텔 A동 205호' : '신축 빌라 3층',
-    location: id === '1' ? '서울시 강남구 삼성동' : id === '2' ? '서울시 서초구 서초동' : '서울시 마포구 합정동',
-    property_type: id === '1' ? 'apt' : id === '2' ? 'officetel' : 'villa',
-    transaction_type: id === '1' ? 'sale' : id === '2' ? 'lease' : 'rent',
-    property_status: id === '1' ? 'available' : id === '2' ? 'available' : 'completed',
-    // 거래유형별 가격 분리
-    sale_price: id === '1' ? 2500000000 : 0,
-    lease_deposit: id === '2' ? 800000000 : id === '3' ? 50000000 : 0,
-    monthly_rent: id === '3' ? 500000 : 0,
-    supply_area_sqm: id === '1' ? 84.56 : id === '2' ? 32.15 : 65.23,
-    private_area_sqm: id === '1' ? 59.82 : id === '2' ? 25.48 : 52.31,
-    building: id === '1' ? '101동' : id === '2' ? 'A동' : '',
-    unit: id === '1' ? '1503호' : id === '2' ? '205호' : '3층',
-    floor_info: id === '1' ? '15층/25층' : id === '2' ? '2층/15층' : '3층/3층',
-    rooms_bathrooms: id === '1' ? '3개/2개' : id === '2' ? '1개/1개' : '2개/1개',
-    direction: id === '1' ? '남향' : id === '2' ? '동향' : '남서향',
-    maintenance_fee: id === '1' ? '15만원' : id === '2' ? '8만원' : '5만원',
-    parking: id === '1' ? '2대' : id === '2' ? '1대' : '1대',
-    move_in_date: '즉시입주',
-    approval_date: '2020.05.15',
-    special_notes: '',
-    manager_memo: '',
-    is_commercial: false
-  } : null;
+  // 매물 상세 정보 조회 (수정 시)
+  const { data: property, isLoading: isPropertyLoading } = useQuery(
+    ['property', id],
+    async () => {
+      if (!id) return null;
+      
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('id', id)
+        .single();
+        
+      if (error) throw error;
+      return data;
+    },
+    {
+      enabled: isEditing && !!id,
+      onError: (err) => {
+        setError(`매물 정보를 불러오는데 실패했습니다: ${err.message}`);
+      }
+    }
+  );
+
+  // 매물 등록/수정 Mutation
+  const mutation = useMutation(
+    async (values) => {
+      if (isEditing) {
+        // 수정
+        const { data, error } = await supabase
+          .from('properties')
+          .update(values)
+          .eq('id', id)
+          .select();
+          
+        if (error) throw error;
+        return data;
+      } else {
+        // 등록
+        const { data, error } = await supabase
+          .from('properties')
+          .insert([{ ...values, manager_id: user.id }])
+          .select();
+          
+        if (error) throw error;
+        return data;
+      }
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['properties']);
+        queryClient.invalidateQueries(['property', id]);
+        setSuccess(true);
+        
+        // Navigate back to properties list after 2 seconds
+        setTimeout(() => {
+          navigate('/properties');
+        }, 2000);
+      },
+      onError: (err) => {
+        setError(`매물 ${isEditing ? '수정' : '등록'}에 실패했습니다: ${err.message}`);
+      },
+      onSettled: () => {
+        setIsSubmitting(false);
+      }
+    }
+  );
 
   const handleSubmit = async (values) => {
     setIsSubmitting(true);
     setError(null);
-    
-    try {
-      // Mock API call - simulate save
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log('매물 데이터:', values);
-      
-      setSuccess(true);
-      
-      // Navigate back to properties list after 2 seconds
-      setTimeout(() => {
-        navigate('/properties');
-      }, 2000);
-      
-    } catch (err) {
-      setError(`매물 ${isEditing ? '수정' : '등록'}에 실패했습니다: ${err.message}`);
-    } finally {
-      setIsSubmitting(false);
-    }
+    mutation.mutate(values);
   };
 
   // Formik 설정
   const formik = useFormik({
     initialValues: {
-      property_type: mockProperty?.property_type || '',
-      property_status: mockProperty?.property_status || '',
-      transaction_type: mockProperty?.transaction_type || '',
-      property_name: mockProperty?.property_name || '',
-      location: mockProperty?.location || '',
-      building: mockProperty?.building || '',
-      unit: mockProperty?.unit || '',
+      property_type: property?.property_type || '',
+      property_status: property?.property_status || '',
+      transaction_type: property?.transaction_type || '',
+      property_name: property?.property_name || '',
+      location: property?.location || '',
+      building: property?.building || '',
+      unit: property?.unit || '',
       // 거래유형별 가격 필드
-      sale_price: mockProperty?.sale_price || '',
-      lease_deposit: mockProperty?.lease_deposit || '',
-      monthly_rent: mockProperty?.monthly_rent || '',
-      supply_area_sqm: mockProperty?.supply_area_sqm || '',
-      private_area_sqm: mockProperty?.private_area_sqm || '',
-      floor_info: mockProperty?.floor_info || '',
-      rooms_bathrooms: mockProperty?.rooms_bathrooms || '',
-      direction: mockProperty?.direction || '',
-      maintenance_fee: mockProperty?.maintenance_fee || '',
-      parking: mockProperty?.parking || '',
-      move_in_date: mockProperty?.move_in_date || '',
-      approval_date: mockProperty?.approval_date || '',
-      special_notes: mockProperty?.special_notes || '',
-      manager_memo: mockProperty?.manager_memo || '',
-      is_commercial: mockProperty?.is_commercial || false
+      sale_price: property?.sale_price || '',
+      lease_deposit: property?.lease_deposit || '',
+      monthly_rent: property?.monthly_rent || '',
+      supply_area_sqm: property?.supply_area_sqm || '',
+      private_area_sqm: property?.private_area_sqm || '',
+      floor_info: property?.floor_info || '',
+      rooms_bathrooms: property?.rooms_bathrooms || '',
+      direction: property?.direction || '',
+      maintenance_fee: property?.maintenance_fee || '',
+      parking: property?.parking || '',
+      move_in_date: property?.move_in_date || '',
+      approval_date: property?.approval_date || '',
+      special_notes: property?.special_notes || '',
+      manager_memo: property?.manager_memo || '',
+      is_commercial: property?.is_commercial || false
     },
     validationSchema: Yup.object({
       property_name: Yup.string().required('매물명은 필수 입력사항입니다'),
@@ -146,6 +170,15 @@ const PropertyForm = ({ isEditing = false }) => {
     if (!sqm) return '';
     return (sqm * 0.3025).toFixed(2);
   };
+
+  if (isEditing && isPropertyLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="ml-2 text-gray-600">매물 정보를 불러오는 중...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
