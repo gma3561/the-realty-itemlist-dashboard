@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useQueryClient } from 'react-query';
+import { supabase } from '../services/supabase';
 import { Upload, FileText, AlertCircle, CheckCircle, Download } from 'lucide-react';
 
 const CSVImport = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [file, setFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [results, setResults] = useState(null);
@@ -165,7 +168,8 @@ const CSVImport = () => {
             approval_date: row['사용승인일'] || '',
             special_notes: row['특이사항'] || '',
             manager_memo: row['메모'] || '',
-            is_commercial: (row['상가여부'] === '예' || row['상가여부'] === 'Y')
+            is_commercial: (row['상가여부'] === '예' || row['상가여부'] === 'Y'),
+            manager_id: user.id || 'admin-hardcoded'
           };
           
           processedProperties.push(property);
@@ -183,6 +187,78 @@ const CSVImport = () => {
       
     } catch (err) {
       setError(`CSV 처리 중 오류가 발생했습니다: ${err.message}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const uploadProcessedData = async () => {
+    setIsProcessing(true);
+    setError(null);
+    
+    try {
+      console.log('처리된 CSV 데이터를 Supabase에 업로드 시작...');
+      
+      // processed_properties.json 파일에서 데이터 로드
+      const response = await fetch('/processed_properties.json');
+      if (!response.ok) {
+        throw new Error('처리된 데이터 파일을 찾을 수 없습니다. CSV 처리를 먼저 실행해주세요.');
+      }
+      
+      const processedData = await response.json();
+      console.log(`${processedData.length}개의 처리된 매물 데이터를 로드했습니다`);
+      
+      // 배치 단위로 업로드 (한 번에 너무 많이 보내면 오류 발생 가능)
+      const BATCH_SIZE = 50;
+      let uploadedCount = 0;
+      let failedCount = 0;
+      const errors = [];
+      
+      for (let i = 0; i < processedData.length; i += BATCH_SIZE) {
+        const batch = processedData.slice(i, i + BATCH_SIZE);
+        
+        try {
+          console.log(`배치 ${Math.floor(i/BATCH_SIZE) + 1} 업로드 중... (${batch.length}개 매물)`);
+          
+          const { data, error } = await supabase
+            .from('properties')
+            .insert(batch)
+            .select();
+            
+          if (error) throw error;
+          
+          uploadedCount += batch.length;
+          console.log(`배치 ${Math.floor(i/BATCH_SIZE) + 1} 완료: ${batch.length}개 업로드 (총 ${uploadedCount}개)`);
+          
+          // 배치 간 잠시 대기 (API 제한 방지)
+          if (i + BATCH_SIZE < processedData.length) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          
+        } catch (batchError) {
+          console.error(`배치 ${Math.floor(i/BATCH_SIZE) + 1} 실패:`, batchError);
+          failedCount += batch.length;
+          errors.push(`배치 ${Math.floor(i/BATCH_SIZE) + 1}: ${batchError.message}`);
+        }
+      }
+      
+      // 업로드 완료 후 캐시 무효화
+      queryClient.invalidateQueries(['properties']);
+      
+      setResults({
+        total: processedData.length,
+        processed: uploadedCount,
+        errors: errors,
+        properties: processedData.slice(0, 5) // 처음 5개만 미리보기로 표시
+      });
+      
+      if (uploadedCount > 0) {
+        console.log(`✅ 업로드 완료! 총 ${uploadedCount}개 매물이 성공적으로 업로드되었습니다.`);
+      }
+      
+    } catch (err) {
+      console.error('업로드 오류:', err);
+      setError(`데이터 업로드 중 오류가 발생했습니다: ${err.message}`);
     } finally {
       setIsProcessing(false);
     }
@@ -271,7 +347,14 @@ const CSVImport = () => {
           </div>
         )}
 
-        <div className="mt-6 flex justify-end">
+        <div className="mt-6 flex justify-end space-x-3">
+          <button
+            onClick={uploadProcessedData}
+            disabled={isProcessing}
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isProcessing ? '업로드 중...' : '처리된 데이터 업로드'}
+          </button>
           <button
             onClick={processCSV}
             disabled={!file || isProcessing}
