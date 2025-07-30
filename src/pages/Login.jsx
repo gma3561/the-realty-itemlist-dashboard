@@ -5,7 +5,7 @@ import { supabase } from '../services/supabase';
 import { isHardcodedAdmin } from '../data/hardcodedAdmins';
 
 const Login = () => {
-  const { user, loading, error: authError } = useAuth();
+  const { user, loading, error: authError, signInWithEmail } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
@@ -25,14 +25,9 @@ const Login = () => {
     try {
       // 하드코딩된 관리자 계정 확인
       if (isHardcodedAdmin(email) && password === 'admin123!') {
-        // signInWithEmail은 AuthContext에서 처리
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-        
-        // 인증 실패해도 하드코딩된 관리자는 로그인 허용
-        window.location.href = '/the-realty-itemlist-dashboard/';
+        // AuthContext의 signInWithEmail 함수 사용
+        await signInWithEmail(email, password);
+        navigate('/');
         return;
       }
       
