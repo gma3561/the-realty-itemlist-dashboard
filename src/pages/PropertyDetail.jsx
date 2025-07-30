@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import Button from '../components/common/Button';
 import ManagerAssignment from '../components/matching/ManagerAssignment';
 import CoBrokerManagement from '../components/matching/CoBrokerManagement';
+import PropertyContactInfo from '../components/property/PropertyContactInfo';
 import { Edit, Trash2, AlertTriangle, ArrowLeft } from 'lucide-react';
 
 const PropertyDetail = () => {
@@ -26,7 +27,8 @@ const PropertyDetail = () => {
           property_type:property_types(name),
           property_status:property_statuses(name),
           transaction_type:transaction_types(name),
-          manager:users(name, email)
+          manager:users(name, email),
+          owner:owners(*)
         `)
         .eq('id', id)
         .single();
@@ -322,6 +324,9 @@ const PropertyDetail = () => {
           </div>
         </div>
       </div>
+      
+      {/* 연락처 정보 섹션 */}
+      <PropertyContactInfo property={property} />
       
       {/* 매칭 관리 섹션 */}
       <div className="bg-white shadow-md rounded-lg p-6 mb-6">

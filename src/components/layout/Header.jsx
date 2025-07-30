@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Menu, X, User, LogOut, Home, FileText, Settings, Users, Upload } from 'lucide-react';
+import { Menu, X, User, LogOut, Home, FileText, Settings, Users, Upload, UserCheck } from 'lucide-react';
 import GlobalSearchBar from '../common/GlobalSearchBar';
 
 const Header = () => {
@@ -17,6 +17,7 @@ const Header = () => {
   const menuItems = [
     { path: '/', icon: Home, label: '대시보드' },
     { path: '/properties', icon: FileText, label: '매물 목록' },
+    { path: '/customers', icon: UserCheck, label: '고객 관리' },
     { path: '/users', icon: Users, label: '사용자 관리' },
     // 관리자만 CSV Import 메뉴 표시
     ...(user && (user.email === 'admin' || user.role === 'admin') ? [
