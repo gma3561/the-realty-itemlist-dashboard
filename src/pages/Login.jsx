@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
+import { isHardcodedAdmin } from '../data/hardcodedAdmins';
 
 const Login = () => {
   const { user, loading, error: authError } = useAuth();
@@ -23,19 +24,14 @@ const Login = () => {
     
     try {
       // 하드코딩된 관리자 계정 확인
-      if (email === 'admin' && password === '12345') {
-        // 임시 관리자 사용자 객체 생성
-        const adminUser = {
-          id: 'admin-hardcoded',
-          email: 'admin',
-          role: 'admin',
-          name: '관리자'
-        };
+      if (isHardcodedAdmin(email) && password === 'admin123!') {
+        // signInWithEmail은 AuthContext에서 처리
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
         
-        // 로컬 스토리지에 저장
-        localStorage.setItem('hardcoded-admin', JSON.stringify(adminUser));
-        
-        // 수동으로 auth 상태 업데이트 (context에서 처리)
+        // 인증 실패해도 하드코딩된 관리자는 로그인 허용
         window.location.href = '/the-realty-itemlist-dashboard/';
         return;
       }
@@ -59,10 +55,10 @@ const Login = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="text-center text-3xl font-extrabold text-gray-900">
-          팀 매물장 관리 시스템
+          더부동산 통합 관리 시스템
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          The Realty 부동산 중개사무소
+          매물 관리 및 직원 성과 분석 플랫폼
         </p>
       </div>
 

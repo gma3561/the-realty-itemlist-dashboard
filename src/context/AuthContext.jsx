@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '../services/supabase';
+import { isHardcodedAdmin, getHardcodedAdmin } from '../data/hardcodedAdmins';
 
 const AuthContext = createContext();
 
@@ -114,6 +115,35 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
+      // 하드코딩된 관리자 확인
+      if (isHardcodedAdmin(email)) {
+        // 간단한 비밀번호 검증 (실제 환경에서는 더 강력한 인증 필요)
+        if (password === 'admin123!') {
+          const adminUser = getHardcodedAdmin(email);
+          if (adminUser) {
+            // 로컬 스토리지에 관리자 정보 저장
+            localStorage.setItem('hardcoded-admin', JSON.stringify({
+              ...adminUser,
+              id: `hardcoded-${adminUser.email}`,
+              aud: 'authenticated',
+              created_at: new Date().toISOString()
+            }));
+            
+            setUser({
+              ...adminUser,
+              id: `hardcoded-${adminUser.email}`,
+              aud: 'authenticated',
+              created_at: new Date().toISOString()
+            });
+            setLoading(false);
+            return;
+          }
+        } else {
+          throw new Error('잘못된 비밀번호입니다.');
+        }
+      }
+      
+      // 일반 Supabase 인증
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password
