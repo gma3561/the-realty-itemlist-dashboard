@@ -24,6 +24,7 @@ import CustomerForm from './pages/customers/CustomerForm';
 
 // 스타일
 import './styles/tailwind.css';
+import './styles/design-system.css';
 
 // React Query 클라이언트 생성 (안전한 설정)
 const queryClient = new QueryClient({
