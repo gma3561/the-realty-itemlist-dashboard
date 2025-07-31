@@ -8,6 +8,7 @@ import OAuthHandler from './components/auth/OAuthHandler';
 // 페이지 컴포넌트
 import Login from './pages/Login';
 import AuthCallback from './pages/AuthCallback';
+import AuthProcess from './pages/AuthProcess';
 import Dashboard from './pages/Dashboard';
 import PropertyList from './pages/PropertyList';
 import MyProperties from './pages/MyProperties';
@@ -60,6 +61,7 @@ function App() {
               <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/auth/process" element={<AuthProcess />} />
             
             <Route element={<MainLayout />}>
               <Route path="/" element={<Dashboard />} />

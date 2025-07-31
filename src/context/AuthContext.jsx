@@ -42,9 +42,12 @@ export const AuthProvider = ({ children }) => {
           timeoutPromise
         ]);
         
+        console.log('AuthContext: Session check result:', !!session);
+        
         if (session?.user) {
           // 구글 로그인 사용자 정보 처리
           const googleUser = session.user;
+          console.log('AuthContext: User found:', googleUser.email);
           
           // DB에서 사용자 프로필 조회
           const { data: userProfile, error: profileError } = await supabase
@@ -99,6 +102,8 @@ export const AuthProvider = ({ children }) => {
     // 인증 상태 변경 리스너
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('AuthContext: Auth state changed:', event, !!session);
+        
         if (event === 'SIGNED_IN' && session?.user) {
           const googleUser = session.user;
           
@@ -164,7 +169,7 @@ export const AuthProvider = ({ children }) => {
             access_type: 'offline',
             prompt: 'consent',
           },
-          redirectTo: 'https://gma3561.github.io/the-realty-itemlist-dashboard/',
+          redirectTo: 'https://gma3561.github.io/the-realty-itemlist-dashboard/oauth-callback.html',
         },
       });
       
