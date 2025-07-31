@@ -1,27 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
 import { IS_DEVELOPMENT, securityLog, LOG_LEVELS } from '../config/security.js';
+import ENV_CONFIG from '../config/env.js';
 
-// 환경변수에서 Supabase 설정 가져오기 (보안 강화)
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// 필수 환경변수 검증
-if (!supabaseUrl || !supabaseAnonKey) {
-  const errorMsg = 'Supabase 환경변수가 설정되지 않았습니다. .env 파일을 확인해주세요.';
-  securityLog(LOG_LEVELS.ERROR, errorMsg, {
-    hasUrl: !!supabaseUrl,
-    hasKey: !!supabaseAnonKey
-  });
-  throw new Error(errorMsg);
-}
+// 환경설정에서 Supabase 설정 가져오기 (GitHub Pages 호환)
+const supabaseUrl = ENV_CONFIG.SUPABASE_URL;
+const supabaseAnonKey = ENV_CONFIG.SUPABASE_ANON_KEY;
 
 // URL 유효성 검사
 try {
   new URL(supabaseUrl);
 } catch (error) {
   const errorMsg = 'Supabase URL이 유효하지 않습니다.';
-  securityLog(LOG_LEVELS.ERROR, errorMsg, { url: supabaseUrl });
-  throw new Error(errorMsg);
+  console.error(errorMsg, { url: supabaseUrl });
+  // GitHub Pages에서는 예외를 던지지 않고 경고만 출력
+  if (IS_DEVELOPMENT) {
+    throw new Error(errorMsg);
+  }
 }
 
 // 개발 모드에서만 설정 정보 출력
@@ -30,7 +24,7 @@ if (IS_DEVELOPMENT) {
     url: supabaseUrl,
     hasKey: !!supabaseAnonKey,
     keyLength: supabaseAnonKey?.length,
-    environment: import.meta.env.VITE_ENVIRONMENT
+    environment: ENV_CONFIG.ENVIRONMENT
   });
 }
 

@@ -35,7 +35,12 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.VITE_SUPABASE_SERVICE_ROLE_KEY }}
+          VITE_ENVIRONMENT: production
+          VITE_APP_NAME: 팀 매물장
+          VITE_APP_VERSION: 2.0.0
+          VITE_ADMIN_EMAILS: ${{ secrets.VITE_ADMIN_EMAILS }}
+          VITE_ENABLE_DEMO_BANNER: true
+          VITE_ENABLE_PWA: true
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

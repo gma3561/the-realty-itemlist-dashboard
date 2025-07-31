@@ -1,12 +1,13 @@
 // 환경변수 기반 관리자 목록 (보안 강화)
+import ENV_CONFIG from '../config/env.js';
+
 const getAdminEmailsFromEnv = () => {
-  const adminEmails = import.meta.env.VITE_ADMIN_EMAILS;
+  const adminEmails = ENV_CONFIG.ADMIN_EMAILS;
   if (adminEmails) {
     return adminEmails.split(',').map(email => email.trim());
   }
   
-  // 환경변수가 없을 경우 기본 관리자 목록 (개발용)
-  console.warn('⚠️ VITE_ADMIN_EMAILS 환경변수가 설정되지 않았습니다. 기본 관리자 목록을 사용합니다.');
+  // fallback 관리자 목록
   return [
     'jenny@the-realty.co.kr',
     'lucas@the-realty.co.kr', 

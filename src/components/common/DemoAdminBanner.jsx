@@ -1,11 +1,12 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
+import ENV_CONFIG from '../../config/env.js';
 
 const DemoAdminBanner = () => {
   const { user } = useAuth();
   
   // 환경변수로 데모 배너 활성화 여부 확인
-  const isDemoBannerEnabled = import.meta.env.VITE_ENABLE_DEMO_BANNER === 'true';
+  const isDemoBannerEnabled = ENV_CONFIG.ENABLE_DEMO_BANNER;
   
   // 하드코딩된 관리자인지 확인
   const isHardcodedAdmin = user && user.id && user.id.toString().startsWith('hardcoded-');
