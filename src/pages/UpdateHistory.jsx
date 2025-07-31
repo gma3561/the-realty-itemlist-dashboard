@@ -4,6 +4,21 @@ import { Clock, CheckCircle, AlertTriangle, Info, Code, Database, Users, Setting
 const UpdateHistory = () => {
   const updates = [
     {
+      version: "v1.3.4",
+      date: "2025-01-31",
+      status: "완료",
+      type: "feature",
+      title: "구글 로그인 대비 사용자 관리 시스템 개선",
+      description: "Google 로그인 연동을 위한 사용자 추가 프로세스 최적화",
+      changes: [
+        "관리자 전용 서비스(adminService.js) 구현으로 RLS 정책 우회",
+        "임시 Auth 사용자 생성 후 Google 로그인 시 연결하는 구조",
+        "Service Role Key 활용한 관리자 권한 사용자 CRUD 작업",
+        "Google 로그인 전까지 임시 비밀번호로 Auth 시스템 연동 유지"
+      ],
+      impact: "'User not allowed' 오류 완전 해결 및 Google 로그인 준비 완료"
+    },
+    {
       version: "v1.3.3",
       date: "2025-01-31",
       status: "완료",

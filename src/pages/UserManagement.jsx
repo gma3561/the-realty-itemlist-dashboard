@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { supabase } from '../services/supabase';
+import { addUserAsAdmin, updateUserAsAdmin, updateUserStatusAsAdmin } from '../services/adminService';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import { Plus, Edit, Trash, AlertTriangle, CheckCircle, X, User, UserPlus, Check } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
 
 const UserManagement = () => {
   const { user } = useAuth();
@@ -60,52 +60,23 @@ const UserManagement = () => {
     }
   );
 
-  // 사용자 추가 뮤테이션 (Auth 사용자 생성 후 Public 사용자 추가)
+  // 사용자 추가 뮤테이션 (관리자 서비스 사용)
   const addUserMutation = useMutation(
     async (userData) => {
-      // 1. auth.users에 먼저 사용자 생성
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: userData.email,
-        password: 'defaultPassword123!', // 기본 비밀번호 (나중에 변경 가능)
-        email_confirm: true,
-        user_metadata: {
-          name: userData.name,
-          role: userData.role
-        }
-      });
-      
-      if (authError) throw authError;
-      
-      // 2. public.users에 연결된 사용자 추가
-      const { data, error } = await supabase
-        .from('users')
-        .insert({
-          id: authData.user.id, // auth.users의 ID 사용
-          email: userData.email,
-          name: userData.name,
-          phone: userData.phone,
-          role: userData.role,
-          status: 'active',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-          
-      if (error) {
-        // public.users 생성 실패 시 auth.users 정리
-        await supabase.auth.admin.deleteUser(authData.user.id);
-        throw error;
-      }
-      
-      return data;
+      return await addUserAsAdmin(userData);
     },
     {
-      onSuccess: () => {
+      onSuccess: (result) => {
         queryClient.invalidateQueries('users');
         resetForm();
-        setSuccess('사용자가 성공적으로 추가되었습니다.');
-        setTimeout(() => setSuccess(null), 3000);
+        
+        let successMessage = '사용자 정보가 성공적으로 추가되었습니다.';
+        if (result.isGoogleLoginPending) {
+          successMessage += ' 사용자는 Google 로그인을 통해 계정을 활성화할 수 있습니다.';
+        }
+        
+        setSuccess(successMessage);
+        setTimeout(() => setSuccess(null), 5000);
       },
       onError: (err) => {
         setError(`사용자 추가 중 오류가 발생했습니다: ${err.message}`);
@@ -116,21 +87,7 @@ const UserManagement = () => {
   // 사용자 수정 뮤테이션
   const updateUserMutation = useMutation(
     async ({ id, ...userData }) => {
-      // users 테이블 데이터만 업데이트 (비밀번호 제외)
-      const updateData = {
-        name: userData.name,
-        phone: userData.phone,
-        role: userData.role,
-      };
-      
-      const { error } = await supabase
-        .from('users')
-        .update(updateData)
-        .eq('id', id);
-        
-      if (error) throw error;
-      
-      return { id };
+      return await updateUserAsAdmin(id, userData);
     },
     {
       onSuccess: () => {
@@ -149,15 +106,7 @@ const UserManagement = () => {
   const toggleUserStatusMutation = useMutation(
     async ({ id, status }) => {
       const newStatus = status === 'active' ? 'inactive' : 'active';
-      
-      const { error } = await supabase
-        .from('users')
-        .update({ status: newStatus })
-        .eq('id', id);
-        
-      if (error) throw error;
-      
-      return { id, newStatus };
+      return await updateUserStatusAsAdmin(id, newStatus);
     },
     {
       onSuccess: () => {
