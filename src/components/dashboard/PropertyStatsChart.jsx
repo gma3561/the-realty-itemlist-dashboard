@@ -1,13 +1,57 @@
 import React, { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { TrendingUp, Home, DollarSign, Calendar } from 'lucide-react';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer, 
+  PieChart, 
+  Pie, 
+  Cell, 
+  Legend,
+  LineChart,
+  Line,
+  Area,
+  AreaChart,
+  RadialBarChart,
+  RadialBar
+} from 'recharts';
+import { 
+  TrendingUp, 
+  Home, 
+  DollarSign, 
+  Calendar,
+  Activity,
+  Users,
+  Target,
+  Award,
+  ArrowUpRight,
+  ArrowDownRight
+} from 'lucide-react';
 
-const PropertyStatsChart = ({ properties = [] }) => {
-  // 매물 유형별 통계 (JOIN된 데이터 사용)
+const PropertyStatsChart = ({ properties = [], lookupData = {} }) => {
+  // 매물 유형별 통계
   const typeStats = useMemo(() => {
     const stats = properties.reduce((acc, property) => {
-      const type = property.property_types?.name || '미지정';
-      acc[type] = (acc[type] || 0) + 1;
+      const typeName = lookupData.propertyTypes?.find(t => t.id === property.property_type_id)?.name || '미지정';
+      acc[typeName] = (acc[typeName] || 0) + 1;
+      return acc;
+    }, {});
+
+    return Object.entries(stats).map(([type, count]) => ({
+      name: type,
+      value: count,
+      percentage: ((count / properties.length) * 100).toFixed(1)
+    }));
+  }, [properties, lookupData]);
+
+  // 거래 유형별 통계
+  const transactionStats = useMemo(() => {
+    const stats = properties.reduce((acc, property) => {
+      const typeName = lookupData.transactionTypes?.find(t => t.id === property.transaction_type_id)?.name || '미지정';
+      acc[typeName] = (acc[typeName] || 0) + 1;
       return acc;
     }, {});
 
@@ -16,245 +60,408 @@ const PropertyStatsChart = ({ properties = [] }) => {
       count,
       percentage: ((count / properties.length) * 100).toFixed(1)
     }));
-  }, [properties]);
+  }, [properties, lookupData]);
 
-  // 거래 유형별 통계 (JOIN된 데이터 사용)
-  const transactionStats = useMemo(() => {
-    const stats = properties.reduce((acc, property) => {
-      const type = property.transaction_types?.name || '미지정';
-      acc[type] = (acc[type] || 0) + 1;
-      return acc;
-    }, {});
-
-    return Object.entries(stats).map(([type, count]) => ({
-      type,
-      count
-    }));
-  }, [properties]);
-
-  // 매물 상태별 통계 (JOIN된 데이터 사용)
+  // 매물 상태별 통계
   const statusStats = useMemo(() => {
     const stats = properties.reduce((acc, property) => {
-      const status = property.property_statuses?.name || '미지정';
-      acc[status] = (acc[status] || 0) + 1;
+      const statusName = lookupData.propertyStatuses?.find(s => s.id === property.property_status_id)?.name || '미지정';
+      acc[statusName] = (acc[statusName] || 0) + 1;
       return acc;
     }, {});
 
     return Object.entries(stats).map(([status, count]) => ({
       status,
-      count
+      count,
+      percentage: ((count / properties.length) * 100).toFixed(1)
     }));
-  }, [properties]);
+  }, [properties, lookupData]);
 
-  // 월별 등록 통계
+  // 월별 통계 (최근 12개월)
   const monthlyStats = useMemo(() => {
+    const now = new Date();
+    const months = [];
+    
+    // 최근 12개월 생성
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      months.push({
+        key: monthKey,
+        month: date.toLocaleDateString('ko-KR', { month: 'short' }),
+        fullMonth: date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long' })
+      });
+    }
+
+    // 매물 데이터 집계
     const monthStats = properties.reduce((acc, property) => {
       if (property.created_at) {
         const date = new Date(property.created_at);
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        acc[monthKey] = (acc[monthKey] || 0) + 1;
+        
+        if (!acc[monthKey]) {
+          acc[monthKey] = {
+            total: 0,
+            completed: 0,
+            available: 0,
+            revenue: 0
+          };
+        }
+        
+        acc[monthKey].total++;
+        
+        const status = lookupData.propertyStatuses?.find(s => s.id === property.property_status_id)?.name;
+        if (status === '거래완료') {
+          acc[monthKey].completed++;
+          acc[monthKey].revenue += property.price || 0;
+        } else if (status === '거래가능') {
+          acc[monthKey].available++;
+        }
       }
       return acc;
     }, {});
 
-    return Object.entries(monthStats)
-      .sort()
-      .slice(-6) // 최근 6개월
-      .map(([month, count]) => ({
-        month: month.substring(5), // MM 형태로 표시
-        count
-      }));
+    return months.map(({ key, month, fullMonth }) => ({
+      month,
+      fullMonth,
+      등록: monthStats[key]?.total || 0,
+      완료: monthStats[key]?.completed || 0,
+      진행중: monthStats[key]?.available || 0,
+      매출: monthStats[key]?.revenue || 0
+    }));
+  }, [properties, lookupData]);
+
+  // 직원별 성과 통계
+  const staffPerformance = useMemo(() => {
+    const stats = properties.reduce((acc, property) => {
+      const managerId = property.manager_id;
+      if (!managerId) return acc;
+      
+      const managerName = managerId.includes('jenny') ? '정연서' :
+                         managerId.includes('lucas') ? '하상현' :
+                         managerId.includes('hmlee') ? '이혜만' :
+                         managerId.includes('jma') ? '장민아' :
+                         managerId.includes('jed') ? '정이든' :
+                         managerId.includes('jsh') ? '장승환' :
+                         managerId.includes('pjh') ? '박지혜' :
+                         managerId.split('@')[0] || '미지정';
+      
+      if (!acc[managerName]) {
+        acc[managerName] = {
+          total: 0,
+          completed: 0,
+          revenue: 0
+        };
+      }
+      
+      acc[managerName].total++;
+      
+      const status = lookupData.propertyStatuses?.find(s => s.id === property.property_status_id)?.name;
+      if (status === '거래완료') {
+        acc[managerName].completed++;
+        acc[managerName].revenue += property.price || 0;
+      }
+      
+      return acc;
+    }, {});
+
+    return Object.entries(stats)
+      .map(([name, data]) => ({
+        name,
+        total: data.total,
+        completed: data.completed,
+        성과율: ((data.completed / data.total) * 100).toFixed(1),
+        revenue: data.revenue
+      }))
+      .sort((a, b) => b.completed - a.completed)
+      .slice(0, 5); // 상위 5명
+  }, [properties, lookupData]);
+
+  // 지역별 통계
+  const locationStats = useMemo(() => {
+    const stats = properties.reduce((acc, property) => {
+      if (property.location) {
+        const district = property.location.split(' ')[0]; // 첫 단어를 구로 가정
+        acc[district] = (acc[district] || 0) + 1;
+      }
+      return acc;
+    }, {});
+
+    return Object.entries(stats)
+      .map(([location, count]) => ({
+        location,
+        count,
+        percentage: ((count / properties.length) * 100).toFixed(1)
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10); // 상위 10개 지역
   }, [properties]);
 
   // 파이 차트 색상
-  const pieColors = ['#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  const pieColors = ['#2563EB', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
 
-  // 주요 통계 계산 (DB 구조에 맞게 수정)
+  // 주요 지표
   const totalProperties = properties.length;
-  const availableProperties = properties.filter(p => 
-    p.property_statuses?.name === '매물확보' || p.property_statuses?.name === '광고진행'
-  ).length;
-  const completedDeals = properties.filter(p => p.property_statuses?.name === '거래완료').length;
-  const avgPrice = properties.length > 0 ? 
-    properties.reduce((sum, p) => sum + (p.price || 0), 0) / properties.length : 0;
-
-  // 추가 통계
-  const recentProperties = properties.filter(p => {
-    const created = new Date(p.created_at);
-    const now = new Date();
-    const daysDiff = (now - created) / (1000 * 60 * 60 * 24);
-    return daysDiff <= 7; // 최근 7일
+  const availableProperties = properties.filter(p => {
+    const status = lookupData.propertyStatuses?.find(s => s.id === p.property_status_id)?.name;
+    return status === '거래가능';
   }).length;
-
-  // 거래유형별 평균 가격
-  const avgPriceByTransaction = useMemo(() => {
-    const transactionGroups = properties.reduce((acc, property) => {
-      const type = property.transaction_types?.name || '미지정';
-      if (!acc[type]) acc[type] = [];
-      if (property.price && property.price > 0) {
-        acc[type].push(property.price);
-      }
-      return acc;
-    }, {});
-
-    return Object.entries(transactionGroups).map(([type, prices]) => ({
-      type,
-      avgPrice: prices.length > 0 ? prices.reduce((sum, price) => sum + price, 0) / prices.length : 0,
-      count: prices.length
-    })).filter(item => item.count > 0);
-  }, [properties]);
+  const completedDeals = properties.filter(p => {
+    const status = lookupData.propertyStatuses?.find(s => s.id === p.property_status_id)?.name;
+    return status === '거래완료';
+  }).length;
+  
+  // 성장률 계산
+  const currentMonth = monthlyStats[monthlyStats.length - 1]?.등록 || 0;
+  const lastMonth = monthlyStats[monthlyStats.length - 2]?.등록 || 0;
+  const growthRate = lastMonth > 0 ? ((currentMonth - lastMonth) / lastMonth * 100).toFixed(1) : 0;
 
   return (
     <div className="space-y-6">
-      {/* 주요 지표 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">전체 매물</p>
-              <p className="text-3xl font-bold text-gray-900">{totalProperties}</p>
-              <p className="text-xs text-gray-500 mt-1">등록된 매물 수</p>
-            </div>
-            <Home className="w-8 h-8 text-blue-500" />
+      {/* 월별 트렌드 차트 */}
+      <div className="grid-container grid-cols-1 lg:grid-cols-2">
+        <div className="card">
+          <div className="card-header">
+            <h3 className="text-xl font-semibold">월별 매물 등록 추이</h3>
+          </div>
+          <div className="card-body">
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={monthlyStats}>
+                <defs>
+                  <linearGradient id="colorRegistered" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#2563EB" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#2563EB" stopOpacity={0.1}/>
+                  </linearGradient>
+                  <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'white', 
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '8px'
+                  }}
+                  formatter={(value, name) => [value, name === '등록' ? '신규 등록' : name]}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="등록" 
+                  stroke="#2563EB" 
+                  fillOpacity={1} 
+                  fill="url(#colorRegistered)" 
+                  strokeWidth={2}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="완료" 
+                  stroke="#10B981" 
+                  fillOpacity={1} 
+                  fill="url(#colorCompleted)" 
+                  strokeWidth={2}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">거래 가능</p>
-              <p className="text-3xl font-bold text-green-600">{availableProperties}</p>
-              <p className="text-xs text-gray-500 mt-1">활성 매물</p>
-            </div>
-            <TrendingUp className="w-8 h-8 text-green-500" />
+        <div className="card">
+          <div className="card-header">
+            <h3 className="text-xl font-semibold">매물 유형별 분포</h3>
           </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">거래 완료</p>
-              <p className="text-3xl font-bold text-blue-600">{completedDeals}</p>
-              <p className="text-xs text-gray-500 mt-1">성사된 거래</p>
-            </div>
-            <Calendar className="w-8 h-8 text-blue-500" />
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">평균 가격</p>
-              <p className="text-3xl font-bold text-purple-600">
-                {avgPrice > 0 ? `${(avgPrice / 100000000).toFixed(1)}억` : '-'}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">매물별 평균</p>
-            </div>
-            <DollarSign className="w-8 h-8 text-purple-500" />
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">최근 7일</p>
-              <p className="text-3xl font-bold text-orange-600">{recentProperties}</p>
-              <p className="text-xs text-gray-500 mt-1">신규 등록</p>
-            </div>
-            <Calendar className="w-8 h-8 text-orange-500" />
+          <div className="card-body">
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={typeStats}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={2}
+                  dataKey="value"
+                >
+                  {typeStats.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'white', 
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Legend 
+                  verticalAlign="bottom" 
+                  height={36}
+                  formatter={(value, entry) => `${value} (${entry.payload.percentage}%)`}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 매물 유형별 분포 */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold mb-4">매물 유형별 분포</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={typeStats}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ type, percentage }) => `${type} (${percentage}%)`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="count"
-              >
-                {typeStats.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+      {/* 직원별 성과 & 거래 유형별 현황 */}
+      <div className="grid-container grid-cols-1 lg:grid-cols-2">
+        <div className="card">
+          <div className="card-header">
+            <h3 className="text-xl font-semibold">직원별 성과 TOP 5</h3>
+          </div>
+          <div className="card-body">
+            <div className="space-y-4">
+              {staffPerformance.map((staff, index) => (
+                <div key={staff.name} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold
+                      ${index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-600' : 'bg-gray-300'}`}>
+                      {index + 1}
+                    </div>
+                    <div className="ml-4">
+                      <p className="font-semibold text-gray-900">{staff.name}</p>
+                      <p className="text-sm text-gray-600">총 {staff.total}건 / 완료 {staff.completed}건</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-primary-600">{staff.성과율}%</p>
+                    <p className="text-xs text-gray-500">성과율</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* 거래 유형별 현황 */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold mb-4">거래 유형별 현황</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={transactionStats}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="type" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="count" fill="#0ea5e9" />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="card">
+          <div className="card-header">
+            <h3 className="text-xl font-semibold">거래 유형별 현황</h3>
+          </div>
+          <div className="card-body">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={transactionStats} layout="horizontal">
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                <XAxis dataKey="type" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'white', 
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '8px'
+                  }}
+                  formatter={(value, name) => [`${value}건 (${transactionStats.find(t => t.count === value)?.percentage}%)`, '매물 수']}
+                />
+                <Bar dataKey="count" fill="#2563EB" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* 지역별 분포 & 상태별 현황 */}
+      <div className="grid-container grid-cols-1 lg:grid-cols-2">
+        <div className="card">
+          <div className="card-header">
+            <h3 className="text-xl font-semibold">지역별 매물 분포</h3>
+          </div>
+          <div className="card-body">
+            <div className="space-y-3">
+              {locationStats.map((location, index) => (
+                <div key={location.location} className="flex items-center justify-between">
+                  <div className="flex items-center flex-1">
+                    <span className="text-sm font-medium text-gray-700 w-20">{location.location}</span>
+                    <div className="flex-1 mx-3">
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-primary-600 h-2 rounded-full" 
+                          style={{ width: `${location.percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-sm font-semibold text-gray-900 w-16 text-right">
+                    {location.count}건
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* 매물 상태별 현황 */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold mb-4">매물 상태별 현황</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={statusStats}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="status" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="count" fill="#10b981" />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="card">
+          <div className="card-header">
+            <h3 className="text-xl font-semibold">매물 상태별 현황</h3>
+          </div>
+          <div className="card-body">
+            <div className="grid grid-cols-2 gap-4">
+              {statusStats.map((status, index) => (
+                <div key={status.status} className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-600">{status.status}</span>
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      status.status === '거래완료' ? 'bg-blue-100 text-blue-700' :
+                      status.status === '거래가능' ? 'bg-green-100 text-green-700' :
+                      'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {status.percentage}%
+                    </span>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">{status.count}</p>
+                  <p className="text-xs text-gray-500 mt-1">전체 {totalProperties}건 중</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
+      </div>
 
-        {/* 월별 등록 추이 */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold mb-4">월별 등록 추이 (최근 6개월)</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={monthlyStats}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="count" fill="#f59e0b" />
-            </BarChart>
-          </ResponsiveContainer>
+      {/* 월별 매출 추이 */}
+      <div className="card">
+        <div className="card-header">
+          <h3 className="text-xl font-semibold">월별 매출 추이</h3>
         </div>
-
-        {/* 거래유형별 평균 가격 */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold mb-4">거래유형별 평균 가격</h3>
+        <div className="card-body">
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={avgPriceByTransaction}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="type" />
+            <LineChart data={monthlyStats}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
               <YAxis 
+                tick={{ fontSize: 12 }}
                 tickFormatter={(value) => 
-                  value >= 100000000 ? `${(value / 100000000).toFixed(1)}억` :
+                  value >= 1000000000 ? `${(value / 1000000000).toFixed(0)}십억` :
+                  value >= 100000000 ? `${(value / 100000000).toFixed(0)}억` :
                   value >= 10000 ? `${(value / 10000).toFixed(0)}만` : value
                 }
               />
               <Tooltip 
-                formatter={([value]) => [
+                contentStyle={{ 
+                  backgroundColor: 'white', 
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '8px'
+                }}
+                formatter={(value) => [
                   value >= 100000000 ? `${(value / 100000000).toFixed(1)}억원` :
                   value >= 10000 ? `${(value / 10000).toFixed(0)}만원` : `${value}원`,
-                  '평균 가격'
+                  '매출'
                 ]}
+                labelFormatter={(label) => {
+                  const data = monthlyStats.find(m => m.month === label);
+                  return data?.fullMonth || label;
+                }}
               />
-              <Bar dataKey="avgPrice" fill="#8b5cf6" />
-            </BarChart>
+              <Line 
+                type="monotone" 
+                dataKey="매출" 
+                stroke="#8B5CF6" 
+                strokeWidth={3}
+                dot={{ fill: '#8B5CF6', strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </div>

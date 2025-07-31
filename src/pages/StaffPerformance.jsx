@@ -57,8 +57,16 @@ const StaffPerformance = () => {
     async () => {
       const { data, error } = await propertyService.getProperties();
       if (error) throw new Error(error);
-      // 해당 직원의 매물만 필터링
-      return data.filter(p => p.manager_id === userId);
+      // 해당 직원의 매물만 필터링 - hardcoded ID도 고려
+      return data.filter(p => {
+        const managerId = p.manager_id;
+        return managerId === userId || 
+               managerId === `hardcoded-${staffUser?.email}` ||
+               (staffUser?.email && managerId?.includes(staffUser.email));
+      });
+    },
+    {
+      enabled: !!staffUser
     }
   );
 

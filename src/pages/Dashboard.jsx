@@ -239,35 +239,62 @@ const Dashboard = () => {
                     <tr>
                       <th>매물명</th>
                       <th>위치</th>
-                      <th>유형</th>
+                      <th>매물유형</th>
+                      <th>거래유형</th>
                       <th>가격</th>
+                      <th>담당자</th>
+                      <th>등록일</th>
                       <th>상태</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {recentProperties.map((property) => (
-                      <tr key={property.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = `#/properties/${property.id}`}>
-                        <td className="font-medium">{property.property_name}</td>
-                        <td className="text-gray-600">{property.location}</td>
-                        <td>
-                          <span className="text-sm text-gray-600">
-                            {getDisplayPropertyType(property)}
-                          </span>
-                        </td>
-                        <td className="font-medium text-primary-600">{getDisplayPrice(property)}</td>
-                        <td>
-                          <span className={`badge ${
-                            getDisplayStatus(property) === '거래가능' 
-                              ? 'badge-success' 
-                              : getDisplayStatus(property) === '거래완료'
-                              ? 'badge-error'
-                              : 'badge-warning'
-                          }`}>
-                            {getDisplayStatus(property)}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                    {recentProperties.map((property) => {
+                      const managerEmail = property.manager_id?.replace('hardcoded-', '').split('@')[0];
+                      const managerName = property.manager_id?.includes('jenny') ? '정연서' :
+                                         property.manager_id?.includes('lucas') ? '하상현' :
+                                         property.manager_id?.includes('hmlee') ? '이혜만' :
+                                         property.manager_id?.includes('jma') ? '장민아' :
+                                         property.manager_id?.includes('jed') ? '정이든' :
+                                         property.manager_id?.includes('jsh') ? '장승환' :
+                                         property.manager_id?.includes('pjh') ? '박지혜' :
+                                         managerEmail || '-';
+                      
+                      return (
+                        <tr key={property.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = `#/properties/${property.id}`}>
+                          <td className="font-medium">{property.property_name}</td>
+                          <td className="text-gray-600">{property.location}</td>
+                          <td>
+                            <span className="text-sm text-gray-600">
+                              {getDisplayPropertyType(property)}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="text-sm text-gray-600">
+                              {getDisplayTransactionType(property)}
+                            </span>
+                          </td>
+                          <td className="font-medium text-primary-600">{getDisplayPrice(property)}</td>
+                          <td className="text-sm text-gray-700">{managerName}</td>
+                          <td className="text-sm text-gray-500">
+                            {new Date(property.created_at).toLocaleDateString('ko-KR', { 
+                              month: '2-digit', 
+                              day: '2-digit' 
+                            })}
+                          </td>
+                          <td>
+                            <span className={`badge ${
+                              getDisplayStatus(property) === '거래가능' 
+                                ? 'badge-success' 
+                                : getDisplayStatus(property) === '거래완료'
+                                ? 'badge-error'
+                                : 'badge-warning'
+                            }`}>
+                              {getDisplayStatus(property)}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
