@@ -24,12 +24,23 @@ import CustomerForm from './pages/customers/CustomerForm';
 // 스타일
 import './styles/tailwind.css';
 
-// React Query 클라이언트 생성
+// React Query 클라이언트 생성 (안전한 설정)
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      retry: 1,
+      retry: (failureCount, error) => {
+        // 네트워크 오류나 서버 오류의 경우만 재시도
+        if (error?.status >= 500 || error?.message?.includes('fetch')) {
+          return failureCount < 2;
+        }
+        return false;
+      },
+      staleTime: 5 * 60 * 1000, // 5분
+      cacheTime: 10 * 60 * 1000, // 10분
+    },
+    mutations: {
+      retry: false,
     },
   },
 });

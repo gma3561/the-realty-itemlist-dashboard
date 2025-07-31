@@ -16,16 +16,31 @@ export const AuthProvider = ({ children }) => {
         setLoading(true);
         
         // 하드코딩된 관리자 계정 확인
-        const hardcodedAdmin = localStorage.getItem('hardcoded-admin');
-        if (hardcodedAdmin) {
-          const adminUser = JSON.parse(hardcodedAdmin);
-          setUser(adminUser);
-          setError(null);
-          setLoading(false);
-          return;
+        try {
+          const hardcodedAdmin = localStorage.getItem('hardcoded-admin');
+          if (hardcodedAdmin) {
+            const adminUser = JSON.parse(hardcodedAdmin);
+            setUser(adminUser);
+            setError(null);
+            setLoading(false);
+            return;
+          }
+        } catch (localStorageError) {
+          console.warn('localStorage 접근 실패:', localStorageError);
+          // localStorage 접근 실패 시 무시하고 계속 진행
         }
         
-        const { data: { session } } = await supabase.auth.getSession();
+        // Supabase 연결 시도 (타임아웃 포함)
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('연결 시간 초과')), 10000)
+        );
+        
+        const sessionPromise = supabase.auth.getSession();
+        
+        const { data: { session } } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]);
         
         if (session?.user) {
           // MVP 버전에서는 도메인 확인 제거
@@ -36,8 +51,7 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (error) {
         console.error('Auth error:', error);
-        setError(error.message);
-        // 에러가 발생해도 앱이 계속 작동하도록 user를 null로 설정
+        setError(null); // 오류를 표시하지 않고 조용히 처리
         setUser(null);
       } finally {
         setLoading(false);
