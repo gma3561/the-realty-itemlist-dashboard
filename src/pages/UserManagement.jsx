@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { supabase } from '../services/supabase';
-import { addUserAsAdmin, updateUserAsAdmin, updateUserStatusAsAdmin } from '../services/adminService';
 import { useAuth } from '../context/AuthContext';
+import userService from '../services/userService';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
-import { Plus, Edit, Trash, AlertTriangle, CheckCircle, X, User, UserPlus, Check } from 'lucide-react';
+import { Plus, Edit, Trash, AlertTriangle, CheckCircle, X, User, UserPlus, Check, Mail, Phone, Shield, Activity } from 'lucide-react';
+import { isHardcodedAdmin } from '../data/hardcodedAdmins';
+import { getUserStats } from '../data/dummyUsers';
 
 const UserManagement = () => {
   const { user } = useAuth();
@@ -22,36 +23,13 @@ const UserManagement = () => {
   });
 
   // 현재 사용자가 관리자인지 확인
-  const { data: currentUserData } = useQuery(
-    ['user', user?.id],
-    async () => {
-      if (!user) return null;
-      
-      const { data, error } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-        
-      if (error) throw error;
-      return data;
-    },
-    {
-      enabled: !!user,
-    }
-  );
-
-  const isAdmin = currentUserData?.role === 'admin' || user?.role === 'admin';
+  const isAdmin = isHardcodedAdmin(user?.email);
 
   // 모든 사용자 조회
-  const { data: users, isLoading } = useQuery(
+  const { data: users = [], isLoading } = useQuery(
     'users',
     async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .order('name');
-        
+      const { data, error } = await userService.getUsers();
       if (error) throw error;
       return data;
     },
@@ -60,22 +38,18 @@ const UserManagement = () => {
     }
   );
 
-  // 사용자 추가 뮤테이션 (관리자 서비스 사용)
+  // 사용자 추가 뮤테이션
   const addUserMutation = useMutation(
     async (userData) => {
-      return await addUserAsAdmin(userData);
+      const { data, error } = await userService.createUser(userData);
+      if (error) throw new Error(error);
+      return data;
     },
     {
-      onSuccess: (result) => {
+      onSuccess: () => {
         queryClient.invalidateQueries('users');
         resetForm();
-        
-        let successMessage = '사용자 정보가 성공적으로 추가되었습니다.';
-        if (result.isGoogleLoginPending) {
-          successMessage += ' 사용자는 Google 로그인을 통해 계정을 활성화할 수 있습니다.';
-        }
-        
-        setSuccess(successMessage);
+        setSuccess('사용자가 성공적으로 추가되었습니다.');
         setTimeout(() => setSuccess(null), 5000);
       },
       onError: (err) => {
@@ -87,7 +61,9 @@ const UserManagement = () => {
   // 사용자 수정 뮤테이션
   const updateUserMutation = useMutation(
     async ({ id, ...userData }) => {
-      return await updateUserAsAdmin(id, userData);
+      const { data, error } = await userService.updateUser(id, userData);
+      if (error) throw new Error(error);
+      return data;
     },
     {
       onSuccess: () => {
@@ -105,8 +81,9 @@ const UserManagement = () => {
   // 사용자 상태 변경 뮤테이션
   const toggleUserStatusMutation = useMutation(
     async ({ id, status }) => {
-      const newStatus = status === 'active' ? 'inactive' : 'active';
-      return await updateUserStatusAsAdmin(id, newStatus);
+      const { error } = await userService.updateUser(id, { status });
+      if (error) throw new Error(error);
+      return true;
     },
     {
       onSuccess: () => {
@@ -176,15 +153,22 @@ const UserManagement = () => {
     setIsAdding(true);
   };
 
-  const handleToggleStatus = (user) => {
-    if (user.id === currentUserData.id) {
+  const handleToggleStatus = (userData) => {
+    if (userData.id === user?.id) {
       setError('자신의 계정 상태는 변경할 수 없습니다.');
       return;
     }
     
-    if (window.confirm(`${user.name} 사용자의 상태를 ${user.status === 'active' ? '비활성화' : '활성화'} 하시겠습니까?`)) {
-      toggleUserStatusMutation.mutate({ id: user.id, status: user.status });
+    const newStatus = userData.status === 'active' ? 'inactive' : 'active';
+    if (window.confirm(`${userData.name} 사용자의 상태를 ${newStatus === 'inactive' ? '비활성화' : '활성화'} 하시겠습니까?`)) {
+      toggleUserStatusMutation.mutate({ id: userData.id, status: newStatus });
     }
+  };
+
+  // 더미데이터에서 사용자별 매물 수 계산
+  const getUserPropertyCount = (userId) => {
+    const stats = getUserStats(userId);
+    return stats?.totalProperties || 0;
   };
 
   if (!isAdmin) {
@@ -332,6 +316,12 @@ const UserManagement = () => {
                   상태
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  담당 매물
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  최근 로그인
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   작업
                 </th>
               </tr>
@@ -359,6 +349,15 @@ const UserManagement = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm">
+                    <div className="flex items-center">
+                      <Activity className="w-4 h-4 mr-1 text-gray-400" />
+                      <span>{getUserPropertyCount(user.id)}건</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                    {user.last_login ? new Date(user.last_login).toLocaleDateString() : '-'}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm">
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleEdit(user)}
@@ -371,7 +370,7 @@ const UserManagement = () => {
                         onClick={() => handleToggleStatus(user)}
                         className={`${user.status === 'active' ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'}`}
                         title={user.status === 'active' ? '비활성화' : '활성화'}
-                        disabled={user.id === currentUserData?.id}
+                        disabled={user.id === user?.id}
                       >
                         {user.status === 'active' ? 
                           <Trash className="w-4 h-4" /> : 

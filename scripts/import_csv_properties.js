@@ -4,11 +4,13 @@ const path = require('path');
 
 // Supabase 설정
 const supabaseUrl = 'https://aekgsysvipnwxhwixglg.supabase.co';
-const supabaseServiceKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '';
+const supabaseServiceKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || 
+                           process.env.SUPABASE_SERVICE_ROLE_KEY || 
+                           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFla2dzeXN2aXBud3hod2l4Z2xnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNzc2MjQxOCwiZXhwIjoyMDUzMzM4NDE4fQ.kjRwN4vwzRKm9gOtJ_wnvOZRIGbepLHY9TW5uq7BxgE';
 
 if (!supabaseServiceKey) {
-  console.error('❌ VITE_SUPABASE_SERVICE_ROLE_KEY 환경변수가 필요합니다.');
-  console.log('로컬에서 실행하려면 .env 파일에 Service Role Key를 설정하세요.');
+  console.error('❌ Service Role Key가 필요합니다.');
+  console.log('로컬에서 실행하려면 .env 파일에 VITE_SUPABASE_SERVICE_ROLE_KEY를 설정하세요.');
   process.exit(1);
 }
 

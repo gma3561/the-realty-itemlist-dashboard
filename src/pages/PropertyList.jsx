@@ -3,8 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../context/AuthContext';
-import { PlusCircle, Search, RefreshCw, Building2, MapPin, Calendar, DollarSign, Grid, List, User, Trash2 } from 'lucide-react';
+import { PlusCircle, Search, RefreshCw, Building2, MapPin, Calendar, DollarSign, Grid, List, User, Trash2, Hash } from 'lucide-react';
 import PropertyCard from '../components/property/PropertyCard';
+import propertyService from '../services/propertyService';
+import { dummyPropertyTypes, dummyTransactionTypes, dummyPropertyStatuses } from '../data/dummyProperties';
+import ENV_CONFIG from '../config/env';
 
 const PropertyList = () => {
   const [filters, setFilters] = useState({
@@ -18,76 +21,68 @@ const PropertyList = () => {
   const { user, userProfile } = useAuth();
   const queryClient = useQueryClient();
   
-  // Supabase에서 매물 데이터 가져오기 (권한별 접근 제한 + 담당자 정보 JOIN)
+  // 매물 데이터 가져오기
   const { data: properties = [], isLoading, error, refetch } = useQuery(
-    ['properties', user?.id, userProfile?.role],
+    ['properties', filters],
     async () => {
-      if (!user || !userProfile) return [];
-
-      let query = supabase
-        .from('properties')
-        .select(`
-          *,
-          property_types(id, name),
-          property_statuses(id, name),
-          transaction_types(id, name),
-          users!properties_manager_id_fkey(id, name, email, role)
-        `);
-
-      // 권한별 접근 제한
-      if (userProfile.role !== 'admin') {
-        // 일반 사용자는 본인이 등록한 매물만 볼 수 있음
-        query = query.eq('manager_id', user.id);
-      }
-      // 관리자는 모든 매물을 볼 수 있음
-
-      const { data, error } = await query.order('created_at', { ascending: false });
-        
+      const { data, error } = await propertyService.getProperties(filters);
       if (error) throw error;
-      return data;
+      return data || [];
     },
     {
       refetchOnWindowFocus: false,
-      enabled: !!user && !!userProfile,
     }
   );
 
-  // 타입 매핑 함수 (JOIN된 데이터 사용)
+  // 룩업 데이터 가져오기
+  const { data: lookupData = {} } = useQuery(
+    'lookupTables',
+    async () => {
+      const data = await propertyService.getLookupTables();
+      return data;
+    },
+    {
+      staleTime: 5 * 60 * 1000, // 5분
+    }
+  );
+
+  // 타입 매핑 함수 (룩업 데이터 사용)
   const getDisplayPropertyType = (property) => {
-    return property.property_types?.name || '미지정';
+    const type = lookupData.propertyTypes?.find(t => t.id === property.property_type_id);
+    return type?.name || '미지정';
   };
 
   const getDisplayTransactionType = (property) => {
-    return property.transaction_types?.name || '미지정';
+    const type = lookupData.transactionTypes?.find(t => t.id === property.transaction_type_id);
+    return type?.name || '미지정';
   };
 
   const getDisplayStatus = (property) => {
-    return property.property_statuses?.name || '미지정';
+    const status = lookupData.propertyStatuses?.find(s => s.id === property.property_status_id);
+    return status?.name || '미지정';
   };
 
   const getDisplayManager = (property) => {
-    if (property.users) {
-      return property.users.name || property.users.email || '미지정';
+    // 더미데이터에서는 manager_id에서 이메일 추출
+    if (property.manager_id?.includes('@')) {
+      const email = property.manager_id.replace('hardcoded-', '');
+      const name = email.split('@')[0].toUpperCase();
+      return name;
     }
-    return '미지정';
+    return property.users?.name || property.users?.email || '미지정';
   };
 
   // 매물 삭제 mutation
   const deleteMutation = useMutation(
     async (propertyId) => {
-      const { error } = await supabase
-        .from('properties')
-        .delete()
-        .eq('id', propertyId);
-      
-      if (error) throw error;
+      const { error } = await propertyService.deleteProperty(propertyId);
+      if (error) throw new Error(error);
       return propertyId;
     },
     {
       onSuccess: (deletedId) => {
         queryClient.invalidateQueries(['properties']);
         setDeleteConfirm({ show: false, property: null });
-        // 성공 알림을 위한 간단한 방법 (나중에 toast로 개선 가능)
         alert('매물이 성공적으로 삭제되었습니다.');
       },
       onError: (error) => {
@@ -312,6 +307,9 @@ const PropertyList = () => {
                       <thead className="bg-gray-50">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            매물ID
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             매물정보
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -340,6 +338,12 @@ const PropertyList = () => {
                       <tbody className="bg-white divide-y divide-gray-200">
                         {filteredProperties.map((property) => (
                           <tr key={property.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center text-sm text-gray-500">
+                                <Hash className="w-4 h-4 mr-1" />
+                                <span className="font-mono text-xs">{property.id.slice(0, 8)}</span>
+                              </div>
+                            </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div>
                                 <div className="text-sm font-medium text-gray-900">

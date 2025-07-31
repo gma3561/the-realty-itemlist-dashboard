@@ -1,7 +1,22 @@
 import { supabase } from './supabase';
+import ENV_CONFIG from '../config/env';
+import { 
+  dummyProperties, 
+  dummyPropertyTypes, 
+  dummyTransactionTypes, 
+  dummyPropertyStatuses 
+} from '../data/dummyProperties';
+
+// 더미데이터 사용 여부
+const USE_DUMMY_DATA = ENV_CONFIG.USE_DUMMY_DATA;
 
 // 룩업 테이블 데이터 초기화 함수
 export const initializeLookupTables = async () => {
+  if (USE_DUMMY_DATA) {
+    console.log('🎭 더미데이터 모드: 룩업 테이블 초기화 스킵');
+    return { success: true, results: [] };
+  }
+
   try {
     // 매물 종류 초기화
     const propertyTypes = [
@@ -43,6 +58,15 @@ export const initializeLookupTables = async () => {
 
 // 룩업 테이블 데이터 조회
 export const getLookupTables = async () => {
+  if (USE_DUMMY_DATA) {
+    console.log('🎭 더미데이터 모드: 룩업 테이블 반환');
+    return {
+      propertyTypes: dummyPropertyTypes,
+      transactionTypes: dummyTransactionTypes,
+      propertyStatuses: dummyPropertyStatuses
+    };
+  }
+
   try {
     const [propertyTypesResult, transactionTypesResult, propertyStatusesResult] = await Promise.all([
       supabase.from('property_types').select('*').order('created_at'),
@@ -62,12 +86,182 @@ export const getLookupTables = async () => {
   } catch (error) {
     console.error('룩업 테이블 조회 실패:', error);
     
-    // 룩업 테이블이 없거나 조회 실패 시 빈 배열 반환
+    // 룩업 테이블이 없거나 조회 실패 시 더미데이터 반환
     return {
-      propertyTypes: [],
-      transactionTypes: [],
-      propertyStatuses: []
+      propertyTypes: dummyPropertyTypes,
+      transactionTypes: dummyTransactionTypes,
+      propertyStatuses: dummyPropertyStatuses
     };
+  }
+};
+
+// 매물 목록 조회
+export const getProperties = async (filters = {}) => {
+  if (USE_DUMMY_DATA) {
+    console.log('🎭 더미데이터 모드: 매물 목록 반환');
+    let filteredProperties = [...dummyProperties];
+
+    // 필터 적용
+    if (filters.property_type_id) {
+      filteredProperties = filteredProperties.filter(p => p.property_type_id === filters.property_type_id);
+    }
+    if (filters.transaction_type_id) {
+      filteredProperties = filteredProperties.filter(p => p.transaction_type_id === filters.transaction_type_id);
+    }
+    if (filters.property_status_id) {
+      filteredProperties = filteredProperties.filter(p => p.property_status_id === filters.property_status_id);
+    }
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      filteredProperties = filteredProperties.filter(p => 
+        p.property_name.toLowerCase().includes(searchLower) ||
+        p.location.toLowerCase().includes(searchLower)
+      );
+    }
+
+    return {
+      data: filteredProperties,
+      error: null
+    };
+  }
+
+  try {
+    let query = supabase.from('properties').select('*');
+
+    // 필터 적용
+    if (filters.property_type_id) {
+      query = query.eq('property_type_id', filters.property_type_id);
+    }
+    if (filters.transaction_type_id) {
+      query = query.eq('transaction_type_id', filters.transaction_type_id);
+    }
+    if (filters.property_status_id) {
+      query = query.eq('property_status_id', filters.property_status_id);
+    }
+    if (filters.search) {
+      query = query.or(`property_name.ilike.%${filters.search}%,location.ilike.%${filters.search}%`);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return { data: data || [], error: null };
+  } catch (error) {
+    console.error('매물 목록 조회 실패:', error);
+    // 오류 시 더미데이터 반환
+    return { data: dummyProperties, error: error.message };
+  }
+};
+
+// 매물 상세 조회
+export const getPropertyById = async (id) => {
+  if (USE_DUMMY_DATA) {
+    const property = dummyProperties.find(p => p.id === id);
+    return { data: property, error: property ? null : 'Property not found' };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('properties')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    console.error('매물 상세 조회 실패:', error);
+    // 오류 시 더미데이터에서 찾기
+    const property = dummyProperties.find(p => p.id === id);
+    return { data: property, error: property ? null : error.message };
+  }
+};
+
+// 매물 추가
+export const createProperty = async (propertyData) => {
+  if (USE_DUMMY_DATA) {
+    console.log('🎭 더미데이터 모드: 매물 추가 시뮬레이션');
+    const newProperty = {
+      ...propertyData,
+      id: `dummy-${Date.now()}`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    dummyProperties.push(newProperty);
+    return { data: newProperty, error: null };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('properties')
+      .insert([propertyData])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    console.error('매물 추가 실패:', error);
+    return { data: null, error: error.message };
+  }
+};
+
+// 매물 수정
+export const updateProperty = async (id, updates) => {
+  if (USE_DUMMY_DATA) {
+    console.log('🎭 더미데이터 모드: 매물 수정 시뮬레이션');
+    const index = dummyProperties.findIndex(p => p.id === id);
+    if (index !== -1) {
+      dummyProperties[index] = {
+        ...dummyProperties[index],
+        ...updates,
+        updated_at: new Date().toISOString()
+      };
+      return { data: dummyProperties[index], error: null };
+    }
+    return { data: null, error: 'Property not found' };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('properties')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    console.error('매물 수정 실패:', error);
+    return { data: null, error: error.message };
+  }
+};
+
+// 매물 삭제
+export const deleteProperty = async (id) => {
+  if (USE_DUMMY_DATA) {
+    console.log('🎭 더미데이터 모드: 매물 삭제 시뮬레이션');
+    const index = dummyProperties.findIndex(p => p.id === id);
+    if (index !== -1) {
+      dummyProperties.splice(index, 1);
+      return { error: null };
+    }
+    return { error: 'Property not found' };
+  }
+
+  try {
+    const { error } = await supabase
+      .from('properties')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return { error: null };
+  } catch (error) {
+    console.error('매물 삭제 실패:', error);
+    return { error: error.message };
   }
 };
 
@@ -100,6 +294,25 @@ export const validatePropertyData = (propertyData) => {
 
 // 매물 일괄 업로드
 export const bulkUploadProperties = async (properties, userId) => {
+  if (USE_DUMMY_DATA) {
+    console.log('🎭 더미데이터 모드: 일괄 업로드 시뮬레이션');
+    const newProperties = properties.map((p, index) => ({
+      ...p,
+      id: `bulk-${Date.now()}-${index}`,
+      manager_id: userId || 'admin',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }));
+    dummyProperties.push(...newProperties);
+    return {
+      success: true,
+      totalCount: properties.length,
+      uploadedCount: properties.length,
+      failedCount: 0,
+      errors: []
+    };
+  }
+
   try {
     // 룩업 테이블 먼저 초기화
     await initializeLookupTables();
@@ -174,6 +387,11 @@ export const bulkUploadProperties = async (properties, userId) => {
 export default {
   initializeLookupTables,
   getLookupTables,
+  getProperties,
+  getPropertyById,
+  createProperty,
+  updateProperty,
+  deleteProperty,
   validatePropertyData,
   bulkUploadProperties
 };
