@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { isHardcodedAdmin } from '../../data/hardcodedAdmins';
 import { 
   Home, 
   Building2, 
@@ -13,7 +14,8 @@ import {
   X,
   ChevronDown,
   UserCircle,
-  Bell
+  Bell,
+  User
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -23,8 +25,9 @@ const Sidebar = () => {
   const [expandedMenu, setExpandedMenu] = useState(null);
 
   const navigation = [
-    { name: '대시보드', href: '/dashboard', icon: Home },
+    { name: '대시보드', href: '/', icon: Home },
     { name: '매물 관리', href: '/properties', icon: Building2 },
+    { name: '내 매물 관리', href: '/my-properties', icon: User },
     { name: '직원 관리', href: '/users', icon: Users, adminOnly: true },
     { name: '성과 분석', href: '/analytics', icon: BarChart3 },
     { name: '보고서', href: '/reports', icon: FileText },
@@ -86,7 +89,7 @@ const Sidebar = () => {
         <nav className="sidebar-nav">
           {navigation.map((item) => {
             // 관리자 전용 메뉴 체크
-            if (item.adminOnly && user?.role !== 'admin') {
+            if (item.adminOnly && !isHardcodedAdmin(user?.email)) {
               return null;
             }
             

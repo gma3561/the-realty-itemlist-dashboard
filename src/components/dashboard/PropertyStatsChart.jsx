@@ -419,52 +419,6 @@ const PropertyStatsChart = ({ properties = [], lookupData = {} }) => {
         </div>
       </div>
 
-      {/* 월별 매출 추이 */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="text-xl font-semibold">월별 매출 추이</h3>
-        </div>
-        <div className="card-body">
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyStats}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis 
-                tick={{ fontSize: 12 }}
-                tickFormatter={(value) => 
-                  value >= 1000000000 ? `${(value / 1000000000).toFixed(0)}십억` :
-                  value >= 100000000 ? `${(value / 100000000).toFixed(0)}억` :
-                  value >= 10000 ? `${(value / 10000).toFixed(0)}만` : value
-                }
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '8px'
-                }}
-                formatter={(value) => [
-                  value >= 100000000 ? `${(value / 100000000).toFixed(1)}억원` :
-                  value >= 10000 ? `${(value / 10000).toFixed(0)}만원` : `${value}원`,
-                  '매출'
-                ]}
-                labelFormatter={(label) => {
-                  const data = monthlyStats.find(m => m.month === label);
-                  return data?.fullMonth || label;
-                }}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="매출" 
-                stroke="#8B5CF6" 
-                strokeWidth={3}
-                dot={{ fill: '#8B5CF6', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
     </div>
   );
 };

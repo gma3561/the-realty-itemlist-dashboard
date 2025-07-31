@@ -10,7 +10,7 @@ import propertyService from '../services/propertyService';
 import { dummyPropertyTypes, dummyTransactionTypes, dummyPropertyStatuses } from '../data/dummyProperties';
 import ENV_CONFIG from '../config/env';
 
-const PropertyList = () => {
+const MyProperties = () => {
   const [filters, setFilters] = useState({
     search: '',
     status: '',
@@ -23,14 +23,14 @@ const PropertyList = () => {
   const { user, userProfile } = useAuth();
   const queryClient = useQueryClient();
   
-  // 매물 데이터 가져오기
+  // 본인 매물만 가져오기 (관리자 권한 무시)
   const { data: properties = [], isLoading, error, refetch } = useQuery(
-    ['properties', filters, user?.email],
+    ['my-properties', filters, user?.email],
     async () => {
       const userInfo = {
         userId: user?.id,
         userEmail: user?.email,
-        isAdmin: isHardcodedAdmin(user?.email)
+        isAdmin: false // 강제로 false로 설정하여 본인 매물만 조회
       };
       const { data, error } = await propertyService.getProperties(filters, userInfo);
       if (error) throw error;
@@ -88,7 +88,7 @@ const PropertyList = () => {
     },
     {
       onSuccess: (deletedId) => {
-        queryClient.invalidateQueries(['properties']);
+        queryClient.invalidateQueries(['my-properties']);
         setDeleteConfirm({ show: false, property: null });
         alert('매물이 성공적으로 삭제되었습니다.');
       },
@@ -164,13 +164,23 @@ const PropertyList = () => {
     return `${sqm}㎡ (${pyeong}평)`;
   };
 
+  // 고객정보 파싱 함수
+  const parseResidentInfo = (residentStr) => {
+    if (!residentStr) return null;
+    try {
+      return JSON.parse(residentStr);
+    } catch {
+      return null;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* 헤더 */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">매물 목록</h1>
-          <p className="text-gray-600">등록된 매물을 관리하고 조회할 수 있습니다.</p>
+          <h1 className="text-2xl font-bold text-gray-900">내 매물 관리</h1>
+          <p className="text-gray-600">본인이 담당하는 매물을 관리하고 고객정보를 확인할 수 있습니다.</p>
         </div>
         <div className="flex items-center space-x-3">
           {/* 뷰 모드 토글 */}
@@ -316,7 +326,7 @@ const PropertyList = () => {
           {filteredProperties.length === 0 ? (
             <div className="bg-white shadow rounded-lg p-8 text-center text-gray-500">
               <Building2 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-lg font-medium mb-2">매물이 없습니다</p>
+              <p className="text-lg font-medium mb-2">담당 매물이 없습니다</p>
               <p className="text-sm">새로운 매물을 등록해보세요.</p>
             </div>
           ) : (
@@ -324,7 +334,7 @@ const PropertyList = () => {
               <div className="bg-white shadow rounded-lg">
                 <div className="px-6 py-4 border-b border-gray-200">
                   <h2 className="text-lg font-medium text-gray-900">
-                    매물 목록 ({filteredProperties.length}건)
+                    내 매물 목록 ({filteredProperties.length}건) - 고객정보 포함
                   </h2>
                 </div>
               </div>
@@ -352,10 +362,10 @@ const PropertyList = () => {
                             가격
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            상태
+                            고객정보
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            담당자
+                            상태
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             등록일
@@ -366,80 +376,85 @@ const PropertyList = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {filteredProperties.map((property) => (
-                          <tr key={property.id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center text-sm text-gray-500">
-                                <Hash className="w-4 h-4 mr-1" />
-                                <span className="font-mono text-xs">{property.id.slice(0, 8)}</span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div>
-                                <div className="text-sm font-medium text-gray-900">
-                                  {property.property_name}
+                        {filteredProperties.map((property) => {
+                          const residentInfo = parseResidentInfo(property.resident);
+                          return (
+                            <tr key={property.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center text-sm text-gray-500">
+                                  <Hash className="w-4 h-4 mr-1" />
+                                  <span className="font-mono text-xs">{property.id.slice(0, 8)}</span>
                                 </div>
-                                <div className="text-sm text-gray-500">
-                                  {getDisplayPropertyType(property)} • {formatArea(property.supply_area_sqm)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                  <div className="text-sm font-medium text-gray-900">
+                                    {property.property_name}
+                                  </div>
+                                  <div className="text-sm text-gray-500">
+                                    {getDisplayPropertyType(property)} • {formatArea(property.supply_area_sqm)}
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center text-sm text-gray-900">
-                                <MapPin className="w-4 h-4 mr-1 text-gray-400" />
-                                {property.location}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {getDisplayTransactionType(property)}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center text-sm font-medium text-gray-900">
-                                {getDisplayPrice(property)}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                getDisplayStatus(property) === '매물확보' || getDisplayStatus(property) === '광고진행'
-                                  ? 'bg-green-100 text-green-800'
-                                  : getDisplayStatus(property) === '거래완료'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {getDisplayStatus(property)}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center text-sm text-gray-900">
-                                <User className="w-4 h-4 mr-1 text-gray-400" />
-                                {getDisplayManager(property)}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center text-sm text-gray-500">
-                                <Calendar className="w-4 h-4 mr-1" />
-                                {new Date(property.created_at).toLocaleDateString()}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              <div className="flex space-x-2">
-                                <Link
-                                  to={`/properties/${property.id}`}
-                                  className="text-blue-600 hover:text-blue-800 font-medium"
-                                >
-                                  상세
-                                </Link>
-                                {/* 본인 매물이거나 관리자인 경우에만 수정/삭제 버튼 표시 */}
-                                {(isHardcodedAdmin(user?.email) || property.manager_id === user?.id || property.manager_id === user?.email) && (
-                                  <>
-                                    <Link
-                                      to={`/properties/${property.id}/edit`}
-                                      className="text-green-600 hover:text-green-800 font-medium"
-                                    >
-                                      수정
-                                    </Link>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center text-sm text-gray-900">
+                                  <MapPin className="w-4 h-4 mr-1 text-gray-400" />
+                                  {property.location}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">
+                                  {getDisplayTransactionType(property)}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center text-sm font-medium text-gray-900">
+                                  {getDisplayPrice(property)}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">
+                                  {residentInfo ? (
+                                    <div>
+                                      <div className="font-medium">{residentInfo.name || '-'}</div>
+                                      <div className="text-xs text-gray-500">{residentInfo.phone || '-'}</div>
+                                    </div>
+                                  ) : (
+                                    <span className="text-gray-400">정보 없음</span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                  getDisplayStatus(property) === '매물확보' || getDisplayStatus(property) === '광고진행'
+                                    ? 'bg-green-100 text-green-800'
+                                    : getDisplayStatus(property) === '거래완료'
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : 'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {getDisplayStatus(property)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center text-sm text-gray-500">
+                                  <Calendar className="w-4 h-4 mr-1" />
+                                  {new Date(property.created_at).toLocaleDateString()}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div className="flex space-x-2">
+                                  <Link
+                                    to={`/properties/${property.id}`}
+                                    className="text-blue-600 hover:text-blue-800 font-medium"
+                                  >
+                                    상세
+                                  </Link>
+                                  <Link
+                                    to={`/properties/${property.id}/edit`}
+                                    className="text-green-600 hover:text-green-800 font-medium"
+                                  >
+                                    수정
+                                  </Link>
                                   <button
                                     onClick={() => handleDeleteClick(property)}
                                     className="text-red-600 hover:text-red-800 font-medium"
@@ -447,12 +462,11 @@ const PropertyList = () => {
                                   >
                                     삭제
                                   </button>
-                                  </>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -466,11 +480,10 @@ const PropertyList = () => {
                     <PropertyCard
                       key={property.id}
                       property={property}
+                      showCustomerInfo={true}
                       onView={(prop) => navigate(`/properties/${prop.id}`)}
-                      onEdit={(isHardcodedAdmin(user?.email) || property.manager_id === user?.id || property.manager_id === user?.email) ? 
-                        (prop) => navigate(`/properties/${prop.id}/edit`) : null}
-                      onDelete={(isHardcodedAdmin(user?.email) || property.manager_id === user?.id || property.manager_id === user?.email) ? 
-                        (prop) => handleDeleteClick(prop) : null}
+                      onEdit={(prop) => navigate(`/properties/${prop.id}/edit`)}
+                      onDelete={(prop) => handleDeleteClick(prop)}
                     />
                   ))}
                 </div>
@@ -525,4 +538,4 @@ const PropertyList = () => {
   );
 };
 
-export default PropertyList;
+export default MyProperties;

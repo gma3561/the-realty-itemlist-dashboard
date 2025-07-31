@@ -45,3 +45,6 @@ lerna-debug.log*
 
 # Supabase
 .supabase
+
+# Google OAuth Credentials - NEVER COMMIT
+GOOGLE_OAUTH_CREDENTIALS.md

@@ -1,16 +1,24 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { isHardcodedAdmin } from '../../data/hardcodedAdmins';
 import { Phone, Lock, User, Building, AlertTriangle } from 'lucide-react';
 
 const PropertyContactInfo = ({ property }) => {
   const { user } = useAuth();
 
   // 현재 사용자가 매물의 담당자인지 또는 관리자인지 확인
-  const canViewContactInfo = user && (
+  // 관리자이거나 본인 매물인 경우에만 고객정보 표시
+  const isPropertyOwner = user && (
     user.id === property.manager_id || 
-    user.role === 'admin' || 
-    property.is_visible_to_all === true
+    user.email === property.manager_id ||
+    property.manager_id === `hardcoded-${user.email}`
   );
+  
+  const isAdmin = user && isHardcodedAdmin(user.email);
+  
+  // 관리자가 아닌 경우: 본인 매물에서만 고객정보 표시
+  // 관리자인 경우: 모든 매물에서 고객정보 표시 안함 (일반 매물 관리 모드)
+  const canViewContactInfo = !isAdmin && isPropertyOwner;
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6 mb-6">
@@ -23,9 +31,12 @@ const PropertyContactInfo = ({ property }) => {
         <div className="bg-yellow-50 p-4 mb-4 rounded-md flex items-start">
           <AlertTriangle className="w-5 h-5 text-yellow-500 mt-0.5 mr-2 flex-shrink-0" />
           <div>
-            <p className="text-sm font-medium text-yellow-800">제한된 접근</p>
+            <p className="text-sm font-medium text-yellow-800">고객정보 제한</p>
             <p className="text-sm text-yellow-700">
-              이 매물의 연락처 정보는 담당자만 볼 수 있습니다. 연락처 정보가 필요하시면 담당자에게 문의하세요.
+              {isAdmin 
+                ? "매물 관리 모드에서는 고객정보가 표시되지 않습니다. 본인 매물 관리에서 고객정보를 확인하세요."
+                : "이 매물의 고객정보는 담당자만 볼 수 있습니다. 고객정보가 필요하시면 담당자에게 문의하세요."
+              }
             </p>
           </div>
         </div>

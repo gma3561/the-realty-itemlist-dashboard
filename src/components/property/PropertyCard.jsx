@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Home, Calendar, Edit, Eye, Trash2 } from 'lucide-react';
+import { MapPin, Home, Calendar, Edit, Eye, Trash2, Phone } from 'lucide-react';
 
-const PropertyCard = ({ property, onEdit, onDelete, onView }) => {
+const PropertyCard = ({ property, onEdit, onDelete, onView, showCustomerInfo = false }) => {
   const getStatusColor = (status) => {
     const colors = {
       'available': 'bg-green-100 text-green-800 border-green-200',
@@ -78,6 +78,16 @@ const PropertyCard = ({ property, onEdit, onDelete, onView }) => {
     return `${area}㎡ (${pyeong}평)`;
   };
 
+  // 고객정보 파싱 함수
+  const parseResidentInfo = (residentStr) => {
+    if (!residentStr) return null;
+    try {
+      return JSON.parse(residentStr);
+    } catch {
+      return null;
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow border border-gray-200 hover:shadow-md transition-shadow duration-200">
       <div className="p-4">
@@ -142,6 +152,32 @@ const PropertyCard = ({ property, onEdit, onDelete, onView }) => {
             <span>등록: {new Date(property.created_at).toLocaleDateString()}</span>
           </div>
         </div>
+
+        {/* 고객정보 (showCustomerInfo가 true일 때만 표시) */}
+        {showCustomerInfo && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+            <div className="flex items-center mb-2">
+              <Phone className="w-4 h-4 mr-2 text-blue-600" />
+              <span className="text-sm font-medium text-blue-800">고객정보</span>
+            </div>
+            {(() => {
+              const residentInfo = parseResidentInfo(property.resident);
+              if (residentInfo) {
+                return (
+                  <div className="text-sm text-blue-700">
+                    <div><span className="font-medium">이름:</span> {residentInfo.name || '-'}</div>
+                    <div><span className="font-medium">연락처:</span> {residentInfo.phone || '-'}</div>
+                    {residentInfo.notes && (
+                      <div><span className="font-medium">메모:</span> {residentInfo.notes}</div>
+                    )}
+                  </div>
+                );
+              } else {
+                return <div className="text-sm text-blue-600">고객정보가 없습니다.</div>;
+              }
+            })()}
+          </div>
+        )}
 
         {/* 특이사항 (있을 경우) */}
         {property.special_notes && (

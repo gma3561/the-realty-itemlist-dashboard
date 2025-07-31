@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { useAuth } from '../context/AuthContext';
+import { isHardcodedAdmin } from '../data/hardcodedAdmins';
 import propertyService from '../services/propertyService';
 import { 
   Building2, 
@@ -24,9 +25,14 @@ const Dashboard = () => {
   
   // 매물 데이터 가져오기
   const { data: properties = [], isLoading } = useQuery(
-    ['dashboard-properties'],
+    ['dashboard-properties', user?.email],
     async () => {
-      const { data, error } = await propertyService.getProperties();
+      const userInfo = {
+        userId: user?.id,
+        userEmail: user?.email,
+        isAdmin: isHardcodedAdmin(user?.email)
+      };
+      const { data, error } = await propertyService.getProperties({}, userInfo);
       if (error) throw new Error(error);
       return data || [];
     }

@@ -43,8 +43,32 @@ export const AuthProvider = ({ children }) => {
         ]);
         
         if (session?.user) {
-          // MVP 버전에서는 도메인 확인 제거
-          setUser(session.user);
+          // 구글 로그인 사용자 정보 처리
+          const googleUser = session.user;
+          
+          // DB에서 사용자 프로필 조회
+          const { data: userProfile, error: profileError } = await supabase
+            .from('users')
+            .select('*, roles(name, permissions)')
+            .eq('id', googleUser.id)
+            .single();
+          
+          if (userProfile) {
+            // DB 정보와 구글 정보 병합
+            setUser({
+              ...googleUser,
+              ...userProfile,
+              role: userProfile.roles?.name || 'employee',
+              isAdmin: userProfile.role_id === 'admin'
+            });
+          } else {
+            // DB에 프로필이 없으면 구글 정보만 사용
+            setUser({
+              ...googleUser,
+              role: 'employee',
+              isAdmin: false
+            });
+          }
           setError(null);
         } else {
           setUser(null);
@@ -64,8 +88,29 @@ export const AuthProvider = ({ children }) => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
-          // MVP 버전에서는 도메인 확인 제거
-          setUser(session.user);
+          const googleUser = session.user;
+          
+          // DB에서 사용자 프로필 조회
+          const { data: userProfile } = await supabase
+            .from('users')
+            .select('*, roles(name, permissions)')
+            .eq('id', googleUser.id)
+            .single();
+          
+          if (userProfile) {
+            setUser({
+              ...googleUser,
+              ...userProfile,
+              role: userProfile.roles?.name || 'employee',
+              isAdmin: userProfile.role_id === 'admin'
+            });
+          } else {
+            setUser({
+              ...googleUser,
+              role: 'employee',
+              isAdmin: false
+            });
+          }
           setError(null);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);

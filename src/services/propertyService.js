@@ -95,13 +95,23 @@ export const getLookupTables = async () => {
   }
 };
 
-// 매물 목록 조회
-export const getProperties = async (filters = {}) => {
+// 매물 목록 조회 (권한 기반 필터링 포함)
+export const getProperties = async (filters = {}, userInfo = null) => {
   if (USE_DUMMY_DATA) {
     console.log('🎭 더미데이터 모드: 매물 목록 반환');
     let filteredProperties = [...dummyProperties];
 
-    // 필터 적용
+    // 권한 기반 필터링: 관리자가 아닌 경우 본인 매물만 조회
+    if (userInfo && !userInfo.isAdmin) {
+      filteredProperties = filteredProperties.filter(p => 
+        p.user_id === userInfo.userId || // 구글 로그인 사용자 ID
+        p.manager_id === userInfo.userId || 
+        p.manager_id === userInfo.userEmail ||
+        p.manager_id === `hardcoded-${userInfo.userEmail}`
+      );
+    }
+
+    // 기타 필터 적용
     if (filters.property_type_id) {
       filteredProperties = filteredProperties.filter(p => p.property_type_id === filters.property_type_id);
     }
@@ -128,7 +138,13 @@ export const getProperties = async (filters = {}) => {
   try {
     let query = supabase.from('properties').select('*');
 
-    // 필터 적용
+    // 권한 기반 필터링: 관리자가 아닌 경우 본인 매물만 조회
+    if (userInfo && !userInfo.isAdmin) {
+      // user_id 또는 manager_id가 일치하는 매물 조회
+      query = query.or(`user_id.eq.${userInfo.userId},manager_id.eq.${userInfo.userId},manager_id.eq.${userInfo.userEmail}`);
+    }
+
+    // 기타 필터 적용
     if (filters.property_type_id) {
       query = query.eq('property_type_id', filters.property_type_id);
     }
@@ -149,8 +165,16 @@ export const getProperties = async (filters = {}) => {
     return { data: data || [], error: null };
   } catch (error) {
     console.error('매물 목록 조회 실패:', error);
-    // 오류 시 더미데이터 반환
-    return { data: dummyProperties, error: error.message };
+    // 오류 시 더미데이터 반환 (권한 필터링 적용)
+    let fallbackData = [...dummyProperties];
+    if (userInfo && !userInfo.isAdmin) {
+      fallbackData = fallbackData.filter(p => 
+        p.manager_id === userInfo.userId || 
+        p.manager_id === userInfo.userEmail ||
+        p.manager_id === `hardcoded-${userInfo.userEmail}`
+      );
+    }
+    return { data: fallbackData, error: error.message };
   }
 };
 

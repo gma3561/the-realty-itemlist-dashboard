@@ -6,8 +6,10 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 
 // 페이지 컴포넌트
 import Login from './pages/Login';
+import AuthCallback from './pages/AuthCallback';
 import Dashboard from './pages/Dashboard';
 import PropertyList from './pages/PropertyList';
+import MyProperties from './pages/MyProperties';
 import PropertyDetail from './pages/PropertyDetail';
 import PropertyForm from './pages/PropertyForm';
 import UserManagement from './pages/UserManagement';
@@ -55,10 +57,12 @@ function App() {
           <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             
             <Route element={<MainLayout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/properties" element={<PropertyList />} />
+              <Route path="/my-properties" element={<MyProperties />} />
               <Route path="/properties/new" element={<PropertyForm />} />
               <Route path="/properties/:id" element={<PropertyDetail />} />
               <Route path="/properties/:id/edit" element={<PropertyForm />} />
