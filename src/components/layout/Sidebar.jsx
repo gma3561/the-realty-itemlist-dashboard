@@ -30,7 +30,6 @@ const Sidebar = () => {
     { name: '내 매물 관리', href: '/my-properties', icon: User },
     { name: '직원 관리', href: '/users', icon: Users, adminOnly: true },
     { name: '성과 분석', href: '/analytics', icon: BarChart3 },
-    { name: '보고서', href: '/reports', icon: FileText },
   ];
 
   const isActive = (path) => {
