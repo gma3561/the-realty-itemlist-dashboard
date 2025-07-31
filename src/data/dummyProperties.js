@@ -7,7 +7,7 @@ export const dummyProperties = [
     property_type_id: '550e8400-e29b-41d4-a716-446655440003', // 빌라/연립
     transaction_type_id: '650e8400-e29b-41d4-a716-446655440001', // 매매
     property_status_id: '750e8400-e29b-41d4-a716-446655440001', // 거래가능
-    price: 250000,
+    price: 2500000000,  // 25억원
     lease_price: null,
     monthly_rent: null,
     supply_area_pyeong: 41,
@@ -33,7 +33,7 @@ export const dummyProperties = [
     transaction_type_id: '650e8400-e29b-41d4-a716-446655440002', // 전세
     property_status_id: '750e8400-e29b-41d4-a716-446655440001', // 거래가능
     price: null,
-    lease_price: 140000,
+    lease_price: 1400000000,  // 14억원
     monthly_rent: null,
     supply_area_pyeong: 41,
     private_area_pyeong: 37,
@@ -58,7 +58,7 @@ export const dummyProperties = [
     transaction_type_id: '650e8400-e29b-41d4-a716-446655440002', // 전세
     property_status_id: '750e8400-e29b-41d4-a716-446655440001', // 거래가능
     price: null,
-    lease_price: 210000,
+    lease_price: 2100000000,  // 21억원
     monthly_rent: null,
     supply_area_pyeong: 54.49,
     private_area_pyeong: 41.9,
@@ -82,7 +82,7 @@ export const dummyProperties = [
     property_type_id: '550e8400-e29b-41d4-a716-446655440001', // 아파트
     transaction_type_id: '650e8400-e29b-41d4-a716-446655440001', // 매매
     property_status_id: '750e8400-e29b-41d4-a716-446655440001', // 거래가능
-    price: 450000,
+    price: 4500000000,  // 45억원
     lease_price: null,
     monthly_rent: null,
     supply_area_pyeong: 84,
@@ -108,7 +108,7 @@ export const dummyProperties = [
     transaction_type_id: '650e8400-e29b-41d4-a716-446655440002', // 전세
     property_status_id: '750e8400-e29b-41d4-a716-446655440001', // 거래가능
     price: null,
-    lease_price: 180000,
+    lease_price: 1800000000,  // 18억원
     monthly_rent: null,
     supply_area_pyeong: 59,
     private_area_pyeong: 45,
@@ -132,7 +132,7 @@ export const dummyProperties = [
     property_type_id: '550e8400-e29b-41d4-a716-446655440001', // 아파트
     transaction_type_id: '650e8400-e29b-41d4-a716-446655440001', // 매매
     property_status_id: '750e8400-e29b-41d4-a716-446655440001', // 거래가능
-    price: 380000,
+    price: 3800000000,  // 38억원
     lease_price: null,
     monthly_rent: null,
     supply_area_pyeong: 76,
@@ -158,8 +158,8 @@ export const dummyProperties = [
     transaction_type_id: '650e8400-e29b-41d4-a716-446655440003', // 월세
     property_status_id: '750e8400-e29b-41d4-a716-446655440001', // 거래가능
     price: null,
-    lease_price: 20000,
-    monthly_rent: 150,
+    lease_price: 200000000,  // 2억원
+    monthly_rent: 1500000,  // 150만원
     supply_area_pyeong: 49,
     private_area_pyeong: 38,
     supply_area_sqm: 162.08,
@@ -183,7 +183,7 @@ export const dummyProperties = [
     transaction_type_id: '650e8400-e29b-41d4-a716-446655440002', // 전세
     property_status_id: '750e8400-e29b-41d4-a716-446655440001', // 거래가능
     price: null,
-    lease_price: 160000,
+    lease_price: 1600000000,  // 16억원
     monthly_rent: null,
     supply_area_pyeong: 52,
     private_area_pyeong: 40,
@@ -208,8 +208,8 @@ export const dummyProperties = [
     transaction_type_id: '650e8400-e29b-41d4-a716-446655440003', // 월세
     property_status_id: '750e8400-e29b-41d4-a716-446655440001', // 거래가능
     price: null,
-    lease_price: 10000,
-    monthly_rent: 900,
+    lease_price: 100000000,  // 1억원
+    monthly_rent: 9000000,  // 900만원
     supply_area_pyeong: 41,
     private_area_pyeong: 37,
     supply_area_sqm: 135.54,
@@ -233,8 +233,8 @@ export const dummyProperties = [
     transaction_type_id: '650e8400-e29b-41d4-a716-446655440003', // 월세
     property_status_id: '750e8400-e29b-41d4-a716-446655440001', // 거래가능
     price: null,
-    lease_price: 30000,
-    monthly_rent: 680,
+    lease_price: 300000000,  // 3억원
+    monthly_rent: 6800000,  // 680만원
     supply_area_pyeong: 54.49,
     private_area_pyeong: 41.9,
     supply_area_sqm: 180.19,

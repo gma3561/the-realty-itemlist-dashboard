@@ -54,9 +54,14 @@ const Dashboard = () => {
 
   const formatPrice = (price) => {
     if (price >= 100000000) {
-      return `${(price / 100000000).toFixed(1)}억원`;
+      const eok = Math.floor(price / 100000000);
+      const man = Math.floor((price % 100000000) / 10000);
+      if (man > 0) {
+        return `${eok}억 ${man.toLocaleString()}만원`;
+      }
+      return `${eok}억원`;
     } else if (price >= 10000) {
-      return `${(price / 10000).toFixed(0)}만원`;
+      return `${(price / 10000).toLocaleString()}만원`;
     }
     return `${price.toLocaleString()}원`;
   };
@@ -83,10 +88,10 @@ const Dashboard = () => {
     if (transactionType === '매매') {
       return formatPrice(property.price || 0);
     } else if (transactionType === '전세') {
-      return formatPrice(property.price || 0);
+      return formatPrice(property.lease_price || 0);
     } else if (transactionType === '월세' || transactionType === '월세/렌트') {
       const deposit = formatPrice(property.lease_price || 0);
-      const monthly = formatPrice(property.price || 0);
+      const monthly = formatPrice(property.monthly_rent || 0);
       return `${deposit} / ${monthly}`;
     } else if (transactionType === '분양') {
       return formatPrice(property.price || 0);

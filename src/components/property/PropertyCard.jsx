@@ -45,9 +45,14 @@ const PropertyCard = ({ property, onEdit, onDelete, onView }) => {
     if (!price || price === 0) return '-';
     
     if (price >= 100000000) {
-      return `${(price / 100000000).toFixed(1)}억원`;
+      const eok = Math.floor(price / 100000000);
+      const man = Math.floor((price % 100000000) / 10000);
+      if (man > 0) {
+        return `${eok}억 ${man.toLocaleString()}만원`;
+      }
+      return `${eok}억원`;
     } else if (price >= 10000) {
-      return `${(price / 10000).toFixed(0)}만원`;
+      return `${(price / 10000).toLocaleString()}만원`;
     }
     return `${price.toLocaleString()}원`;
   };
