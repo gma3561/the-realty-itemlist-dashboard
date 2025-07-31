@@ -54,7 +54,9 @@ const AuthProcess = () => {
           
           // 대시보드로 이동
           console.log('Redirecting to dashboard...');
-          navigate('/', { replace: true });
+          
+          // window.location을 사용하여 강제 리디렉션
+          window.location.href = '/the-realty-itemlist-dashboard/#/';
         } catch (sessionError) {
           console.error('Session setup error:', sessionError);
           navigate('/login');
