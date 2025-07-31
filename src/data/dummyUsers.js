@@ -3,7 +3,7 @@ export const dummyUsers = [
   {
     id: 'hardcoded-jenny@the-realty.co.kr',
     email: 'jenny@the-realty.co.kr',
-    name: 'Jenny Kim',
+    name: '정연서',
     phone: '010-1234-5678',
     role: 'admin',
     status: 'active',
@@ -14,7 +14,7 @@ export const dummyUsers = [
   {
     id: 'hardcoded-lucas@the-realty.co.kr',
     email: 'lucas@the-realty.co.kr',
-    name: 'Lucas Lee',
+    name: '하상현',
     phone: '010-2345-6789',
     role: 'admin',
     status: 'active',
@@ -25,7 +25,7 @@ export const dummyUsers = [
   {
     id: 'hardcoded-hmlee@the-realty.co.kr',
     email: 'hmlee@the-realty.co.kr',
-    name: 'HM Lee',
+    name: '이혜만',
     phone: '010-3456-7890',
     role: 'admin',
     status: 'active',

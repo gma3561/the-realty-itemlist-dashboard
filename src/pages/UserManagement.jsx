@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useAuth } from '../context/AuthContext';
 import userService from '../services/userService';
+import propertyService from '../services/propertyService';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
-import { Plus, Edit, Trash, AlertTriangle, CheckCircle, X, User, UserPlus, Check, Mail, Phone, Shield, Activity, BarChart3 } from 'lucide-react';
+import { Plus, Edit, Trash, AlertTriangle, CheckCircle, X, User, UserPlus, Check, Mail, Phone, Shield, Activity, BarChart3, Users, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { isHardcodedAdmin } from '../data/hardcodedAdmins';
 import { getUserStats } from '../data/dummyUsers';
@@ -12,6 +13,7 @@ import { getUserStats } from '../data/dummyUsers';
 const UserManagement = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState('list'); // 'list' or 'performance'
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState(null);
@@ -184,27 +186,61 @@ const UserManagement = () => {
   }
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-xl font-semibold mb-4 flex items-center">
-        <User className="w-6 h-6 mr-2 text-blue-600" />
-        사용자 관리
-      </h2>
-      
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md flex items-center">
-          <AlertTriangle className="w-5 h-5 mr-2" />
-          {error}
+    <div className="space-y-6">
+      {/* 헤더 */}
+      <div className="bg-white shadow rounded-lg p-6">
+        <h2 className="text-2xl font-bold mb-6 flex items-center">
+          <User className="w-8 h-8 mr-2 text-blue-600" />
+          직원 관리
+        </h2>
+        
+        {/* 탭 네비게이션 */}
+        <div className="border-b border-gray-200 mb-6">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('list')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'list'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Users className="w-4 h-4 inline-block mr-2" />
+              직원 목록
+            </button>
+            <button
+              onClick={() => setActiveTab('performance')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'performance'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <TrendingUp className="w-4 h-4 inline-block mr-2" />
+              직원별 성과
+            </button>
+          </nav>
         </div>
-      )}
+        
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md flex items-center">
+            <AlertTriangle className="w-5 h-5 mr-2" />
+            {error}
+          </div>
+        )}
+        
+        {success && (
+          <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-md flex items-center">
+            <CheckCircle className="w-5 h-5 mr-2" />
+            {success}
+          </div>
+        )}
+      </div>
       
-      {success && (
-        <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-md flex items-center">
-          <CheckCircle className="w-5 h-5 mr-2" />
-          {success}
-        </div>
-      )}
-      
-      {!isAdding ? (
+      {/* 탭 콘텐츠 */}
+      {activeTab === 'list' ? (
+        <div className="bg-white shadow rounded-lg p-6">
+          {!isAdding ? (
         <div className="mb-4">
           <Button
             onClick={() => setIsAdding(true)}
@@ -393,6 +429,132 @@ const UserManagement = () => {
           </table>
         </div>
       )}
+        </div>
+      ) : (
+        /* 성과 탭 */
+        <StaffPerformanceTab />
+      )}
+    </div>
+  );
+};
+
+// 직원별 성과 탭 컴포넌트
+const StaffPerformanceTab = () => {
+  const { data: users = [] } = useQuery('users', async () => {
+    const { data, error } = await userService.getUsers();
+    if (error) throw error;
+    return data;
+  });
+
+  const { data: properties = [] } = useQuery('all-properties', async () => {
+    const { data, error } = await propertyService.getProperties();
+    if (error) throw error;
+    return data || [];
+  });
+
+  const { data: lookupData = {} } = useQuery(
+    'lookupTables',
+    async () => {
+      const data = await propertyService.getLookupTables();
+      return data;
+    },
+    {
+      staleTime: 5 * 60 * 1000,
+    }
+  );
+
+  // 직원별 통계 계산
+  const calculateUserStats = (userId) => {
+    const userProperties = properties.filter(p => p.manager_id === userId);
+    
+    const stats = {
+      totalProperties: userProperties.length,
+      completedDeals: 0,
+      activeDeals: 0,
+      monthlyDeals: 0
+    };
+
+    userProperties.forEach(property => {
+      const status = lookupData.propertyStatuses?.find(s => s.id === property.property_status_id);
+      if (status?.name === '거래완료') {
+        stats.completedDeals++;
+      } else if (status?.name === '거래가능') {
+        stats.activeDeals++;
+      }
+
+      const createdDate = new Date(property.created_at);
+      const now = new Date();
+      if (createdDate.getMonth() === now.getMonth() && createdDate.getFullYear() === now.getFullYear()) {
+        stats.monthlyDeals++;
+      }
+    });
+
+    return stats;
+  };
+
+  return (
+    <div className="bg-white shadow rounded-lg p-6">
+      <h3 className="text-lg font-semibold mb-6">직원별 성과 현황</h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {users.map((user) => {
+          const stats = calculateUserStats(user.id);
+          const performanceRate = stats.totalProperties > 0 
+            ? Math.round((stats.completedDeals / stats.totalProperties) * 100) 
+            : 0;
+          
+          return (
+            <div key={user.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h4 className="font-semibold text-lg">{user.name}</h4>
+                  <p className="text-sm text-gray-600">{user.email}</p>
+                </div>
+                <Link
+                  to={`/users/${user.id}/performance`}
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  <BarChart3 className="w-5 h-5" />
+                </Link>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">총 매물</span>
+                  <span className="font-semibold">{stats.totalProperties}건</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">거래완료</span>
+                  <span className="font-semibold text-green-600">{stats.completedDeals}건</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">진행중</span>
+                  <span className="font-semibold text-blue-600">{stats.activeDeals}건</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">이번달 등록</span>
+                  <span className="font-semibold">{stats.monthlyDeals}건</span>
+                </div>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-700">성과율</span>
+                  <div className="flex items-center">
+                    <div className="w-32 bg-gray-200 rounded-full h-2 mr-2">
+                      <div 
+                        className="bg-blue-600 h-2 rounded-full"
+                        style={{ width: `${performanceRate}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-sm font-semibold">{performanceRate}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };

@@ -17,8 +17,14 @@ const getAdminEmailsFromEnv = () => {
 
 // 하드코딩된 관리자 목록 (환경변수 기반)
 export const hardcodedAdmins = getAdminEmailsFromEnv().map((email, index) => {
-  // 이메일에서 이름 추출 (@ 앞부분)
-  const name = email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase());
+  // 이메일별 이름 매핑
+  const nameMap = {
+    'jenny@the-realty.co.kr': '정연서',
+    'lucas@the-realty.co.kr': '하상현',
+    'hmlee@the-realty.co.kr': '이혜만'
+  };
+  
+  const name = nameMap[email] || email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase());
   
   return {
     email,

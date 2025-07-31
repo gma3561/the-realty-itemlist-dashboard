@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { supabase } from '../services/supabase';
+import propertyService from '../services/propertyService';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/common/Button';
 import ManagerAssignment from '../components/matching/ManagerAssignment';
@@ -20,33 +20,29 @@ const PropertyDetail = () => {
   const { data: property, isLoading, error } = useQuery(
     ['property', id],
     async () => {
-      const { data, error } = await supabase
-        .from('properties')
-        .select(`
-          *,
-          property_type:property_types(name),
-          property_status:property_statuses(name),
-          transaction_type:transaction_types(name),
-          manager:users(name, email),
-          owner:owners(*)
-        `)
-        .eq('id', id)
-        .single();
-        
-      if (error) throw error;
+      const { data, error } = await propertyService.getPropertyById(id);
+      if (error) throw new Error(error);
       return data;
+    }
+  );
+
+  // 룩업 데이터 가져오기
+  const { data: lookupData = {} } = useQuery(
+    'lookupTables',
+    async () => {
+      const data = await propertyService.getLookupTables();
+      return data;
+    },
+    {
+      staleTime: 5 * 60 * 1000, // 5분
     }
   );
   
   const deleteMutation = useMutation(
     async () => {
       setIsDeleting(true);
-      const { error } = await supabase
-        .from('properties')
-        .delete()
-        .eq('id', id);
-        
-      if (error) throw error;
+      const { error } = await propertyService.deleteProperty(id);
+      if (error) throw new Error(error);
     },
     {
       onSuccess: () => {
@@ -109,7 +105,56 @@ const PropertyDetail = () => {
     );
   }
   
-  const canEdit = user && (user.id === property.manager_id || user.role === 'admin');
+  // 헬퍼 함수 추가
+  const getPropertyType = () => {
+    return lookupData.propertyTypes?.find(t => t.id === property.property_type_id)?.name || '-';
+  };
+
+  const getTransactionType = () => {
+    return lookupData.transactionTypes?.find(t => t.id === property.transaction_type_id)?.name || '-';
+  };
+
+  const getPropertyStatus = () => {
+    return lookupData.propertyStatuses?.find(s => s.id === property.property_status_id)?.name || '-';
+  };
+
+  const formatPrice = (price) => {
+    if (!price || price === 0) return '-';
+    
+    if (price >= 100000000) {
+      const eok = Math.floor(price / 100000000);
+      const man = Math.floor((price % 100000000) / 10000);
+      if (man > 0) {
+        return `${eok}억 ${man.toLocaleString()}만원`;
+      }
+      return `${eok}억원`;
+    } else if (price >= 10000) {
+      return `${(price / 10000).toLocaleString()}만원`;
+    }
+    return `${price.toLocaleString()}원`;
+  };
+
+  const getDisplayPrice = () => {
+    const transactionType = getTransactionType();
+    
+    if (transactionType === '매매') {
+      return formatPrice(property.price || 0);
+    } else if (transactionType === '전세') {
+      return formatPrice(property.lease_price || 0);
+    } else if (transactionType === '월세') {
+      const deposit = formatPrice(property.lease_price || 0);
+      const monthly = formatPrice(property.monthly_rent || 0);
+      return `${deposit} / ${monthly}`;
+    }
+    return formatPrice(property.price || 0) || '-';
+  };
+
+  const calculatePyeong = (sqm) => {
+    if (!sqm) return '-';
+    return `${(sqm * 0.3025).toFixed(1)}평`;
+  };
+
+  const canEdit = user && (user.id === property.manager_id || user.email === property.manager_id || user.role === 'admin');
   
   return (
     <div>
@@ -153,14 +198,14 @@ const PropertyDetail = () => {
           </div>
           <div className="mt-4 md:mt-0">
             <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
-              ${property.property_status?.name === '거래가능' 
+              ${getPropertyStatus() === '거래가능' 
                 ? 'bg-green-100 text-green-800' 
-                : property.property_status?.name === '거래완료' 
+                : getPropertyStatus() === '거래완료' 
                   ? 'bg-gray-100 text-gray-800'
                   : 'bg-yellow-100 text-yellow-800'
               }`}
             >
-              {property.property_status?.name || '-'}
+              {getPropertyStatus()}
             </span>
           </div>
         </div>
@@ -168,19 +213,19 @@ const PropertyDetail = () => {
         <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <p className="text-sm font-medium text-gray-500">매물종류</p>
-            <p className="mt-1 text-lg font-semibold text-gray-900">{property.property_type?.name || '-'}</p>
+            <p className="mt-1 text-lg font-semibold text-gray-900">{getPropertyType()}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">거래유형</p>
-            <p className="mt-1 text-lg font-semibold text-gray-900">{property.transaction_type?.name || '-'}</p>
+            <p className="mt-1 text-lg font-semibold text-gray-900">{getTransactionType()}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">금액</p>
-            <p className="mt-1 text-lg font-semibold text-gray-900">{formatPrice(property.price)}</p>
+            <p className="mt-1 text-lg font-semibold text-gray-900">{getDisplayPrice()}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">담당자</p>
-            <p className="mt-1 text-lg font-semibold text-gray-900">{property.manager?.name || '-'}</p>
+            <p className="mt-1 text-lg font-semibold text-gray-900">{property.manager_id?.split('@')[0]?.replace('hardcoded-', '').toUpperCase() || '-'}</p>
           </div>
         </div>
       </div>
@@ -211,7 +256,7 @@ const PropertyDetail = () => {
               </div>
               <div className="grid grid-cols-2 border-b border-gray-200 py-2">
                 <p className="text-sm font-medium text-gray-500">매물종류</p>
-                <p className="text-sm text-gray-900">{property.property_type?.name || '-'}</p>
+                <p className="text-sm text-gray-900">{getPropertyType()}</p>
               </div>
               <div className="grid grid-cols-2 border-b border-gray-200 py-2">
                 <p className="text-sm font-medium text-gray-500">상가여부</p>
@@ -225,15 +270,15 @@ const PropertyDetail = () => {
             <div className="space-y-2">
               <div className="grid grid-cols-2 border-b border-gray-200 py-2">
                 <p className="text-sm font-medium text-gray-500">진행상태</p>
-                <p className="text-sm text-gray-900">{property.property_status?.name || '-'}</p>
+                <p className="text-sm text-gray-900">{getPropertyStatus()}</p>
               </div>
               <div className="grid grid-cols-2 border-b border-gray-200 py-2">
                 <p className="text-sm font-medium text-gray-500">거래유형</p>
-                <p className="text-sm text-gray-900">{property.transaction_type?.name || '-'}</p>
+                <p className="text-sm text-gray-900">{getTransactionType()}</p>
               </div>
               <div className="grid grid-cols-2 border-b border-gray-200 py-2">
                 <p className="text-sm font-medium text-gray-500">금액</p>
-                <p className="text-sm text-gray-900">{formatPrice(property.price)}</p>
+                <p className="text-sm text-gray-900">{getDisplayPrice()}</p>
               </div>
               <div className="grid grid-cols-2 border-b border-gray-200 py-2">
                 <p className="text-sm font-medium text-gray-500">거래완료날짜</p>
