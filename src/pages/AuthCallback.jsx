@@ -13,7 +13,12 @@ const AuthCallback = () => {
         console.log('Hash:', window.location.hash);
         
         // Hash에서 토큰 가져오기 (Implicit Flow)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        // HashRouter 사용 시 #/auth/callback#access_token=... 형태가 됨
+        const fullHash = window.location.hash;
+        const tokenIndex = fullHash.lastIndexOf('#');
+        const tokenPart = tokenIndex > 0 ? fullHash.substring(tokenIndex + 1) : fullHash.substring(1);
+        
+        const hashParams = new URLSearchParams(tokenPart);
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
         

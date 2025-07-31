@@ -9,7 +9,16 @@ const OAuthHandler = ({ children }) => {
   useEffect(() => {
     const handleOAuthCallback = async () => {
       // URL에 OAuth 토큰이 있는지 확인
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      // HashRouter 사용 시 #/경로#access_token=... 형태가 됨
+      const fullHash = window.location.hash;
+      const tokenIndex = fullHash.lastIndexOf('#access_token');
+      
+      if (tokenIndex === -1) {
+        return; // OAuth 토큰이 없음
+      }
+      
+      const tokenPart = fullHash.substring(tokenIndex + 1);
+      const hashParams = new URLSearchParams(tokenPart);
       const accessToken = hashParams.get('access_token');
       
       if (accessToken) {
