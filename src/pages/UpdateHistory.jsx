@@ -4,6 +4,36 @@ import { Clock, CheckCircle, AlertTriangle, Info, Code, Database, Users, Setting
 const UpdateHistory = () => {
   const updates = [
     {
+      version: "v1.3.3",
+      date: "2025-01-31",
+      status: "완료",
+      type: "fix",
+      title: "매물 등록 시 숫자 필드 빈 값 처리 개선",
+      description: "숫자 필드에 빈 문자열 입력 시 발생하는 데이터베이스 오류 해결",
+      changes: [
+        "빈 문자열을 null로 변환하는 processNumericFields 함수 추가",
+        "price, lease_price, area 등 숫자 필드 전처리 로직 구현",
+        "숫자 변환 실패 시 null로 처리하여 데이터베이스 호환성 확보",
+        "매물 등록/수정 시 데이터 검증 및 변환 과정 표준화"
+      ],
+      impact: "'invalid input syntax for type numeric' 오류 해결"
+    },
+    {
+      version: "v1.3.2",
+      date: "2025-01-31",
+      status: "완료",
+      type: "fix",
+      title: "사용자 추가 시 ID NULL 오류 해결",
+      description: "Auth 시스템과 Public 사용자 테이블 연동 구조 정상화",
+      changes: [
+        "auth.users에 먼저 사용자 생성 후 public.users에 연결하는 방식으로 변경",
+        "외래키 제약조건(users_id_fkey) 준수하도록 수정",
+        "사용자 생성 실패 시 롤백 로직 추가",
+        "기본 비밀번호 설정 및 이메일 자동 확인 처리"
+      ],
+      impact: "'null value in column id violates not-null constraint' 오류 해결"
+    },
+    {
       version: "v1.3.1",
       date: "2025-01-31",
       status: "완료",

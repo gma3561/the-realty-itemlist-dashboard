@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import { Plus, Edit, Trash, AlertTriangle, CheckCircle, X, User, UserPlus, Check } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
 const UserManagement = () => {
   const { user } = useAuth();
@@ -59,24 +60,43 @@ const UserManagement = () => {
     }
   );
 
-  // 사용자 추가 뮤테이션 (users 테이블에 직접 추가)
+  // 사용자 추가 뮤테이션 (Auth 사용자 생성 후 Public 사용자 추가)
   const addUserMutation = useMutation(
     async (userData) => {
-      // users 테이블에 직접 데이터 추가 (인증 없이)
+      // 1. auth.users에 먼저 사용자 생성
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: userData.email,
+        password: 'defaultPassword123!', // 기본 비밀번호 (나중에 변경 가능)
+        email_confirm: true,
+        user_metadata: {
+          name: userData.name,
+          role: userData.role
+        }
+      });
+      
+      if (authError) throw authError;
+      
+      // 2. public.users에 연결된 사용자 추가
       const { data, error } = await supabase
         .from('users')
         .insert({
+          id: authData.user.id, // auth.users의 ID 사용
           email: userData.email,
           name: userData.name,
           phone: userData.phone,
           role: userData.role,
           status: 'active',
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         })
         .select()
         .single();
           
-      if (error) throw error;
+      if (error) {
+        // public.users 생성 실패 시 auth.users 정리
+        await supabase.auth.admin.deleteUser(authData.user.id);
+        throw error;
+      }
       
       return data;
     },

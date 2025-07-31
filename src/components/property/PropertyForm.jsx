@@ -55,14 +55,38 @@ const PropertyForm = ({ isEditing = false }) => {
     }
   );
 
+  // 숫자 필드 처리 함수 (빈 문자열을 null로 변환)
+  const processNumericFields = (values) => {
+    const numericFields = [
+      'price', 'lease_price', 'supply_area_sqm', 'private_area_sqm', 
+      'supply_area_pyeong', 'private_area_pyeong', 'maintenance_fee'
+    ];
+    
+    const processedValues = { ...values };
+    
+    numericFields.forEach(field => {
+      if (processedValues[field] === '' || processedValues[field] === undefined) {
+        processedValues[field] = null;
+      } else if (processedValues[field] !== null) {
+        // 숫자로 변환
+        const numValue = parseFloat(processedValues[field]);
+        processedValues[field] = isNaN(numValue) ? null : numValue;
+      }
+    });
+    
+    return processedValues;
+  };
+
   // 매물 등록/수정 Mutation
   const mutation = useMutation(
     async (values) => {
+      const processedValues = processNumericFields(values);
+      
       if (isEditing) {
         // 수정
         const { data, error } = await supabase
           .from('properties')
-          .update(values)
+          .update(processedValues)
           .eq('id', id)
           .select();
           
@@ -72,7 +96,7 @@ const PropertyForm = ({ isEditing = false }) => {
         // 등록
         const { data, error } = await supabase
           .from('properties')
-          .insert([{ ...values, manager_id: user.id }])
+          .insert([{ ...processedValues, manager_id: user.id }])
           .select();
           
         if (error) throw error;
