@@ -14,13 +14,18 @@ const PropertyList = () => {
   const [viewMode, setViewMode] = useState('table'); // 'table' or 'card'
   const navigate = useNavigate();
   
-  // Supabase에서 매물 데이터 가져오기
+  // Supabase에서 매물 데이터 가져오기 (JOIN으로)
   const { data: properties = [], isLoading, error, refetch } = useQuery(
     ['properties'],
     async () => {
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
+        .select(`
+          *,
+          property_types(id, name),
+          property_statuses(id, name),
+          transaction_types(id, name)
+        `)
         .order('created_at', { ascending: false });
         
       if (error) throw error;
@@ -31,34 +36,17 @@ const PropertyList = () => {
     }
   );
 
-  // 타입 매핑 함수
-  const getDisplayPropertyType = (type) => {
-    const typeMap = {
-      'apt': '아파트',
-      'officetel': '오피스텔',
-      'villa': '빌라/연립',
-      'house': '단독주택',
-      'commercial': '상가'
-    };
-    return typeMap[type] || type;
+  // 타입 매핑 함수 (JOIN된 데이터 사용)
+  const getDisplayPropertyType = (property) => {
+    return property.property_types?.name || '미지정';
   };
 
-  const getDisplayTransactionType = (type) => {
-    const typeMap = {
-      'sale': '매매',
-      'lease': '전세',
-      'rent': '월세'
-    };
-    return typeMap[type] || type;
+  const getDisplayTransactionType = (property) => {
+    return property.transaction_types?.name || '미지정';
   };
 
-  const getDisplayStatus = (status) => {
-    const statusMap = {
-      'available': '거래가능',
-      'reserved': '거래보류',
-      'completed': '거래완료'
-    };
-    return statusMap[status] || status;
+  const getDisplayStatus = (property) => {
+    return property.property_statuses?.name || '미지정';
   };
 
   // 필터된 매물 목록
@@ -67,8 +55,8 @@ const PropertyList = () => {
       property.property_name.toLowerCase().includes(filters.search.toLowerCase()) ||
       property.location.toLowerCase().includes(filters.search.toLowerCase());
     
-    const displayStatus = getDisplayStatus(property.property_status);
-    const displayType = getDisplayPropertyType(property.property_type);
+    const displayStatus = getDisplayStatus(property);
+    const displayType = getDisplayPropertyType(property);
     
     const matchesStatus = !filters.status || displayStatus === filters.status;
     const matchesType = !filters.type || displayType === filters.type;
@@ -86,18 +74,18 @@ const PropertyList = () => {
   };
 
   const getDisplayPrice = (property) => {
-    const transactionType = getDisplayTransactionType(property.transaction_type);
+    const transactionType = getDisplayTransactionType(property);
     
     if (transactionType === '매매') {
-      return formatPrice(property.sale_price || 0);
+      return formatPrice(property.price || 0);
     } else if (transactionType === '전세') {
-      return formatPrice(property.lease_price || 0);
+      return formatPrice(property.price || 0);
     } else if (transactionType === '월세') {
       const deposit = formatPrice(property.lease_price || 0);
       const monthly = formatPrice(property.price || 0);
       return `${deposit} / ${monthly}`;
     }
-    return '-';
+    return formatPrice(property.price || 0) || '-';
   };
 
   const formatArea = (sqm) => {
@@ -294,7 +282,7 @@ const PropertyList = () => {
                                   {property.property_name}
                                 </div>
                                 <div className="text-sm text-gray-500">
-                                  {getDisplayPropertyType(property.property_type)} • {formatArea(property.supply_area_sqm)}
+                                  {getDisplayPropertyType(property)} • {formatArea(property.supply_area_sqm)}
                                 </div>
                               </div>
                             </td>
@@ -306,7 +294,7 @@ const PropertyList = () => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="text-sm text-gray-900">
-                                {getDisplayTransactionType(property.transaction_type)}
+                                {getDisplayTransactionType(property)}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -317,13 +305,13 @@ const PropertyList = () => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                getDisplayStatus(property.property_status) === '거래가능'
+                                getDisplayStatus(property) === '매물확보' || getDisplayStatus(property) === '광고진행'
                                   ? 'bg-green-100 text-green-800'
-                                  : getDisplayStatus(property.property_status) === '거래완료'
+                                  : getDisplayStatus(property) === '거래완료'
                                   ? 'bg-blue-100 text-blue-800'
                                   : 'bg-yellow-100 text-yellow-800'
                               }`}>
-                                {getDisplayStatus(property.property_status)}
+                                {getDisplayStatus(property)}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">

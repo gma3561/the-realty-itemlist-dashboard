@@ -15,7 +15,6 @@ const UserManagement = () => {
   const [success, setSuccess] = useState(null);
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
     name: '',
     phone: '',
     role: 'user',
@@ -60,31 +59,26 @@ const UserManagement = () => {
     }
   );
 
-  // 사용자 추가 뮤테이션
+  // 사용자 추가 뮤테이션 (users 테이블에 직접 추가)
   const addUserMutation = useMutation(
     async (userData) => {
-      // 1. 인증 시스템에 사용자 추가
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: userData.email,
-        password: userData.password,
-        email_confirm: true,
-      });
-      
-      if (authError) throw authError;
-      
-      // 2. 사용자 프로필 데이터 추가
-      const { error: profileError } = await supabase
+      // users 테이블에 직접 데이터 추가 (인증 없이)
+      const { data, error } = await supabase
         .from('users')
-        .update({
+        .insert({
+          email: userData.email,
           name: userData.name,
           phone: userData.phone,
           role: userData.role,
+          status: 'active',
+          created_at: new Date().toISOString()
         })
-        .eq('id', authData.user.id);
-        
-      if (profileError) throw profileError;
+        .select()
+        .single();
+          
+      if (error) throw error;
       
-      return authData.user;
+      return data;
     },
     {
       onSuccess: () => {
@@ -102,27 +96,19 @@ const UserManagement = () => {
   // 사용자 수정 뮤테이션
   const updateUserMutation = useMutation(
     async ({ id, ...userData }) => {
-      // 1. 비밀번호 변경이 있는 경우
-      if (userData.password) {
-        const { error: pwError } = await supabase.auth.admin.updateUserById(
-          id,
-          { password: userData.password }
-        );
-        
-        if (pwError) throw pwError;
-      }
+      // users 테이블 데이터만 업데이트 (비밀번호 제외)
+      const updateData = {
+        name: userData.name,
+        phone: userData.phone,
+        role: userData.role,
+      };
       
-      // 2. 프로필 데이터 업데이트
-      const { error: profileError } = await supabase
+      const { error } = await supabase
         .from('users')
-        .update({
-          name: userData.name,
-          phone: userData.phone,
-          role: userData.role,
-        })
+        .update(updateData)
         .eq('id', id);
         
-      if (profileError) throw profileError;
+      if (error) throw error;
       
       return { id };
     },
@@ -173,7 +159,6 @@ const UserManagement = () => {
   const resetForm = () => {
     setFormData({
       email: '',
-      password: '',
       name: '',
       phone: '',
       role: 'user',
@@ -197,10 +182,7 @@ const UserManagement = () => {
       return;
     }
     
-    if (!editingId && (!formData.password || formData.password.length < 6)) {
-      setError('비밀번호는 6자 이상이어야 합니다.');
-      return;
-    }
+    // 비밀번호 검증 제거 (users 테이블에만 저장)
     
     if (editingId) {
       // 수정
@@ -217,7 +199,6 @@ const UserManagement = () => {
   const handleEdit = (userData) => {
     setFormData({
       email: userData.email || '',
-      password: '', // 비밀번호는 빈칸으로 시작
       name: userData.name || '',
       phone: userData.phone || '',
       role: userData.role || 'user',
@@ -286,27 +267,15 @@ const UserManagement = () => {
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {!editingId && (
-              <Input
-                label="이메일"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required={!editingId}
-                placeholder="예: user@example.com"
-                disabled={!!editingId}
-              />
-            )}
-            
             <Input
-              label={editingId ? '새 비밀번호 (변경 시에만 입력)' : '비밀번호'}
-              name="password"
-              type="password"
-              value={formData.password}
+              label="이메일"
+              name="email"
+              type="email"
+              value={formData.email}
               onChange={handleInputChange}
               required={!editingId}
-              placeholder={editingId ? '변경하지 않으려면 비워두세요' : '6자 이상 입력'}
+              placeholder="예: user@example.com"
+              disabled={!!editingId}
             />
             
             <Input

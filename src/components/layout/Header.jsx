@@ -19,9 +19,10 @@ const Header = () => {
     { path: '/properties', icon: FileText, label: '매물 목록' },
     { path: '/customers', icon: UserCheck, label: '고객 관리' },
     { path: '/users', icon: Users, label: '사용자 관리' },
-    // 관리자만 CSV Import 메뉴 표시
-    ...(user && (user.email === 'admin' || user.role === 'admin') ? [
-      { path: '/csv-import', icon: Upload, label: 'CSV 가져오기' }
+    // 관리자만 CSV Import와 설정 메뉴 표시
+    ...(user && (user.email === 'admin@the-realty.co.kr' || user.role === 'admin') ? [
+      { path: '/csv-import', icon: Upload, label: 'CSV 가져오기' },
+      { path: '/settings', icon: Settings, label: '설정' }
     ] : [])
   ];
 

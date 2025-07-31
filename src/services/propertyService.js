@@ -45,9 +45,9 @@ export const initializeLookupTables = async () => {
 export const getLookupTables = async () => {
   try {
     const [propertyTypesResult, transactionTypesResult, propertyStatusesResult] = await Promise.all([
-      supabase.from('property_types').select('*').order('order'),
-      supabase.from('transaction_types').select('*').order('order'),
-      supabase.from('property_statuses').select('*').order('order')
+      supabase.from('property_types').select('*').order('created_at'),
+      supabase.from('transaction_types').select('*').order('created_at'),
+      supabase.from('property_statuses').select('*').order('created_at')
     ]);
 
     if (propertyTypesResult.error) throw propertyTypesResult.error;
@@ -62,25 +62,11 @@ export const getLookupTables = async () => {
   } catch (error) {
     console.error('룩업 테이블 조회 실패:', error);
     
-    // 룩업 테이블이 없거나 조회 실패 시 하드코딩된 데이터 반환
+    // 룩업 테이블이 없거나 조회 실패 시 빈 배열 반환
     return {
-      propertyTypes: [
-        { id: 'apt', name: '아파트' },
-        { id: 'officetel', name: '오피스텔' },
-        { id: 'villa', name: '빌라/연립' },
-        { id: 'house', name: '단독주택' },
-        { id: 'commercial', name: '상가' }
-      ],
-      transactionTypes: [
-        { id: 'sale', name: '매매' },
-        { id: 'lease', name: '전세' },
-        { id: 'rent', name: '월세' }
-      ],
-      propertyStatuses: [
-        { id: 'available', name: '거래가능' },
-        { id: 'reserved', name: '거래보류' },
-        { id: 'completed', name: '거래완료' }
-      ]
+      propertyTypes: [],
+      transactionTypes: [],
+      propertyStatuses: []
     };
   }
 };

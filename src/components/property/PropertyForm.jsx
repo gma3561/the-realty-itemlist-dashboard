@@ -108,9 +108,9 @@ const PropertyForm = ({ isEditing = false }) => {
   // Formik 설정
   const formik = useFormik({
     initialValues: {
-      property_type: property?.property_type || '',
-      property_status: property?.property_status || '',
-      transaction_type: property?.transaction_type || '',
+      property_type_id: property?.property_type_id || '',
+      property_status_id: property?.property_status_id || '',
+      transaction_type_id: property?.transaction_type_id || '',
       property_name: property?.property_name || '',
       location: property?.location || '',
       building: property?.building || '',
@@ -135,9 +135,9 @@ const PropertyForm = ({ isEditing = false }) => {
     validationSchema: Yup.object({
       property_name: Yup.string().required('매물명은 필수 입력사항입니다'),
       location: Yup.string().required('소재지는 필수 입력사항입니다'),
-      property_type: Yup.string().required('매물종류는 필수 선택사항입니다'),
-      property_status: Yup.string().required('진행상태는 필수 선택사항입니다'),
-      transaction_type: Yup.string().required('거래유형은 필수 선택사항입니다'),
+      property_type_id: Yup.string().required('매물종류는 필수 선택사항입니다'),
+      property_status_id: Yup.string().required('진행상태는 필수 선택사항입니다'),
+      transaction_type_id: Yup.string().required('거래유형은 필수 선택사항입니다'),
       // 거래유형별 조건부 검증
       sale_price: Yup.number().when('transaction_type', {
         is: 'sale',
@@ -165,6 +165,12 @@ const PropertyForm = ({ isEditing = false }) => {
   const calculatePyeong = (sqm) => {
     if (!sqm) return '';
     return (sqm * 0.3025).toFixed(2);
+  };
+
+  // UUID로 lookup 테이블의 name 찾기
+  const getTransactionTypeName = (id) => {
+    const type = transactionTypes.find(t => t.id === id);
+    return type ? type.name : '';
   };
 
   if ((isEditing && isPropertyLoading) || isLookupLoading) {
@@ -243,8 +249,8 @@ const PropertyForm = ({ isEditing = false }) => {
                   매물종류 <span className="text-red-500">*</span>
                 </label>
                 <select
-                  name="property_type"
-                  value={formik.values.property_type}
+                  name="property_type_id"
+                  value={formik.values.property_type_id}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -254,8 +260,8 @@ const PropertyForm = ({ isEditing = false }) => {
                     <option key={type.id} value={type.id}>{type.name}</option>
                   ))}
                 </select>
-                {formik.touched.property_type && formik.errors.property_type && (
-                  <p className="mt-1 text-sm text-red-500">{formik.errors.property_type}</p>
+                {formik.touched.property_type_id && formik.errors.property_type_id && (
+                  <p className="mt-1 text-sm text-red-500">{formik.errors.property_type_id}</p>
                 )}
               </div>
               
@@ -313,8 +319,8 @@ const PropertyForm = ({ isEditing = false }) => {
                   진행상태 <span className="text-red-500">*</span>
                 </label>
                 <select
-                  name="property_status"
-                  value={formik.values.property_status}
+                  name="property_status_id"
+                  value={formik.values.property_status_id}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -324,8 +330,8 @@ const PropertyForm = ({ isEditing = false }) => {
                     <option key={status.id} value={status.id}>{status.name}</option>
                   ))}
                 </select>
-                {formik.touched.property_status && formik.errors.property_status && (
-                  <p className="mt-1 text-sm text-red-500">{formik.errors.property_status}</p>
+                {formik.touched.property_status_id && formik.errors.property_status_id && (
+                  <p className="mt-1 text-sm text-red-500">{formik.errors.property_status_id}</p>
                 )}
               </div>
               
@@ -334,8 +340,8 @@ const PropertyForm = ({ isEditing = false }) => {
                   거래유형 <span className="text-red-500">*</span>
                 </label>
                 <select
-                  name="transaction_type"
-                  value={formik.values.transaction_type}
+                  name="transaction_type_id"
+                  value={formik.values.transaction_type_id}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -345,13 +351,13 @@ const PropertyForm = ({ isEditing = false }) => {
                     <option key={type.id} value={type.id}>{type.name}</option>
                   ))}
                 </select>
-                {formik.touched.transaction_type && formik.errors.transaction_type && (
-                  <p className="mt-1 text-sm text-red-500">{formik.errors.transaction_type}</p>
+                {formik.touched.transaction_type_id && formik.errors.transaction_type_id && (
+                  <p className="mt-1 text-sm text-red-500">{formik.errors.transaction_type_id}</p>
                 )}
               </div>
               
               {/* 거래유형별 가격 필드 */}
-              {formik.values.transaction_type === 'sale' && (
+              {getTransactionTypeName(formik.values.transaction_type_id) === '매매' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     매매가 <span className="text-red-500">*</span>
@@ -371,7 +377,7 @@ const PropertyForm = ({ isEditing = false }) => {
                 </div>
               )}
               
-              {(formik.values.transaction_type === 'lease' || formik.values.transaction_type === 'rent') && (
+              {(getTransactionTypeName(formik.values.transaction_type_id) === '전세' || getTransactionTypeName(formik.values.transaction_type_id) === '월세') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     보증금 <span className="text-red-500">*</span>
@@ -391,7 +397,7 @@ const PropertyForm = ({ isEditing = false }) => {
                 </div>
               )}
               
-              {formik.values.transaction_type === 'rent' && (
+              {getTransactionTypeName(formik.values.transaction_type_id) === '월세' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     월세 <span className="text-red-500">*</span>
