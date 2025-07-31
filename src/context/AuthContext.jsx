@@ -139,7 +139,7 @@ export const AuthProvider = ({ children }) => {
             access_type: 'offline',
             prompt: 'consent',
           },
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: 'https://gma3561.github.io/the-realty-itemlist-dashboard/#/auth/callback',
         },
       });
       
