@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
         
         // Supabase 연결 시도 (타임아웃 포함)
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('연결 시간 초과')), 10000)
+          setTimeout(() => reject(new Error('연결 시간 초과')), 30000) // 30초로 증가
         );
         
         const sessionPromise = supabase.auth.getSession();

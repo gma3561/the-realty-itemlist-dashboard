@@ -25,24 +25,40 @@ const AuthProcess = () => {
         }
 
         // 세션 설정
-        const { data, error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken || ''
-        });
+        try {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || ''
+          });
 
-        if (error) {
-          console.error('Failed to set session:', error);
+          if (error) {
+            console.error('Failed to set session:', error);
+            navigate('/login');
+            return;
+          }
+
+          console.log('Session set successfully!', data);
+          
+          // 세션이 제대로 설정되었는지 확인
+          const { data: { session } } = await supabase.auth.getSession();
+          console.log('Current session after setting:', !!session);
+          
+          if (!session) {
+            console.error('Session was not properly set');
+            navigate('/login');
+            return;
+          }
+          
+          // 세션 설정 후 약간의 지연
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // 대시보드로 이동
+          console.log('Redirecting to dashboard...');
+          navigate('/', { replace: true });
+        } catch (sessionError) {
+          console.error('Session setup error:', sessionError);
           navigate('/login');
-          return;
         }
-
-        console.log('Session set successfully!');
-        
-        // 세션 설정 후 약간의 지연
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // 대시보드로 이동
-        navigate('/', { replace: true });
       } catch (error) {
         console.error('Auth processing error:', error);
         navigate('/login');
