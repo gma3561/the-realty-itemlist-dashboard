@@ -4,8 +4,26 @@ import { Clock, CheckCircle, AlertTriangle, Info, Code, Database, Users, Setting
 const UpdateHistory = () => {
   const updates = [
     {
+      version: "v1.4.0",
+      date: "2025-07-31 15:30",
+      status: "완료",
+      type: "feature",
+      title: "매물 관리 시스템 완전 구축",
+      description: "매물-담당자-고객 연결 시스템 및 권한별 접근 제한 구현",
+      changes: [
+        "매물 목록에 담당자 정보 표시 (users 테이블 JOIN)",
+        "권한별 매물 접근 제한 (일반 사용자: 본인 매물만, 관리자: 모든 매물)",
+        "매물 등록 시 로그인한 사용자를 담당자로 자동 설정",
+        "고객 정보 입력 기능 추가 (이름, 전화번호, 이메일, 주소, 메모)",
+        "거래유형별 맞춤 금액 필드 (매매가, 분양가, 보증금, 월세, 일일요금)",
+        "전화번호 형식 검증 및 필수 항목 설정",
+        "고객 정보를 properties.resident 컬럼에 JSON 형태로 저장"
+      ],
+      impact: "완전한 매물 관리 시스템 구축 - 매물, 담당자, 고객 정보 통합 관리 가능"
+    },
+    {
       version: "v1.3.4",
-      date: "2025-01-31",
+      date: "2025-07-31 14:20",
       status: "완료",
       type: "feature",
       title: "구글 로그인 대비 사용자 관리 시스템 개선",
@@ -20,7 +38,7 @@ const UpdateHistory = () => {
     },
     {
       version: "v1.3.3",
-      date: "2025-01-31",
+      date: "2025-07-31 13:45",
       status: "완료",
       type: "fix",
       title: "매물 등록 시 숫자 필드 빈 값 처리 개선",
@@ -35,7 +53,7 @@ const UpdateHistory = () => {
     },
     {
       version: "v1.3.2",
-      date: "2025-01-31",
+      date: "2025-07-31 12:15",
       status: "완료",
       type: "fix",
       title: "사용자 추가 시 ID NULL 오류 해결",
@@ -50,7 +68,7 @@ const UpdateHistory = () => {
     },
     {
       version: "v1.3.1",
-      date: "2025-01-31",
+      date: "2025-07-31 11:30",
       status: "완료",
       type: "fix",
       title: "사용자 관리 기능 단순화",
@@ -65,7 +83,7 @@ const UpdateHistory = () => {
     },
     {
       version: "v1.3.0",
-      date: "2025-01-31",
+      date: "2025-07-31 10:45",
       status: "완료",
       type: "fix",
       title: "로그인 인증 문제 해결",
@@ -80,7 +98,7 @@ const UpdateHistory = () => {
     },
     {
       version: "v1.2.0",
-      date: "2025-01-31",
+      date: "2025-07-31 09:20",
       status: "완료",
       type: "feature",
       title: "데이터베이스 스키마 통합",
@@ -95,7 +113,7 @@ const UpdateHistory = () => {
     },
     {
       version: "v1.1.0",
-      date: "2025-01-30",
+      date: "2025-07-30 16:30",
       status: "완료",
       type: "feature",
       title: "Supabase 데이터베이스 연동",
@@ -110,7 +128,7 @@ const UpdateHistory = () => {
     },
     {
       version: "v1.0.0",
-      date: "2025-01-29",
+      date: "2025-07-29 14:00",
       status: "완료",
       type: "feature",
       title: "초기 프로젝트 구축",

@@ -82,11 +82,32 @@ const PropertyForm = ({ isEditing = false }) => {
     async (values) => {
       const processedValues = processNumericFields(values);
       
+      // 고객 정보를 resident 컬럼에 JSON으로 저장
+      const customerInfo = {
+        name: values.customer_name,
+        phone: values.customer_phone,
+        email: values.customer_email,
+        address: values.customer_address,
+        notes: values.customer_notes
+      };
+
+      const finalValues = {
+        ...processedValues,
+        resident: JSON.stringify(customerInfo)
+      };
+
+      // 고객 정보 필드들은 데이터베이스에 직접 저장하지 않으므로 제거
+      delete finalValues.customer_name;
+      delete finalValues.customer_phone;
+      delete finalValues.customer_email;
+      delete finalValues.customer_address;
+      delete finalValues.customer_notes;
+      
       if (isEditing) {
         // 수정
         const { data, error } = await supabase
           .from('properties')
-          .update(processedValues)
+          .update(finalValues)
           .eq('id', id)
           .select();
           
@@ -96,7 +117,7 @@ const PropertyForm = ({ isEditing = false }) => {
         // 등록
         const { data, error } = await supabase
           .from('properties')
-          .insert([{ ...processedValues, manager_id: user.id }])
+          .insert([{ ...finalValues, manager_id: user.id }])
           .select();
           
         if (error) throw error;
@@ -129,6 +150,20 @@ const PropertyForm = ({ isEditing = false }) => {
     mutation.mutate(values);
   };
 
+  // 기존 고객 정보 파싱
+  const getCustomerInfo = () => {
+    if (property?.resident) {
+      try {
+        return JSON.parse(property.resident);
+      } catch (e) {
+        return {};
+      }
+    }
+    return {};
+  };
+
+  const customerInfo = getCustomerInfo();
+
   // Formik 설정
   const formik = useFormik({
     initialValues: {
@@ -153,7 +188,13 @@ const PropertyForm = ({ isEditing = false }) => {
       approval_date: property?.approval_date || '',
       special_notes: property?.special_notes || '',
       manager_memo: property?.manager_memo || '',
-      is_commercial: property?.is_commercial || false
+      is_commercial: property?.is_commercial || false,
+      // 고객 정보 (기존 데이터에서 파싱)
+      customer_name: customerInfo.name || '',
+      customer_phone: customerInfo.phone || '',
+      customer_email: customerInfo.email || '',
+      customer_address: customerInfo.address || '',
+      customer_notes: customerInfo.notes || ''
     },
     validationSchema: Yup.object({
       property_name: Yup.string().required('매물명은 필수 입력사항입니다'),
@@ -161,19 +202,14 @@ const PropertyForm = ({ isEditing = false }) => {
       property_type_id: Yup.string().required('매물종류는 필수 선택사항입니다'),
       property_status_id: Yup.string().required('진행상태는 필수 선택사항입니다'),
       transaction_type_id: Yup.string().required('거래유형은 필수 선택사항입니다'),
-      // 거래유형별 조건부 검증 (매매가는 price 필드 사용)
-      lease_price: Yup.number().when('transaction_type', {
-        is: (val) => val === 'lease' || val === 'rent',
-        then: (schema) => schema.positive('유효한 보증금을 입력하세요').required('보증금은 필수 입력사항입니다'),
-        otherwise: (schema) => schema.nullable()
-      }),
-      price: Yup.number().when('transaction_type', {
-        is: 'rent',
-        then: (schema) => schema.positive('유효한 월세를 입력하세요').required('월세는 필수 입력사항입니다'),
-        otherwise: (schema) => schema.nullable()
-      }),
       supply_area_sqm: Yup.number().positive('유효한 면적을 입력하세요'),
-      private_area_sqm: Yup.number().positive('유효한 면적을 입력하세요')
+      private_area_sqm: Yup.number().positive('유효한 면적을 입력하세요'),
+      // 고객 정보 유효성 검사
+      customer_name: Yup.string().required('고객 이름은 필수 입력사항입니다'),
+      customer_phone: Yup.string()
+        .matches(/^010-\d{4}-\d{4}$/, '올바른 전화번호 형식을 입력하세요 (예: 010-1234-5678)')
+        .required('고객 전화번호는 필수 입력사항입니다'),
+      customer_email: Yup.string().email('올바른 이메일 형식을 입력하세요')
     }),
     onSubmit: handleSubmit,
     enableReinitialize: true
@@ -394,8 +430,30 @@ const PropertyForm = ({ isEditing = false }) => {
                   )}
                 </div>
               )}
+
+              {getTransactionTypeName(formik.values.transaction_type_id) === '분양' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    분양가 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={formik.values.price}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="예: 3000000000"
+                  />
+                  {formik.touched.price && formik.errors.price && (
+                    <p className="mt-1 text-sm text-red-500">{formik.errors.price}</p>
+                  )}
+                </div>
+              )}
               
-              {(getTransactionTypeName(formik.values.transaction_type_id) === '전세' || getTransactionTypeName(formik.values.transaction_type_id) === '월세') && (
+              {(getTransactionTypeName(formik.values.transaction_type_id) === '전세' || 
+                getTransactionTypeName(formik.values.transaction_type_id) === '월세' ||
+                getTransactionTypeName(formik.values.transaction_type_id) === '월세/렌트') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     보증금 <span className="text-red-500">*</span>
@@ -415,7 +473,8 @@ const PropertyForm = ({ isEditing = false }) => {
                 </div>
               )}
               
-              {getTransactionTypeName(formik.values.transaction_type_id) === '월세' && (
+              {(getTransactionTypeName(formik.values.transaction_type_id) === '월세' ||
+                getTransactionTypeName(formik.values.transaction_type_id) === '월세/렌트') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     월세 <span className="text-red-500">*</span>
@@ -428,6 +487,27 @@ const PropertyForm = ({ isEditing = false }) => {
                     onBlur={formik.handleBlur}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="예: 500000"
+                  />
+                  {formik.touched.price && formik.errors.price && (
+                    <p className="mt-1 text-sm text-red-500">{formik.errors.price}</p>
+                  )}
+                </div>
+              )}
+
+              {(getTransactionTypeName(formik.values.transaction_type_id) === '단기' ||
+                getTransactionTypeName(formik.values.transaction_type_id) === '단기임대') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    일일요금 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={formik.values.price}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="예: 150000"
                   />
                   {formik.touched.price && formik.errors.price && (
                     <p className="mt-1 text-sm text-red-500">{formik.errors.price}</p>
@@ -596,6 +676,95 @@ const PropertyForm = ({ isEditing = false }) => {
                   rows="3"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="담당자만 볼 수 있는 내부 메모"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          {/* 고객 정보 */}
+          <div className="md:col-span-2">
+            <h3 className="text-lg font-medium text-gray-800 mb-3">고객 정보</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  고객 이름 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="customer_name"
+                  value={formik.values.customer_name}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="고객 이름을 입력하세요"
+                />
+                {formik.touched.customer_name && formik.errors.customer_name && (
+                  <p className="mt-1 text-sm text-red-500">{formik.errors.customer_name}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  전화번호 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  name="customer_phone"
+                  value={formik.values.customer_phone}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="010-1234-5678"
+                />
+                {formik.touched.customer_phone && formik.errors.customer_phone && (
+                  <p className="mt-1 text-sm text-red-500">{formik.errors.customer_phone}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  이메일
+                </label>
+                <input
+                  type="email"
+                  name="customer_email"
+                  value={formik.values.customer_email}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="customer@example.com"
+                />
+                {formik.touched.customer_email && formik.errors.customer_email && (
+                  <p className="mt-1 text-sm text-red-500">{formik.errors.customer_email}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  주소
+                </label>
+                <input
+                  type="text"
+                  name="customer_address"
+                  value={formik.values.customer_address}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="고객 주소를 입력하세요"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  고객 메모
+                </label>
+                <textarea
+                  name="customer_notes"
+                  value={formik.values.customer_notes}
+                  onChange={formik.handleChange}
+                  rows="3"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="고객 관련 메모사항을 입력하세요"
                 ></textarea>
               </div>
             </div>

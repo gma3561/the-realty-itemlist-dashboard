@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { supabase } from '../services/supabase';
-import { PlusCircle, Search, RefreshCw, Building2, MapPin, Calendar, DollarSign, Grid, List } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { PlusCircle, Search, RefreshCw, Building2, MapPin, Calendar, DollarSign, Grid, List, User } from 'lucide-react';
 import PropertyCard from '../components/property/PropertyCard';
 
 const PropertyList = () => {
@@ -13,26 +14,39 @@ const PropertyList = () => {
   });
   const [viewMode, setViewMode] = useState('table'); // 'table' or 'card'
   const navigate = useNavigate();
+  const { user, userProfile } = useAuth();
   
-  // Supabase에서 매물 데이터 가져오기 (JOIN으로)
+  // Supabase에서 매물 데이터 가져오기 (권한별 접근 제한 + 담당자 정보 JOIN)
   const { data: properties = [], isLoading, error, refetch } = useQuery(
-    ['properties'],
+    ['properties', user?.id, userProfile?.role],
     async () => {
-      const { data, error } = await supabase
+      if (!user || !userProfile) return [];
+
+      let query = supabase
         .from('properties')
         .select(`
           *,
           property_types(id, name),
           property_statuses(id, name),
-          transaction_types(id, name)
-        `)
-        .order('created_at', { ascending: false });
+          transaction_types(id, name),
+          users!properties_manager_id_fkey(id, name, email, role)
+        `);
+
+      // 권한별 접근 제한
+      if (userProfile.role !== 'admin') {
+        // 일반 사용자는 본인이 등록한 매물만 볼 수 있음
+        query = query.eq('manager_id', user.id);
+      }
+      // 관리자는 모든 매물을 볼 수 있음
+
+      const { data, error } = await query.order('created_at', { ascending: false });
         
       if (error) throw error;
       return data;
     },
     {
       refetchOnWindowFocus: false,
+      enabled: !!user && !!userProfile,
     }
   );
 
@@ -47,6 +61,13 @@ const PropertyList = () => {
 
   const getDisplayStatus = (property) => {
     return property.property_statuses?.name || '미지정';
+  };
+
+  const getDisplayManager = (property) => {
+    if (property.users) {
+      return property.users.name || property.users.email || '미지정';
+    }
+    return '미지정';
   };
 
   // 필터된 매물 목록
@@ -266,6 +287,9 @@ const PropertyList = () => {
                             상태
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            담당자
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             등록일
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -313,6 +337,12 @@ const PropertyList = () => {
                               }`}>
                                 {getDisplayStatus(property)}
                               </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center text-sm text-gray-900">
+                                <User className="w-4 h-4 mr-1 text-gray-400" />
+                                {getDisplayManager(property)}
+                              </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center text-sm text-gray-500">
