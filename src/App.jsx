@@ -12,6 +12,7 @@ import PropertyForm from './pages/PropertyForm';
 import UserManagement from './pages/UserManagement';
 import CSVImport from './pages/CSVImport';
 import Settings from './pages/Settings';
+import UpdateHistory from './pages/UpdateHistory';
 import MainLayout from './components/layout/MainLayout';
 
 // 고객 관리 페이지
@@ -49,6 +50,7 @@ function App() {
               <Route path="/users" element={<UserManagement />} />
               <Route path="/csv-import" element={<CSVImport />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/updates" element={<UpdateHistory />} />
               
               {/* 고객 관리 라우트 */}
               <Route path="/customers" element={<CustomerList />} />

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Menu, X, User, LogOut, Home, FileText, Settings, Users, Upload, UserCheck } from 'lucide-react';
+import { Menu, X, User, LogOut, Home, FileText, Settings, Users, Upload, UserCheck, Clock } from 'lucide-react';
 import GlobalSearchBar from '../common/GlobalSearchBar';
 
 const Header = () => {
@@ -22,7 +22,8 @@ const Header = () => {
     // 관리자만 CSV Import와 설정 메뉴 표시
     ...(user && (user.email === 'admin@the-realty.co.kr' || user.role === 'admin') ? [
       { path: '/csv-import', icon: Upload, label: 'CSV 가져오기' },
-      { path: '/settings', icon: Settings, label: '설정' }
+      { path: '/settings', icon: Settings, label: '설정' },
+      { path: '/updates', icon: Clock, label: '업데이트 내역' }
     ] : [])
   ];
 
