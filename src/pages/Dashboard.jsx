@@ -9,13 +9,19 @@ import PropertyStatsChart from '../components/dashboard/PropertyStatsChart';
 const Dashboard = () => {
   const { user } = useAuth();
   
-  // Supabase에서 매물 데이터 가져오기
+  // Supabase에서 매물 데이터 가져오기 (관련 테이블 JOIN)
   const { data: properties = [], isLoading } = useQuery(
-    ['properties'],
+    ['dashboard-properties'],
     async () => {
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
+        .select(`
+          *,
+          property_types(id, name),
+          property_statuses(id, name),
+          transaction_types(id, name),
+          users!properties_manager_id_fkey(id, name, email)
+        `)
         .order('created_at', { ascending: false });
         
       if (error) throw error;
@@ -23,11 +29,11 @@ const Dashboard = () => {
     }
   );
 
-  // 통계 계산
+  // 통계 계산 (DB 구조에 맞게 수정)
   const stats = {
     totalProperties: properties.length,
-    completedDeals: properties.filter(p => p.property_status === 'completed').length,
-    inProgress: properties.filter(p => p.property_status === 'available').length,
+    completedDeals: properties.filter(p => p.property_statuses?.name === '거래완료').length,
+    inProgress: properties.filter(p => p.property_statuses?.name === '매물확보' || p.property_statuses?.name === '광고진행').length,
     thisMonth: properties.filter(p => {
       const created = new Date(p.created_at);
       const now = new Date();
@@ -47,38 +53,36 @@ const Dashboard = () => {
     return `${price.toLocaleString()}원`;
   };
 
-  // 타입 매핑 함수
-  const getDisplayTransactionType = (type) => {
-    const typeMap = {
-      'sale': '매매',
-      'lease': '전세',
-      'rent': '월세'
-    };
-    return typeMap[type] || type;
+  // JOIN된 데이터 사용을 위한 헬퍼 함수
+  const getDisplayTransactionType = (property) => {
+    return property.transaction_types?.name || '미지정';
   };
 
-  const getDisplayStatus = (status) => {
-    const statusMap = {
-      'available': '거래가능',
-      'reserved': '거래보류',
-      'completed': '거래완료'
-    };
-    return statusMap[status] || status;
+  const getDisplayStatus = (property) => {
+    return property.property_statuses?.name || '미지정';
+  };
+
+  const getDisplayPropertyType = (property) => {
+    return property.property_types?.name || '미지정';
   };
 
   const getDisplayPrice = (property) => {
-    const transactionType = getDisplayTransactionType(property.transaction_type);
+    const transactionType = getDisplayTransactionType(property);
     
     if (transactionType === '매매') {
-      return formatPrice(property.sale_price || 0);
+      return formatPrice(property.price || 0);
     } else if (transactionType === '전세') {
-      return formatPrice(property.lease_price || 0);
-    } else if (transactionType === '월세') {
+      return formatPrice(property.price || 0);
+    } else if (transactionType === '월세' || transactionType === '월세/렌트') {
       const deposit = formatPrice(property.lease_price || 0);
       const monthly = formatPrice(property.price || 0);
       return `${deposit} / ${monthly}`;
+    } else if (transactionType === '분양') {
+      return formatPrice(property.price || 0);
+    } else if (transactionType === '단기임대') {
+      return `${formatPrice(property.price || 0)}/일`;
     }
-    return '-';
+    return formatPrice(property.price || 0) || '-';
   };
   
   if (isLoading) {
@@ -213,11 +217,13 @@ const Dashboard = () => {
                     </div>
                     <div className="text-right">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        getDisplayStatus(property.property_status) === '거래가능'
+                        getDisplayStatus(property) === '매물확보' || getDisplayStatus(property) === '광고진행'
                           ? 'bg-green-100 text-green-800'
+                          : getDisplayStatus(property) === '거래완료'
+                          ? 'bg-blue-100 text-blue-800'
                           : 'bg-yellow-100 text-yellow-800'
                       }`}>
-                        {getDisplayStatus(property.property_status)}
+                        {getDisplayStatus(property)}
                       </span>
                       <p className="text-xs text-gray-500 mt-1">{new Date(property.created_at).toLocaleDateString()}</p>
                     </div>

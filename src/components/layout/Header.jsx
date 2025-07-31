@@ -15,15 +15,15 @@ const Header = () => {
   const isActive = (path) => location.pathname === path;
 
   const menuItems = [
-    { path: '/', icon: Home, label: '대시보드' },
-    { path: '/properties', icon: FileText, label: '매물 목록' },
-    { path: '/customers', icon: UserCheck, label: '고객 관리' },
-    { path: '/users', icon: Users, label: '사용자 관리' },
-    { path: '/updates', icon: Clock, label: '업데이트 내역' },
+    { path: '/', icon: Home, label: '대시보드', shortLabel: '홈' },
+    { path: '/properties', icon: FileText, label: '매물목록', shortLabel: '매물' },
+    { path: '/customers', icon: UserCheck, label: '고객관리', shortLabel: '고객' },
+    { path: '/users', icon: Users, label: '사용자관리', shortLabel: '사용자' },
+    { path: '/updates', icon: Clock, label: '업데이트', shortLabel: '업데이트' },
     // 관리자만 CSV Import와 설정 메뉴 표시
     ...(user && (user.email === 'admin@the-realty.co.kr' || user.role === 'admin') ? [
-      { path: '/csv-import', icon: Upload, label: 'CSV 가져오기' },
-      { path: '/settings', icon: Settings, label: '설정' }
+      { path: '/csv-import', icon: Upload, label: 'CSV가져오기', shortLabel: 'CSV' },
+      { path: '/settings', icon: Settings, label: '설정', shortLabel: '설정' }
     ] : [])
   ];
 
@@ -37,46 +37,45 @@ const Header = () => {
             </Link>
             
             {/* 데스크톱 메뉴 */}
-            <nav className="hidden md:ml-6 md:flex md:space-x-8">
+            <nav className="hidden md:ml-6 md:flex md:space-x-4 lg:space-x-6">
               {menuItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  className={`inline-flex items-center px-2 lg:px-3 pt-1 border-b-2 text-sm font-medium whitespace-nowrap transition-colors duration-200 ${
                     isActive(item.path)
                       ? 'border-blue-500 text-gray-900'
                       : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                   }`}
+                  title={item.label}
                 >
-                  <item.icon className="w-4 h-4 mr-1" />
-                  {item.label}
+                  <item.icon className="w-4 h-4 mr-1 flex-shrink-0" />
+                  <span className="hidden lg:inline">{item.label}</span>
+                  <span className="lg:hidden">{item.shortLabel}</span>
                 </Link>
               ))}
             </nav>
           </div>
           
           {/* 중앙 검색 바 */}
-          <div className="hidden md:flex md:flex-1 md:justify-center md:max-w-lg md:mx-8">
+          <div className="hidden lg:flex lg:flex-1 lg:justify-center lg:max-w-md lg:mx-4">
             <GlobalSearchBar />
           </div>
           
           <div className="flex items-center">
             {user && (
-              <div className="hidden md:ml-4 md:flex md:items-center">
-                <div className="ml-3 relative">
-                  <div className="flex items-center">
-                    <span className="hidden md:block mr-3 text-sm font-medium text-gray-700">
-                      {user.email}
-                    </span>
-                    <button
-                      onClick={signOut}
-                      className="flex items-center text-gray-500 hover:text-gray-700"
-                    >
-                      <LogOut className="w-5 h-5" />
-                      <span className="ml-1">로그아웃</span>
-                    </button>
-                  </div>
-                </div>
+              <div className="hidden md:ml-4 md:flex md:items-center md:space-x-3">
+                <span className="hidden lg:block text-sm font-medium text-gray-700 truncate max-w-32">
+                  {user.email}
+                </span>
+                <button
+                  onClick={signOut}
+                  className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200"
+                  title="로그아웃"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="ml-1 hidden lg:inline">로그아웃</span>
+                </button>
               </div>
             )}
             

@@ -411,109 +411,160 @@ const PropertyForm = ({ isEditing = false }) => {
               </div>
               
               {/* 거래유형별 가격 필드 */}
-              {getTransactionTypeName(formik.values.transaction_type_id) === '매매' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    매매가 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formik.values.price}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="예: 2500000000"
-                  />
-                  {formik.touched.price && formik.errors.price && (
-                    <p className="mt-1 text-sm text-red-500">{formik.errors.price}</p>
-                  )}
-                </div>
-              )}
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium text-gray-800">가격 정보</h4>
+                
+                {/* 매매 */}
+                {getTransactionTypeName(formik.values.transaction_type_id) === '매매' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      매매가 <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        name="price"
+                        value={formik.values.price}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="예: 2500000000"
+                      />
+                      <span className="absolute right-3 top-2 text-sm text-gray-500">원</span>
+                    </div>
+                    {formik.touched.price && formik.errors.price && (
+                      <p className="mt-1 text-sm text-red-500">{formik.errors.price}</p>
+                    )}
+                  </div>
+                )}
 
-              {getTransactionTypeName(formik.values.transaction_type_id) === '분양' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    분양가 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formik.values.price}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="예: 3000000000"
-                  />
-                  {formik.touched.price && formik.errors.price && (
-                    <p className="mt-1 text-sm text-red-500">{formik.errors.price}</p>
-                  )}
-                </div>
-              )}
-              
-              {(getTransactionTypeName(formik.values.transaction_type_id) === '전세' || 
-                getTransactionTypeName(formik.values.transaction_type_id) === '월세' ||
-                getTransactionTypeName(formik.values.transaction_type_id) === '월세/렌트') && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    보증금 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="lease_price"
-                    value={formik.values.lease_price}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="예: 50000000"
-                  />
-                  {formik.touched.lease_price && formik.errors.lease_price && (
-                    <p className="mt-1 text-sm text-red-500">{formik.errors.lease_price}</p>
-                  )}
-                </div>
-              )}
-              
-              {(getTransactionTypeName(formik.values.transaction_type_id) === '월세' ||
-                getTransactionTypeName(formik.values.transaction_type_id) === '월세/렌트') && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    월세 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formik.values.price}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="예: 500000"
-                  />
-                  {formik.touched.price && formik.errors.price && (
-                    <p className="mt-1 text-sm text-red-500">{formik.errors.price}</p>
-                  )}
-                </div>
-              )}
+                {/* 분양 */}
+                {getTransactionTypeName(formik.values.transaction_type_id) === '분양' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      분양가 <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        name="price"
+                        value={formik.values.price}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="예: 3000000000"
+                      />
+                      <span className="absolute right-3 top-2 text-sm text-gray-500">원</span>
+                    </div>
+                    {formik.touched.price && formik.errors.price && (
+                      <p className="mt-1 text-sm text-red-500">{formik.errors.price}</p>
+                    )}
+                  </div>
+                )}
+                
+                {/* 전세 */}
+                {getTransactionTypeName(formik.values.transaction_type_id) === '전세' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      전세 보증금 <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        name="lease_price"
+                        value={formik.values.lease_price}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="예: 200000000"
+                      />
+                      <span className="absolute right-3 top-2 text-sm text-gray-500">원</span>
+                    </div>
+                    {formik.touched.lease_price && formik.errors.lease_price && (
+                      <p className="mt-1 text-sm text-red-500">{formik.errors.lease_price}</p>
+                    )}
+                  </div>
+                )}
+                
+                {/* 월세/월세렌트 */}
+                {(getTransactionTypeName(formik.values.transaction_type_id) === '월세' ||
+                  getTransactionTypeName(formik.values.transaction_type_id) === '월세/렌트') && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        보증금 <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          name="lease_price"
+                          value={formik.values.lease_price}
+                          onChange={formik.handleChange}
+                          onBlur={formik.handleBlur}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="예: 50000000"
+                        />
+                        <span className="absolute right-3 top-2 text-sm text-gray-500">원</span>
+                      </div>
+                      {formik.touched.lease_price && formik.errors.lease_price && (
+                        <p className="mt-1 text-sm text-red-500">{formik.errors.lease_price}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        월세 <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          name="price"
+                          value={formik.values.price}
+                          onChange={formik.handleChange}
+                          onBlur={formik.handleBlur}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="예: 500000"
+                        />
+                        <span className="absolute right-3 top-2 text-sm text-gray-500">원</span>
+                      </div>
+                      {formik.touched.price && formik.errors.price && (
+                        <p className="mt-1 text-sm text-red-500">{formik.errors.price}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
 
-              {(getTransactionTypeName(formik.values.transaction_type_id) === '단기' ||
-                getTransactionTypeName(formik.values.transaction_type_id) === '단기임대') && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    일일요금 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formik.values.price}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="예: 150000"
-                  />
-                  {formik.touched.price && formik.errors.price && (
-                    <p className="mt-1 text-sm text-red-500">{formik.errors.price}</p>
-                  )}
-                </div>
-              )}
+                {/* 단기임대 */}
+                {(getTransactionTypeName(formik.values.transaction_type_id) === '단기' ||
+                  getTransactionTypeName(formik.values.transaction_type_id) === '단기임대') && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      일일요금 <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        name="price"
+                        value={formik.values.price}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="예: 150000"
+                      />
+                      <span className="absolute right-3 top-2 text-sm text-gray-500">원/일</span>
+                    </div>
+                    {formik.touched.price && formik.errors.price && (
+                      <p className="mt-1 text-sm text-red-500">{formik.errors.price}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* 거래유형이 선택되지 않았을 때 */}
+                {!getTransactionTypeName(formik.values.transaction_type_id) && (
+                  <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-md">
+                    거래유형을 먼저 선택하시면 해당 유형에 맞는 가격 입력 필드가 나타납니다.
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           

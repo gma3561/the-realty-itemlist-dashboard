@@ -165,13 +165,15 @@ const PropertyCard = ({ property, onEdit, onDelete, onView }) => {
             </button>
           </div>
           
-          <button
-            onClick={() => onDelete && onDelete(property)}
-            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-100 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-            <Trash2 className="w-4 h-4 mr-1" />
-            삭제
-          </button>
+          {onDelete && (
+            <button
+              onClick={() => onDelete(property)}
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-100 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              <Trash2 className="w-4 h-4 mr-1" />
+              삭제
+            </button>
+          )}
         </div>
       </div>
     </div>

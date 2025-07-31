@@ -13,11 +13,17 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "import-csv": "node scripts/import_csv_data.js",
+    "create-users": "node scripts/create_dummy_users.js",
+    "create-sample": "node scripts/create_sample_data.js",
+    "generate-sql": "node scripts/generate_sample_sql.js",
+    "test-system": "node scripts/test_comprehensive.js"
   },
   "dependencies": {
     "@supabase/auth-helpers-react": "^0.4.2",
     "@supabase/supabase-js": "^2.53.0",
+    "csv-parser": "^3.2.0",
     "date-fns": "^3.6.0",
     "dotenv": "^17.2.1",
     "formik": "^2.4.5",

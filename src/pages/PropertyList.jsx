@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery } from 'react-query';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../context/AuthContext';
-import { PlusCircle, Search, RefreshCw, Building2, MapPin, Calendar, DollarSign, Grid, List, User } from 'lucide-react';
+import { PlusCircle, Search, RefreshCw, Building2, MapPin, Calendar, DollarSign, Grid, List, User, Trash2 } from 'lucide-react';
 import PropertyCard from '../components/property/PropertyCard';
 
 const PropertyList = () => {
@@ -13,8 +13,10 @@ const PropertyList = () => {
     type: ''
   });
   const [viewMode, setViewMode] = useState('table'); // 'table' or 'card'
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, property: null });
   const navigate = useNavigate();
   const { user, userProfile } = useAuth();
+  const queryClient = useQueryClient();
   
   // Supabase에서 매물 데이터 가져오기 (권한별 접근 제한 + 담당자 정보 JOIN)
   const { data: properties = [], isLoading, error, refetch } = useQuery(
@@ -68,6 +70,44 @@ const PropertyList = () => {
       return property.users.name || property.users.email || '미지정';
     }
     return '미지정';
+  };
+
+  // 매물 삭제 mutation
+  const deleteMutation = useMutation(
+    async (propertyId) => {
+      const { error } = await supabase
+        .from('properties')
+        .delete()
+        .eq('id', propertyId);
+      
+      if (error) throw error;
+      return propertyId;
+    },
+    {
+      onSuccess: (deletedId) => {
+        queryClient.invalidateQueries(['properties']);
+        setDeleteConfirm({ show: false, property: null });
+        // 성공 알림을 위한 간단한 방법 (나중에 toast로 개선 가능)
+        alert('매물이 성공적으로 삭제되었습니다.');
+      },
+      onError: (error) => {
+        alert(`매물 삭제 중 오류가 발생했습니다: ${error.message}`);
+      }
+    }
+  );
+
+  const handleDeleteClick = (property) => {
+    setDeleteConfirm({ show: true, property });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteConfirm.property) {
+      deleteMutation.mutate(deleteConfirm.property.id);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirm({ show: false, property: null });
   };
 
   // 필터된 매물 목록
@@ -364,6 +404,16 @@ const PropertyList = () => {
                                 >
                                   수정
                                 </Link>
+                                {/* 본인 매물이거나 관리자인 경우에만 삭제 버튼 표시 */}
+                                {(userProfile?.role === 'admin' || property.manager_id === user?.id) && (
+                                  <button
+                                    onClick={() => handleDeleteClick(property)}
+                                    className="text-red-600 hover:text-red-800 font-medium"
+                                    disabled={deleteMutation.isLoading}
+                                  >
+                                    삭제
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -383,12 +433,9 @@ const PropertyList = () => {
                       property={property}
                       onView={(prop) => navigate(`/properties/${prop.id}`)}
                       onEdit={(prop) => navigate(`/properties/${prop.id}/edit`)}
-                      onDelete={(prop) => {
-                        if (window.confirm('정말로 이 매물을 삭제하시겠습니까?')) {
-                          // TODO: 삭제 기능 구현
-                          console.log('Delete property:', prop.id);
-                        }
-                      }}
+                      onDelete={(userProfile?.role === 'admin' || property.manager_id === user?.id) ? 
+                        (prop) => handleDeleteClick(prop) : null
+                      }
                     />
                   ))}
                 </div>
@@ -396,6 +443,48 @@ const PropertyList = () => {
             </>
           )}
         </>
+      )}
+      
+      {/* 삭제 확인 모달 */}
+      {deleteConfirm.show && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <Trash2 className="h-6 w-6 text-red-600" />
+              </div>
+              <h3 className="text-lg leading-6 font-medium text-gray-900 mt-4">
+                매물 삭제 확인
+              </h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  '{deleteConfirm.property?.property_name}' 매물을 정말로 삭제하시겠습니까?
+                </p>
+                <p className="text-sm text-red-600 mt-2">
+                  삭제된 매물은 복구할 수 없습니다.
+                </p>
+              </div>
+              <div className="items-center px-4 py-3">
+                <div className="flex space-x-3">
+                  <button
+                    onClick={handleDeleteCancel}
+                    className="flex-1 px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    disabled={deleteMutation.isLoading}
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={handleDeleteConfirm}
+                    className="flex-1 px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                    disabled={deleteMutation.isLoading}
+                  >
+                    {deleteMutation.isLoading ? '삭제 중...' : '삭제'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
