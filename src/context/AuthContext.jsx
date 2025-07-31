@@ -48,9 +48,9 @@ export const AuthProvider = ({ children }) => {
           
           // DB에서 사용자 프로필 조회
           const { data: userProfile, error: profileError } = await supabase
-            .from('users')
-            .select('*, roles(name, permissions)')
-            .eq('id', googleUser.id)
+            .from('user_profiles')
+            .select('*')
+            .eq('user_id', googleUser.id)
             .single();
           
           if (userProfile) {
@@ -58,14 +58,26 @@ export const AuthProvider = ({ children }) => {
             setUser({
               ...googleUser,
               ...userProfile,
-              role: userProfile.roles?.name || 'employee',
-              isAdmin: userProfile.role_id === 'admin'
+              role: userProfile.role || 'user',
+              isAdmin: userProfile.role === 'admin'
             });
           } else {
-            // DB에 프로필이 없으면 구글 정보만 사용
+            // 새 사용자인 경우 프로필 생성
+            const { data: newProfile } = await supabase
+              .from('user_profiles')
+              .insert({
+                user_id: googleUser.id,
+                email: googleUser.email,
+                name: googleUser.user_metadata?.full_name || googleUser.email,
+                role: 'user'
+              })
+              .select()
+              .single();
+            
             setUser({
               ...googleUser,
-              role: 'employee',
+              ...newProfile,
+              role: 'user',
               isAdmin: false
             });
           }
@@ -92,22 +104,35 @@ export const AuthProvider = ({ children }) => {
           
           // DB에서 사용자 프로필 조회
           const { data: userProfile } = await supabase
-            .from('users')
-            .select('*, roles(name, permissions)')
-            .eq('id', googleUser.id)
+            .from('user_profiles')
+            .select('*')
+            .eq('user_id', googleUser.id)
             .single();
           
           if (userProfile) {
             setUser({
               ...googleUser,
               ...userProfile,
-              role: userProfile.roles?.name || 'employee',
-              isAdmin: userProfile.role_id === 'admin'
+              role: userProfile.role || 'user',
+              isAdmin: userProfile.role === 'admin'
             });
           } else {
+            // 새 사용자인 경우 프로필 생성
+            const { data: newProfile } = await supabase
+              .from('user_profiles')
+              .insert({
+                user_id: googleUser.id,
+                email: googleUser.email,
+                name: googleUser.user_metadata?.full_name || googleUser.email,
+                role: 'user'
+              })
+              .select()
+              .single();
+            
             setUser({
               ...googleUser,
-              role: 'employee',
+              ...newProfile,
+              role: 'user',
               isAdmin: false
             });
           }

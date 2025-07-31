@@ -8,17 +8,32 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // URL에서 인증 코드 처리
-        const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+        // Hash에서 토큰 가져오기 (Implicit Flow)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
         
-        if (error) {
-          console.error('Auth callback error:', error);
+        if (!accessToken) {
+          console.error('No access token found in URL');
           navigate('/login');
           return;
         }
 
-        // 인증 성공 시 대시보드로 이동
-        navigate('/');
+        // 세션 설정
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken || ''
+        });
+
+        if (error) {
+          console.error('Session error:', error);
+          navigate('/login');
+          return;
+        }
+
+        // 세션이 성공적으로 설정되면 대시보드로 이동
+        console.log('Auth successful, redirecting to dashboard...');
+        navigate('/', { replace: true });
       } catch (error) {
         console.error('Unexpected error during auth callback:', error);
         navigate('/login');
