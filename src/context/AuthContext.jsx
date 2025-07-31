@@ -30,17 +30,16 @@ export const AuthProvider = ({ children }) => {
           // localStorage 접근 실패 시 무시하고 계속 진행
         }
         
-        // Supabase 연결 시도 (타임아웃 포함)
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('연결 시간 초과')), 30000) // 30초로 증가
-        );
+        // Supabase 세션 가져오기
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        const sessionPromise = supabase.auth.getSession();
-        
-        const { data: { session } } = await Promise.race([
-          sessionPromise,
-          timeoutPromise
-        ]);
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          setUser(null);
+          setError(null);
+          setLoading(false);
+          return;
+        }
         
         console.log('AuthContext: Session check result:', !!session);
         
@@ -64,22 +63,51 @@ export const AuthProvider = ({ children }) => {
               role: userProfile.role || 'user',
               isAdmin: userProfile.role === 'admin'
             });
+          } else if (!profileError || profileError.code === 'PGRST116') {
+            // 새 사용자인 경우 프로필 생성 (PGRST116 = row not found)
+            console.log('Creating new user profile...');
+            try {
+              const { data: newProfile, error: insertError } = await supabase
+                .from('user_profiles')
+                .insert({
+                  user_id: googleUser.id,
+                  email: googleUser.email,
+                  name: googleUser.user_metadata?.full_name || googleUser.email,
+                  role: 'user'
+                })
+                .select()
+                .single();
+              
+              if (insertError) {
+                console.error('Failed to create user profile:', insertError);
+                // 프로필 생성 실패해도 기본 정보로 진행
+                setUser({
+                  ...googleUser,
+                  role: 'user',
+                  isAdmin: false
+                });
+              } else {
+                setUser({
+                  ...googleUser,
+                  ...newProfile,
+                  role: 'user',
+                  isAdmin: false
+                });
+              }
+            } catch (err) {
+              console.error('Profile creation error:', err);
+              // 오류 발생해도 기본 정보로 진행
+              setUser({
+                ...googleUser,
+                role: 'user',
+                isAdmin: false
+              });
+            }
           } else {
-            // 새 사용자인 경우 프로필 생성
-            const { data: newProfile } = await supabase
-              .from('user_profiles')
-              .insert({
-                user_id: googleUser.id,
-                email: googleUser.email,
-                name: googleUser.user_metadata?.full_name || googleUser.email,
-                role: 'user'
-              })
-              .select()
-              .single();
-            
+            // 다른 오류의 경우에도 기본 정보로 진행
+            console.error('Profile fetch error:', profileError);
             setUser({
               ...googleUser,
-              ...newProfile,
               role: 'user',
               isAdmin: false
             });
@@ -122,24 +150,43 @@ export const AuthProvider = ({ children }) => {
               isAdmin: userProfile.role === 'admin'
             });
           } else {
-            // 새 사용자인 경우 프로필 생성
-            const { data: newProfile } = await supabase
-              .from('user_profiles')
-              .insert({
-                user_id: googleUser.id,
-                email: googleUser.email,
-                name: googleUser.user_metadata?.full_name || googleUser.email,
-                role: 'user'
-              })
-              .select()
-              .single();
-            
-            setUser({
-              ...googleUser,
-              ...newProfile,
-              role: 'user',
-              isAdmin: false
-            });
+            // 새 사용자인 경우 또는 프로필이 없는 경우
+            console.log('User profile not found, creating or using default...');
+            try {
+              const { data: newProfile, error: insertError } = await supabase
+                .from('user_profiles')
+                .insert({
+                  user_id: googleUser.id,
+                  email: googleUser.email,
+                  name: googleUser.user_metadata?.full_name || googleUser.email,
+                  role: 'user'
+                })
+                .select()
+                .single();
+              
+              if (!insertError && newProfile) {
+                setUser({
+                  ...googleUser,
+                  ...newProfile,
+                  role: 'user',
+                  isAdmin: false
+                });
+              } else {
+                // 프로필 생성 실패해도 기본 정보로 진행
+                setUser({
+                  ...googleUser,
+                  role: 'user',
+                  isAdmin: false
+                });
+              }
+            } catch (err) {
+              // 오류 발생해도 기본 정보로 진행
+              setUser({
+                ...googleUser,
+                role: 'user',
+                isAdmin: false
+              });
+            }
           }
           setError(null);
         } else if (event === 'SIGNED_OUT') {
