@@ -15,7 +15,8 @@
     <script>
         const supabaseUrl = 'https://qwxghpwasmvottahchky.supabase.co';
         const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3eGdocHdhc212b3R0YWhjaGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI2NzY3MjUsImV4cCI6MjA0ODI1MjcyNX0.DzDPPqC4l69m-7x4tenvmsJdPx2s45GzRPaV1rQ1LLo';
-        const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+        const { createClient } = supabase;
+        const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 
         const log = (msg) => {
             const time = new Date().toLocaleTimeString();
@@ -28,7 +29,7 @@
                 log('로그인 시작...');
                 document.getElementById('status').textContent = '로그인 중...';
 
-                const { data, error } = await supabase.auth.signInWithOAuth({
+                const { data, error } = await supabaseClient.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
                         redirectTo: window.location.origin + '/the-realty-itemlist-dashboard/oauth-callback.html'
@@ -49,7 +50,7 @@
         });
 
         // 현재 세션 확인
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
             if (session) {
                 log('현재 세션 있음: ' + session.user.email);
                 document.getElementById('status').textContent = '이미 로그인됨: ' + session.user.email;
@@ -59,7 +60,7 @@
         });
 
         // Auth 상태 변경 리스너
-        supabase.auth.onAuthStateChange((event, session) => {
+        supabaseClient.auth.onAuthStateChange((event, session) => {
             log('Auth 이벤트: ' + event);
             if (session) {
                 log('사용자: ' + session.user.email);
