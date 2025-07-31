@@ -11,6 +11,7 @@ import PropertyList from './pages/PropertyList';
 import PropertyDetail from './pages/PropertyDetail';
 import PropertyForm from './pages/PropertyForm';
 import UserManagement from './pages/UserManagement';
+import StaffPerformance from './pages/StaffPerformance';
 import CSVImport from './pages/CSVImport';
 import Settings from './pages/Settings';
 import UpdateHistory from './pages/UpdateHistory';
@@ -61,6 +62,7 @@ function App() {
               <Route path="/properties/:id" element={<PropertyDetail />} />
               <Route path="/properties/:id/edit" element={<PropertyForm />} />
               <Route path="/users" element={<UserManagement />} />
+              <Route path="/users/:userId/performance" element={<StaffPerformance />} />
               <Route path="/csv-import" element={<CSVImport />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/updates" element={<UpdateHistory />} />

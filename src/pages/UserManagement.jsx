@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import userService from '../services/userService';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
-import { Plus, Edit, Trash, AlertTriangle, CheckCircle, X, User, UserPlus, Check, Mail, Phone, Shield, Activity } from 'lucide-react';
+import { Plus, Edit, Trash, AlertTriangle, CheckCircle, X, User, UserPlus, Check, Mail, Phone, Shield, Activity, BarChart3 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { isHardcodedAdmin } from '../data/hardcodedAdmins';
 import { getUserStats } from '../data/dummyUsers';
 
@@ -359,6 +360,13 @@ const UserManagement = () => {
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm">
                     <div className="flex space-x-2">
+                      <Link
+                        to={`/users/${user.id}/performance`}
+                        className="text-purple-600 hover:text-purple-800"
+                        title="성과 보기"
+                      >
+                        <BarChart3 className="w-4 h-4" />
+                      </Link>
                       <button
                         onClick={() => handleEdit(user)}
                         className="text-blue-600 hover:text-blue-800"
