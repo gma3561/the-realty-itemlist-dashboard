@@ -109,7 +109,7 @@ const Dashboard = () => {
     <div className="space-y-6">
       {/* 환영 메시지 */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
-        <h1 className="text-2xl font-bold mb-2">안녕하세요, {user?.name || user?.email}님!</h1>
+        <h1 className="text-2xl font-bold mb-2">안녕하세요, {user?.user_metadata?.name || user?.email || '사용자'}님!</h1>
         <p className="text-blue-100">오늘도 성공적인 부동산 중개 업무를 위해 팀 매물장을 활용해보세요.</p>
       </div>
       

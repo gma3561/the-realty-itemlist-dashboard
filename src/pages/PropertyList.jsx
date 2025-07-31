@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../context/AuthContext';
-import { PlusCircle, Search, RefreshCw, Building2, MapPin, Calendar, DollarSign, Grid, List, User, Trash2, Hash } from 'lucide-react';
+import { isHardcodedAdmin } from '../data/hardcodedAdmins';
+import { PlusCircle, Search, RefreshCw, Building2, MapPin, Calendar, Grid, List, User, Trash2, Hash } from 'lucide-react';
 import PropertyCard from '../components/property/PropertyCard';
 import propertyService from '../services/propertyService';
 import { dummyPropertyTypes, dummyTransactionTypes, dummyPropertyStatuses } from '../data/dummyProperties';
@@ -13,7 +14,8 @@ const PropertyList = () => {
   const [filters, setFilters] = useState({
     search: '',
     status: '',
-    type: ''
+    type: '',
+    transactionType: ''
   });
   const [viewMode, setViewMode] = useState('table'); // 'table' or 'card'
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, property: null });
@@ -113,11 +115,13 @@ const PropertyList = () => {
     
     const displayStatus = getDisplayStatus(property);
     const displayType = getDisplayPropertyType(property);
+    const displayTransactionType = getDisplayTransactionType(property);
     
     const matchesStatus = !filters.status || displayStatus === filters.status;
     const matchesType = !filters.type || displayType === filters.type;
+    const matchesTransactionType = !filters.transactionType || displayTransactionType === filters.transactionType;
     
-    return matchesSearch && matchesStatus && matchesType;
+    return matchesSearch && matchesStatus && matchesType && matchesTransactionType;
   });
 
   const formatPrice = (price) => {
@@ -220,7 +224,7 @@ const PropertyList = () => {
           {/* 필터 섹션 */}
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">필터 및 검색</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   검색
@@ -270,9 +274,25 @@ const PropertyList = () => {
                 </select>
               </div>
               
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  매물유형
+                </label>
+                <select
+                  value={filters.transactionType}
+                  onChange={(e) => setFilters({ ...filters, transactionType: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">전체</option>
+                  <option value="매매">매매</option>
+                  <option value="전세">전세</option>
+                  <option value="월세">월세</option>
+                </select>
+              </div>
+              
               <div className="flex items-end">
                 <button
-                  onClick={() => setFilters({ search: '', status: '', type: '' })}
+                  onClick={() => setFilters({ search: '', status: '', type: '', transactionType: '' })}
                   className="w-full px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
                 >
                   <RefreshCw className="w-4 h-4 mr-2 inline" />
@@ -316,7 +336,7 @@ const PropertyList = () => {
                             위치
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            거래정보
+                            매물유형
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             가격
@@ -367,7 +387,6 @@ const PropertyList = () => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center text-sm font-medium text-gray-900">
-                                <DollarSign className="w-4 h-4 mr-1 text-gray-400" />
                                 {getDisplayPrice(property)}
                               </div>
                             </td>
@@ -402,14 +421,15 @@ const PropertyList = () => {
                                 >
                                   상세
                                 </Link>
-                                <Link
-                                  to={`/properties/${property.id}/edit`}
-                                  className="text-green-600 hover:text-green-800 font-medium"
-                                >
-                                  수정
-                                </Link>
-                                {/* 본인 매물이거나 관리자인 경우에만 삭제 버튼 표시 */}
-                                {(userProfile?.role === 'admin' || property.manager_id === user?.id) && (
+                                {/* 본인 매물이거나 관리자인 경우에만 수정/삭제 버튼 표시 */}
+                                {(isHardcodedAdmin(user?.email) || property.manager_id === user?.id || property.manager_id === user?.email) && (
+                                  <>
+                                    <Link
+                                      to={`/properties/${property.id}/edit`}
+                                      className="text-green-600 hover:text-green-800 font-medium"
+                                    >
+                                      수정
+                                    </Link>
                                   <button
                                     onClick={() => handleDeleteClick(property)}
                                     className="text-red-600 hover:text-red-800 font-medium"
@@ -417,6 +437,7 @@ const PropertyList = () => {
                                   >
                                     삭제
                                   </button>
+                                  </>
                                 )}
                               </div>
                             </td>
@@ -436,10 +457,10 @@ const PropertyList = () => {
                       key={property.id}
                       property={property}
                       onView={(prop) => navigate(`/properties/${prop.id}`)}
-                      onEdit={(prop) => navigate(`/properties/${prop.id}/edit`)}
-                      onDelete={(userProfile?.role === 'admin' || property.manager_id === user?.id) ? 
-                        (prop) => handleDeleteClick(prop) : null
-                      }
+                      onEdit={(isHardcodedAdmin(user?.email) || property.manager_id === user?.id || property.manager_id === user?.email) ? 
+                        (prop) => navigate(`/properties/${prop.id}/edit`) : null}
+                      onDelete={(isHardcodedAdmin(user?.email) || property.manager_id === user?.id || property.manager_id === user?.email) ? 
+                        (prop) => handleDeleteClick(prop) : null}
                     />
                   ))}
                 </div>
