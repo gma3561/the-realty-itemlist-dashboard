@@ -1,15 +1,19 @@
 // 관리자 전용 서비스 (Service Role Key 사용)
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseServiceKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+// 하드코딩된 환경변수 (GitHub Pages 배포 안정성을 위해)
+const supabaseUrl = 'https://aekgsysvipnwxhwixglg.supabase.co';
+const supabaseServiceKey = ''; // Service Role Key는 보안상 비워둠 (관리자 기능 비활성화)
 
 // 관리자 전용 Supabase 클라이언트 (Service Role Key 사용)
-// 주의: 이는 임시 해결책이며, 프로덕션에서는 백엔드 API를 통해 처리해야 함
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+// 주의: GitHub Pages 배포에서는 Service Role Key를 사용하지 않음
+const supabaseAdmin = supabaseServiceKey ? createClient(supabaseUrl, supabaseServiceKey) : null;
 
 // 관리자 권한으로 사용자 추가 (임시 Auth 사용자 생성 포함)
 export const addUserAsAdmin = async (userData) => {
+  if (!supabaseAdmin) {
+    throw new Error('관리자 기능이 비활성화되었습니다. (Service Role Key 없음)');
+  }
   try {
     // 1. 임시 Auth 사용자 생성 (구글 로그인 전까지 사용)
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -64,6 +68,9 @@ export const addUserAsAdmin = async (userData) => {
 
 // 관리자 권한으로 사용자 수정
 export const updateUserAsAdmin = async (id, userData) => {
+  if (!supabaseAdmin) {
+    throw new Error('관리자 기능이 비활성화되었습니다. (Service Role Key 없음)');
+  }
   try {
     const { data, error } = await supabaseAdmin
       .from('users')
@@ -90,6 +97,9 @@ export const updateUserAsAdmin = async (id, userData) => {
 
 // 관리자 권한으로 사용자 상태 변경
 export const updateUserStatusAsAdmin = async (id, newStatus) => {
+  if (!supabaseAdmin) {
+    throw new Error('관리자 기능이 비활성화되었습니다. (Service Role Key 없음)');
+  }
   try {
     const { data, error } = await supabaseAdmin
       .from('users')
