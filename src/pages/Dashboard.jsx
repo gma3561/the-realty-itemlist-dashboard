@@ -2,38 +2,46 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../services/supabase';
+import propertyService from '../services/propertyService';
 import { Building2, CheckCircle, Clock, PlusCircle, BarChart, TrendingUp } from 'lucide-react';
 import PropertyStatsChart from '../components/dashboard/PropertyStatsChart';
 
 const Dashboard = () => {
   const { user } = useAuth();
   
-  // Supabase에서 매물 데이터 가져오기 (관련 테이블 JOIN)
+  // 매물 데이터 가져오기
   const { data: properties = [], isLoading } = useQuery(
     ['dashboard-properties'],
     async () => {
-      const { data, error } = await supabase
-        .from('properties')
-        .select(`
-          *,
-          property_types(id, name),
-          property_statuses(id, name),
-          transaction_types(id, name),
-          users!properties_manager_id_fkey(id, name, email)
-        `)
-        .order('created_at', { ascending: false });
-        
-      if (error) throw error;
-      return data;
+      const { data, error } = await propertyService.getProperties();
+      if (error) throw new Error(error);
+      return data || [];
     }
   );
 
-  // 통계 계산 (DB 구조에 맞게 수정)
+  // 룩업 데이터 가져오기
+  const { data: lookupData = {} } = useQuery(
+    'lookupTables',
+    async () => {
+      const data = await propertyService.getLookupTables();
+      return data;
+    },
+    {
+      staleTime: 5 * 60 * 1000, // 5분
+    }
+  );
+
+  // 통계 계산 (더미데이터 구조에 맞게 수정)
   const stats = {
     totalProperties: properties.length,
-    completedDeals: properties.filter(p => p.property_statuses?.name === '거래완료').length,
-    inProgress: properties.filter(p => p.property_statuses?.name === '매물확보' || p.property_statuses?.name === '광고진행').length,
+    completedDeals: properties.filter(p => {
+      const status = lookupData.propertyStatuses?.find(s => s.id === p.property_status_id);
+      return status?.name === '거래완료';
+    }).length,
+    inProgress: properties.filter(p => {
+      const status = lookupData.propertyStatuses?.find(s => s.id === p.property_status_id);
+      return status?.name === '거래가능' || status?.name === '거래보류';
+    }).length,
     thisMonth: properties.filter(p => {
       const created = new Date(p.created_at);
       const now = new Date();
@@ -53,17 +61,20 @@ const Dashboard = () => {
     return `${price.toLocaleString()}원`;
   };
 
-  // JOIN된 데이터 사용을 위한 헬퍼 함수
+  // 룩업 데이터 사용을 위한 헬퍼 함수
   const getDisplayTransactionType = (property) => {
-    return property.transaction_types?.name || '미지정';
+    const type = lookupData.transactionTypes?.find(t => t.id === property.transaction_type_id);
+    return type?.name || '미지정';
   };
 
   const getDisplayStatus = (property) => {
-    return property.property_statuses?.name || '미지정';
+    const status = lookupData.propertyStatuses?.find(s => s.id === property.property_status_id);
+    return status?.name || '미지정';
   };
 
   const getDisplayPropertyType = (property) => {
-    return property.property_types?.name || '미지정';
+    const type = lookupData.propertyTypes?.find(t => t.id === property.property_type_id);
+    return type?.name || '미지정';
   };
 
   const getDisplayPrice = (property) => {
