@@ -35,39 +35,48 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Router>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/properties" element={<PropertyList />} />
-              <Route path="/properties/new" element={<PropertyForm />} />
-              <Route path="/properties/:id" element={<PropertyDetail />} />
-              <Route path="/properties/:id/edit" element={<PropertyForm />} />
-              <Route path="/users" element={<UserManagement />} />
-              <Route path="/csv-import" element={<CSVImport />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/updates" element={<UpdateHistory />} />
-              
-              {/* 고객 관리 라우트 */}
-              <Route path="/customers" element={<CustomerList />} />
-              <Route path="/customers/new" element={<CustomerForm />} />
-              <Route path="/customers/:id" element={<CustomerDetail />} />
-              <Route path="/customers/:id/edit" element={<CustomerForm />} />
-            </Route>
-            
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-          </Router>
-        </AuthProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
-  );
+  // 디버깅용 간단한 렌더링 테스트
+  console.log('🚀 App 컴포넌트 렌더링 시작');
+  
+  try {
+    return (
+      <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+        <h1 style={{ color: '#0284c7' }}>🏠 팀 매물장 시스템</h1>
+        <div style={{ background: '#f0f9ff', padding: '15px', borderRadius: '8px', margin: '10px 0' }}>
+          <p><strong>✅ React 앱이 정상적으로 로드되었습니다!</strong></p>
+          <p>현재 시간: {new Date().toLocaleString('ko-KR')}</p>
+          <p>현재 URL: {window.location.href}</p>
+        </div>
+        
+        <div style={{ background: '#fff3cd', padding: '15px', borderRadius: '8px', margin: '10px 0' }}>
+          <p><strong>🔧 디버깅 모드:</strong> 기본 렌더링 테스트</p>
+          <p>이 메시지가 보인다면 JavaScript가 정상적으로 실행되고 있습니다.</p>
+        </div>
+
+        <button 
+          onClick={() => alert('버튼 클릭 테스트 성공!')}
+          style={{ 
+            background: '#0284c7', 
+            color: 'white', 
+            padding: '10px 20px', 
+            border: 'none', 
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          🔘 상호작용 테스트
+        </button>
+      </div>
+    );
+  } catch (error) {
+    console.error('❌ App 렌더링 오류:', error);
+    return (
+      <div style={{ padding: '20px', color: 'red' }}>
+        <h1>앱 로딩 오류</h1>
+        <p>오류: {error.message}</p>
+      </div>
+    );
+  }
 }
 
 export default App;
