@@ -68,15 +68,6 @@ const PropertyDetail = () => {
     setShowConfirmation(false);
   };
   
-  const formatPrice = (price) => {
-    if (!price) return '-';
-    return new Intl.NumberFormat('ko-KR').format(price) + '원';
-  };
-  
-  const calculatePyeong = (sqm) => {
-    if (!sqm) return '-';
-    return (sqm * 0.3025).toFixed(2) + '평';
-  };
   
   if (isLoading) {
     return (
