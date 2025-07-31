@@ -3,6 +3,7 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { AuthProvider } from './context/AuthContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import OAuthHandler from './components/auth/OAuthHandler';
 
 // 페이지 컴포넌트
 import Login from './pages/Login';
@@ -55,7 +56,8 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <Router>
-          <Routes>
+            <OAuthHandler>
+              <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             
@@ -80,7 +82,8 @@ function App() {
             </Route>
             
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              </Routes>
+            </OAuthHandler>
           </Router>
         </AuthProvider>
       </QueryClientProvider>

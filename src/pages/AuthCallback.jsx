@@ -8,10 +8,17 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
+        // 디버깅을 위한 URL 로그
+        console.log('Current URL:', window.location.href);
+        console.log('Hash:', window.location.hash);
+        
         // Hash에서 토큰 가져오기 (Implicit Flow)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
+        
+        console.log('Access Token found:', !!accessToken);
+        console.log('Refresh Token found:', !!refreshToken);
         
         if (!accessToken) {
           console.error('No access token found in URL');
@@ -31,6 +38,11 @@ const AuthCallback = () => {
           return;
         }
 
+        console.log('Session set successfully:', data);
+
+        // 세션이 설정된 후 잠시 대기
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         // 세션이 성공적으로 설정되면 대시보드로 이동
         console.log('Auth successful, redirecting to dashboard...');
         navigate('/', { replace: true });
