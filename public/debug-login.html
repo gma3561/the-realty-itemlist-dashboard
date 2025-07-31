@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 디버그</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>로그인 디버그 페이지</h1>
+    <button id="loginBtn" style="padding: 10px 20px; font-size: 16px;">Google 로그인 테스트</button>
+    <div id="status" style="margin-top: 20px;"></div>
+    <pre id="logs" style="margin-top: 20px; background: #f0f0f0; padding: 10px;"></pre>
+
+    <script>
+        const supabaseUrl = 'https://qwxghpwasmvottahchky.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3eGdocHdhc212b3R0YWhjaGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI2NzY3MjUsImV4cCI6MjA0ODI1MjcyNX0.DzDPPqC4l69m-7x4tenvmsJdPx2s45GzRPaV1rQ1LLo';
+        const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+        const log = (msg) => {
+            const time = new Date().toLocaleTimeString();
+            document.getElementById('logs').textContent += `[${time}] ${msg}\n`;
+            console.log(msg);
+        };
+
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            try {
+                log('로그인 시작...');
+                document.getElementById('status').textContent = '로그인 중...';
+
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin + '/the-realty-itemlist-dashboard/oauth-callback.html'
+                    }
+                });
+
+                if (error) {
+                    log('오류: ' + error.message);
+                    document.getElementById('status').textContent = '로그인 실패: ' + error.message;
+                } else {
+                    log('OAuth 리디렉션 성공');
+                    document.getElementById('status').textContent = 'Google로 리디렉션 중...';
+                }
+            } catch (err) {
+                log('예외 발생: ' + err.message);
+                document.getElementById('status').textContent = '오류 발생: ' + err.message;
+            }
+        });
+
+        // 현재 세션 확인
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                log('현재 세션 있음: ' + session.user.email);
+                document.getElementById('status').textContent = '이미 로그인됨: ' + session.user.email;
+            } else {
+                log('현재 세션 없음');
+            }
+        });
+
+        // Auth 상태 변경 리스너
+        supabase.auth.onAuthStateChange((event, session) => {
+            log('Auth 이벤트: ' + event);
+            if (session) {
+                log('사용자: ' + session.user.email);
+            }
+        });
+    </script>
+</body>
+</html>
