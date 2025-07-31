@@ -115,8 +115,7 @@ const PropertyForm = ({ isEditing = false }) => {
       location: property?.location || '',
       building: property?.building || '',
       unit: property?.unit || '',
-      // 거래유형별 가격 필드
-      sale_price: property?.sale_price || '',
+      // 거래유형별 가격 필드 (데이터베이스 스키마에 맞게)
       lease_price: property?.lease_price || '',
       price: property?.price || '',
       supply_area_sqm: property?.supply_area_sqm || '',
@@ -138,12 +137,7 @@ const PropertyForm = ({ isEditing = false }) => {
       property_type_id: Yup.string().required('매물종류는 필수 선택사항입니다'),
       property_status_id: Yup.string().required('진행상태는 필수 선택사항입니다'),
       transaction_type_id: Yup.string().required('거래유형은 필수 선택사항입니다'),
-      // 거래유형별 조건부 검증
-      sale_price: Yup.number().when('transaction_type', {
-        is: 'sale',
-        then: (schema) => schema.positive('유효한 매매가를 입력하세요').required('매매가는 필수 입력사항입니다'),
-        otherwise: (schema) => schema.nullable()
-      }),
+      // 거래유형별 조건부 검증 (매매가는 price 필드 사용)
       lease_price: Yup.number().when('transaction_type', {
         is: (val) => val === 'lease' || val === 'rent',
         then: (schema) => schema.positive('유효한 보증금을 입력하세요').required('보증금은 필수 입력사항입니다'),
@@ -364,15 +358,15 @@ const PropertyForm = ({ isEditing = false }) => {
                   </label>
                   <input
                     type="number"
-                    name="sale_price"
-                    value={formik.values.sale_price}
+                    name="price"
+                    value={formik.values.price}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="예: 2500000000"
                   />
-                  {formik.touched.sale_price && formik.errors.sale_price && (
-                    <p className="mt-1 text-sm text-red-500">{formik.errors.sale_price}</p>
+                  {formik.touched.price && formik.errors.price && (
+                    <p className="mt-1 text-sm text-red-500">{formik.errors.price}</p>
                   )}
                 </div>
               )}
