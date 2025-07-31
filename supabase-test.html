@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase 연결 테스트 | The Realty</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .success { border-left: 5px solid #28a745; }
+        .error { border-left: 5px solid #dc3545; }
+        .info { border-left: 5px solid #17a2b8; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .loading { opacity: 0.6; pointer-events: none; }
+        pre { background: #f1f3f4; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>🏠 Supabase 연결 테스트</h1>
+    
+    <div class="card info">
+        <h3>📍 연결 정보</h3>
+        <p><strong>Supabase URL:</strong> https://aekgsysvipnwxhwixglg.supabase.co</p>
+        <p><strong>API Key:</strong> eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</p>
+    </div>
+
+    <div class="card">
+        <h3>🧪 테스트 실행</h3>
+        <button onclick="testConnection()">연결 테스트</button>
+        <button onclick="testTables()">테이블 구조 확인</button>
+        <button onclick="testProperties()">매물 데이터 조회</button>
+        <button onclick="testInsert()">테스트 매물 등록</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const SUPABASE_URL = 'https://aekgsysvipnwxhwixglg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFla2dzeXN2aXBud3hod2l4Z2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc3NjI0MTgsImV4cCI6MjA1MzMzODQxOH0.z7C6bXL0Y6kCJEPIu6AlKLGi1vgfwdD9QQ0rtjcqe5g';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function addResult(title, content, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `card ${type}`;
+            div.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(content, null, 2)}</pre>
+            `;
+            results.appendChild(div);
+        }
+
+        async function testConnection() {
+            try {
+                addResult('🔄 연결 테스트 중...', '연결을 확인하고 있습니다...', 'info');
+                
+                const { data, error } = await supabase
+                    .from('properties')
+                    .select('count')
+                    .limit(1);
+
+                if (error) throw error;
+                
+                addResult('✅ 연결 성공', {
+                    message: 'Supabase 연결이 정상적으로 작동합니다',
+                    timestamp: new Date().toISOString()
+                }, 'success');
+            } catch (error) {
+                addResult('❌ 연결 실패', {
+                    error: error.message,
+                    timestamp: new Date().toISOString()
+                }, 'error');
+            }
+        }
+
+        async function testTables() {
+            try {
+                addResult('🔄 테이블 구조 확인 중...', '테이블을 조회하고 있습니다...', 'info');
+                
+                const tables = ['properties', 'property_types', 'transaction_types', 'property_statuses', 'users'];
+                const results = {};
+
+                for (const table of tables) {
+                    try {
+                        const { data, error } = await supabase
+                            .from(table)
+                            .select('*')
+                            .limit(1);
+
+                        results[table] = {
+                            exists: true,
+                            error: error?.message || null,
+                            sampleCount: data?.length || 0
+                        };
+                    } catch (err) {
+                        results[table] = {
+                            exists: false,
+                            error: err.message
+                        };
+                    }
+                }
+                
+                addResult('📊 테이블 구조', results, 'info');
+            } catch (error) {
+                addResult('❌ 테이블 확인 실패', {
+                    error: error.message
+                }, 'error');
+            }
+        }
+
+        async function testProperties() {
+            try {
+                addResult('🔄 매물 데이터 조회 중...', '매물 목록을 가져오고 있습니다...', 'info');
+                
+                const { data, error } = await supabase
+                    .from('properties')
+                    .select('*')
+                    .limit(5);
+
+                if (error) throw error;
+                
+                addResult('🏠 매물 데이터', {
+                    count: data.length,
+                    properties: data.map(p => ({
+                        id: p.id,
+                        property_name: p.property_name,
+                        location: p.location,
+                        created_at: p.created_at
+                    }))
+                }, 'success');
+            } catch (error) {
+                addResult('❌ 매물 조회 실패', {
+                    error: error.message
+                }, 'error');
+            }
+        }
+
+        async function testInsert() {
+            try {
+                addResult('🔄 테스트 매물 등록 중...', '테스트 데이터를 추가하고 있습니다...', 'info');
+                
+                const testProperty = {
+                    property_name: '테스트 매물',
+                    location: '서울시 강남구 테스트동',
+                    property_type: 'apt',
+                    transaction_type: 'sale',
+                    property_status: 'available',
+                    price: 50000,
+                    manager_id: 'test-user',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from('properties')
+                    .insert([testProperty])
+                    .select();
+
+                if (error) throw error;
+                
+                addResult('✅ 매물 등록 성공', {
+                    message: '테스트 매물이 성공적으로 등록되었습니다',
+                    data: data[0]
+                }, 'success');
+            } catch (error) {
+                addResult('❌ 매물 등록 실패', {
+                    error: error.message,
+                    details: error
+                }, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
