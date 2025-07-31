@@ -18,7 +18,8 @@
     "create-users": "node scripts/create_dummy_users.js",
     "create-sample": "node scripts/create_sample_data.js",
     "generate-sql": "node scripts/generate_sample_sql.js",
-    "test-system": "node scripts/test_comprehensive.js"
+    "test-system": "node scripts/test_comprehensive.js",
+    "add-dummy": "node scripts/add_dummy_data_direct.js"
   },
   "dependencies": {
     "@supabase/auth-helpers-react": "^0.4.2",

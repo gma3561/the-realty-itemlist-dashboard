@@ -1,30 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
-import { IS_DEVELOPMENT, securityLog, LOG_LEVELS } from '../config/security.js';
-import ENV_CONFIG from '../config/env.js';
 
-// 환경설정에서 Supabase 설정 가져오기 (GitHub Pages 호환)
-const supabaseUrl = ENV_CONFIG.SUPABASE_URL;
-const supabaseAnonKey = ENV_CONFIG.SUPABASE_ANON_KEY;
+// 하드코딩된 환경변수 (GitHub Pages 배포 안정성을 위해)
+const supabaseUrl = 'https://aekgsysvipnwxhwixglg.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFla2dzeXN2aXBud3hod2l4Z2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc3NjI0MTgsImV4cCI6MjA1MzMzODQxOH0.z7C6bXL0Y6kCJEPIu6AlKLGi1vgfwdD9QQ0rtjcqe5g';
 
-// URL 유효성 검사
-try {
-  new URL(supabaseUrl);
-} catch (error) {
-  const errorMsg = 'Supabase URL이 유효하지 않습니다.';
-  console.error(errorMsg, { url: supabaseUrl });
-  // GitHub Pages에서는 예외를 던지지 않고 경고만 출력
-  if (IS_DEVELOPMENT) {
-    throw new Error(errorMsg);
-  }
-}
+// 개발 환경 체크 (안전한 방식)
+const IS_DEVELOPMENT = typeof window !== 'undefined' && window.location.hostname === 'localhost';
 
 // 개발 모드에서만 설정 정보 출력
 if (IS_DEVELOPMENT) {
   console.log('🔗 Supabase 설정:', {
     url: supabaseUrl,
     hasKey: !!supabaseAnonKey,
-    keyLength: supabaseAnonKey?.length,
-    environment: ENV_CONFIG.ENVIRONMENT
+    keyLength: supabaseAnonKey?.length
   });
 }
 
@@ -37,7 +25,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
   global: {
     headers: {
-      'X-Client-Info': `the-realty-dashboard/${import.meta.env.VITE_APP_VERSION || '1.0.0'}`,
+      'X-Client-Info': 'the-realty-dashboard/2.0.0',
     }
   },
   // RLS 정책 강제 적용
@@ -54,13 +42,13 @@ if (IS_DEVELOPMENT) {
     .limit(1)
     .then(({ data, error }) => {
       if (error) {
-        securityLog(LOG_LEVELS.ERROR, 'Supabase 연결 실패', { error: error.message });
+        console.error('Supabase 연결 실패:', error.message);
       } else {
-        securityLog(LOG_LEVELS.INFO, 'Supabase 연결 성공');
+        console.log('✅ Supabase 연결 성공');
       }
     })
     .catch((error) => {
-      securityLog(LOG_LEVELS.ERROR, 'Supabase 연결 테스트 실패', { error: error.message });
+      console.error('Supabase 연결 테스트 실패:', error.message);
     });
 }
 

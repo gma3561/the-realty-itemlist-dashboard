@@ -37,6 +37,8 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         console.error('Auth error:', error);
         setError(error.message);
+        // 에러가 발생해도 앱이 계속 작동하도록 user를 null로 설정
+        setUser(null);
       } finally {
         setLoading(false);
       }
