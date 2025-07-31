@@ -15,9 +15,15 @@ const AuthCallback = () => {
         // Hash에서 토큰 가져오기 (Implicit Flow)
         // HashRouter 사용 시 #/auth/callback#access_token=... 형태가 됨
         const fullHash = window.location.hash;
-        const tokenIndex = fullHash.lastIndexOf('#');
-        const tokenPart = tokenIndex > 0 ? fullHash.substring(tokenIndex + 1) : fullHash.substring(1);
+        const tokenIndex = fullHash.lastIndexOf('#access_token');
         
+        if (tokenIndex === -1) {
+          console.error('No access token in URL');
+          navigate('/login');
+          return;
+        }
+        
+        const tokenPart = fullHash.substring(tokenIndex + 1);
         const hashParams = new URLSearchParams(tokenPart);
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
@@ -46,11 +52,13 @@ const AuthCallback = () => {
         console.log('Session set successfully:', data);
 
         // 세션이 설정된 후 잠시 대기
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         // 세션이 성공적으로 설정되면 대시보드로 이동
         console.log('Auth successful, redirecting to dashboard...');
-        navigate('/', { replace: true });
+        
+        // 강제로 페이지 새로고침하여 대시보드로 이동
+        window.location.href = '/the-realty-itemlist-dashboard/#/';
       } catch (error) {
         console.error('Unexpected error during auth callback:', error);
         navigate('/login');
