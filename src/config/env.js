@@ -13,8 +13,8 @@ const getEnvVar = (key, fallback = '') => {
 // GitHub Pages에서 환경변수가 없을 경우를 대비한 fallback 값들
 export const ENV_CONFIG = {
   // Supabase 설정 (확실한 fallback)
-  SUPABASE_URL: getEnvVar('VITE_SUPABASE_URL', 'https://aekgsysvipnwxhwixglg.supabase.co'),
-  SUPABASE_ANON_KEY: getEnvVar('VITE_SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFla2dzeXN2aXBud3hod2l4Z2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc3NjI0MTgsImV4cCI6MjA1MzMzODQxOH0.z7C6bXL0Y6kCJEPIu6AlKLGi1vgfwdD9QQ0rtjcqe5g'),
+  SUPABASE_URL: getEnvVar('VITE_SUPABASE_URL', 'https://qwxghpwasmvottahchky.supabase.co'),
+  SUPABASE_ANON_KEY: getEnvVar('VITE_SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3eGdocHdhc212b3R0YWhjaGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5MTI3NTksImV4cCI6MjA2ODQ4ODc1OX0.4a1Oc66k9mGmXLoHmrKyZiVeZISpyzgq1BERrb_-8n8'),
 
   // 애플리케이션 설정
   ENVIRONMENT: getEnvVar('VITE_ENVIRONMENT', 'production'),
