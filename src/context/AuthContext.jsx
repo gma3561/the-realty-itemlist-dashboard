@@ -9,9 +9,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // 현재 세션 확인
-    const checkUser = async () => {
+  // checkUser를 useEffect 밖으로 이동하여 재사용 가능하게 함
+  const checkUser = async () => {
       try {
         setLoading(true);
         
@@ -128,6 +127,7 @@ export const AuthProvider = ({ children }) => {
       }
     };
     
+  useEffect(() => {
     checkUser();
     
     // 인증 상태 변경 리스너
@@ -135,74 +135,18 @@ export const AuthProvider = ({ children }) => {
       async (event, session) => {
         console.log('AuthContext: Auth state changed:', event, !!session);
         
-        if (event === 'SIGNED_IN' && session?.user) {
-          const googleUser = session.user;
-          
-          // DB에서 사용자 프로필 조회
-          const { data: userProfile } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('user_id', googleUser.id)
-            .single();
-          
-          if (userProfile) {
-            setUser({
-              ...googleUser,
-              ...userProfile,
-              role: userProfile.role || 'user',
-              isAdmin: userProfile.role === 'admin'
-            });
-          } else {
-            // 새 사용자인 경우 또는 프로필이 없는 경우
-            console.log('User profile not found, creating or using default...');
-            try {
-              const { data: newProfile, error: insertError } = await supabase
-                .from('user_profiles')
-                .insert({
-                  user_id: googleUser.id,
-                  email: googleUser.email,
-                  name: googleUser.user_metadata?.full_name || googleUser.email,
-                  role: 'user'
-                })
-                .select()
-                .single();
-              
-              if (!insertError && newProfile) {
-                setUser({
-                  ...googleUser,
-                  ...newProfile,
-                  role: 'user',
-                  isAdmin: false
-                });
-              } else {
-                // 프로필 생성 실패해도 기본 정보로 진행
-                setUser({
-                  ...googleUser,
-                  role: 'user',
-                  isAdmin: false
-                });
-              }
-            } catch (err) {
-              // 오류 발생해도 기본 정보로 진행
-              setUser({
-                ...googleUser,
-                role: 'user',
-                isAdmin: false
-              });
-            }
-          }
-          setError(null);
-        } else if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT') {
           setUser(null);
-          setError(null);
+          setLoading(false);
+        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          // checkUser 함수를 재사용하여 중복 제거
+          await checkUser();
         }
       }
     );
     
     return () => {
-      if (authListener?.subscription) {
-        authListener.subscription.unsubscribe();
-      }
+      authListener?.subscription?.unsubscribe();
     };
   }, []);
 
@@ -227,7 +171,6 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Error signing in with Google:', error);
       setError(error.message);
-    } finally {
       setLoading(false);
     }
   };
@@ -279,22 +222,19 @@ export const AuthProvider = ({ children }) => {
             setLoading(false);
             return;
           }
-        } else {
-          throw new Error('잘못된 비밀번호입니다.');
         }
+        throw new Error('비밀번호가 올바르지 않습니다.');
       }
       
-      // 일반 Supabase 인증
       const { error } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       });
       
       if (error) throw error;
     } catch (error) {
       console.error('Error signing in with email:', error);
       setError(error.message);
-    } finally {
       setLoading(false);
     }
   };

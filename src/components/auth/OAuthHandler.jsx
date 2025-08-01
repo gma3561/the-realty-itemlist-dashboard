@@ -1,60 +1,33 @@
 import { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { supabase } from '../../services/supabase';
+import { useLocation, Navigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const OAuthHandler = ({ children }) => {
   const location = useLocation();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleOAuthCallback = async () => {
-      // URL에 OAuth 토큰이 있는지 확인
-      // HashRouter 사용 시 #/경로#access_token=... 형태가 됨
-      const fullHash = window.location.hash;
-      const tokenIndex = fullHash.lastIndexOf('#access_token');
-      
-      if (tokenIndex === -1) {
-        return; // OAuth 토큰이 없음
-      }
-      
-      const tokenPart = fullHash.substring(tokenIndex + 1);
-      const hashParams = new URLSearchParams(tokenPart);
-      const accessToken = hashParams.get('access_token');
-      
-      if (accessToken) {
-        console.log('OAuth token detected, processing...');
-        
-        try {
-          const refreshToken = hashParams.get('refresh_token');
-          
-          // 세션 설정
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken || ''
-          });
-
-          if (error) {
-            console.error('Failed to set session:', error);
-            navigate('/login');
-            return;
-          }
-
-          console.log('OAuth session set successfully');
-          
-          // URL에서 토큰 제거
-          window.history.replaceState(null, '', window.location.pathname);
-          
-          // 대시보드로 이동
-          navigate('/', { replace: true });
-        } catch (error) {
-          console.error('OAuth processing error:', error);
-          navigate('/login');
-        }
-      }
-    };
-
-    handleOAuthCallback();
-  }, [location, navigate]);
+  const { user, loading } = useAuth();
+  
+  // 공개 경로 정의
+  const publicPaths = ['/login', '/auth/callback', '/auth/process'];
+  const isPublicPath = publicPaths.includes(location.pathname);
+  
+  // 로딩 중일 때는 렌더링하지 않음
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+  
+  // 로그인하지 않은 사용자가 보호된 페이지에 접근하려 할 때
+  if (!user && !isPublicPath) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // 로그인한 사용자가 로그인 페이지에 접근하려 할 때
+  if (user && location.pathname === '/login') {
+    return <Navigate to="/" replace />;
+  }
 
   return children;
 };
