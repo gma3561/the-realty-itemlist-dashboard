@@ -49,9 +49,6 @@ const AuthProcess = () => {
             return;
           }
           
-          // 세션 설정 후 약간의 지연
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
           // 대시보드로 이동
           console.log('Redirecting to dashboard...');
           

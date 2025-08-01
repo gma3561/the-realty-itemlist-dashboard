@@ -27,7 +27,7 @@ export const ENV_CONFIG = {
   // 기능 설정
   ENABLE_DEMO_BANNER: getEnvVar('VITE_ENABLE_DEMO_BANNER', 'true') !== 'false',
   ENABLE_PWA: getEnvVar('VITE_ENABLE_PWA', 'true') !== 'false',
-  USE_DUMMY_DATA: getEnvVar('VITE_USE_DUMMY_DATA', 'true') !== 'false', // GitHub Pages에서는 더미데이터 사용
+  USE_DUMMY_DATA: getEnvVar('VITE_USE_DUMMY_DATA', 'false') !== 'false', // Supabase 실제 데이터 사용
 };
 
 // 개발 모드에서 환경변수 정보 출력

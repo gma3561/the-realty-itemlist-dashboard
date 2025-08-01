@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // 하드코딩된 환경변수 (GitHub Pages 배포 안정성을 위해)
-const supabaseUrl = 'https://qwxghpwasmvottahchky.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3eGdocHdhc212b3R0YWhjaGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5MTI3NTksImV4cCI6MjA2ODQ4ODc1OX0.4a1Oc66k9mGmXLoHmrKyZiVeZISpyzgq1BERrb_-8n8';
+const supabaseUrl = 'https://aekgsysvipnwxhwixglg.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFla2dzeXN2aXBud3hod2l4Z2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc3NjI0MTgsImV4cCI6MjA1MzMzODQxOH0.z7C6bXL0Y6kCJEPIu6AlKLGi1vgfwdD9QQ0rtjcqe5g';
 
 // 개발 환경 체크 (안전한 방식)
 const IS_DEVELOPMENT = typeof window !== 'undefined' && window.location.hostname === 'localhost';
