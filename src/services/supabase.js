@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
+import ENV_CONFIG from '../config/env';
 
-// 하드코딩된 환경변수 (GitHub Pages 배포 안정성을 위해)
-const supabaseUrl = 'https://qwxghpwasmvottahchky.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3eGdocHdhc212b3R0YWhjaGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5MTI3NTksImV4cCI6MjA2ODQ4ODc1OX0.4a1Oc66k9mGmXLoHmrKyZiVeZISpyzgq1BERrb_-8n8';
+// Supabase 환경변수에서 가져오기
+const supabaseUrl = ENV_CONFIG.SUPABASE_URL;
+const supabaseAnonKey = ENV_CONFIG.SUPABASE_ANON_KEY;
 
 // 개발 환경 체크 (안전한 방식)
 const IS_DEVELOPMENT = typeof window !== 'undefined' && window.location.hostname === 'localhost';
@@ -16,7 +17,8 @@ if (IS_DEVELOPMENT) {
   });
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+// Supabase 클라이언트 생성 (환경변수가 없으면 null)
+export const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
@@ -32,23 +34,23 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   db: {
     schema: 'public'
   }
-});
+}) : null;
 
 // 개발 모드에서만 연결 상태 확인
-if (IS_DEVELOPMENT) {
+if (IS_DEVELOPMENT && supabase) {
   supabase
     .from('properties')
     .select('count')
     .limit(1)
     .then(({ data, error }) => {
       if (error) {
-        console.error('Supabase 연결 실패:', error.message);
+        console.warn('Supabase 연결 실패'); // 민감한 정보 제거
       } else {
         console.log('✅ Supabase 연결 성공');
       }
     })
     .catch((error) => {
-      console.error('Supabase 연결 테스트 실패:', error.message);
+      console.warn('Supabase 연결 테스트 실패'); // 민감한 정보 제거
     });
 }
 

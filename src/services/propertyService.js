@@ -144,15 +144,15 @@ export const getProperties = async (filters = {}, userInfo = null) => {
       query = query.or(`user_id.eq.${userInfo.userId},manager_id.eq.${userInfo.userId},manager_id.eq.${userInfo.userEmail}`);
     }
 
-    // 기타 필터 적용
+    // 기타 필터 적용 (실제 DB 컬럼명 사용)
     if (filters.property_type_id) {
-      query = query.eq('property_type_id', filters.property_type_id);
+      query = query.eq('property_type', filters.property_type_id);
     }
     if (filters.transaction_type_id) {
-      query = query.eq('transaction_type_id', filters.transaction_type_id);
+      query = query.eq('transaction_type', filters.transaction_type_id);
     }
     if (filters.property_status_id) {
-      query = query.eq('property_status_id', filters.property_status_id);
+      query = query.eq('property_status', filters.property_status_id);
     }
     if (filters.search) {
       query = query.or(`property_name.ilike.%${filters.search}%,location.ilike.%${filters.search}%`);

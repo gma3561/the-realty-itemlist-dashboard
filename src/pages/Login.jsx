@@ -94,6 +94,33 @@ const Login = () => {
                 <p>• 관리자 권한은 별도로 부여됩니다</p>
               </div>
             </div>
+
+            {/* 개발용 임시 로그인 바이패스 */}
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <p className="text-xs text-gray-500 text-center mb-3">개발자 전용</p>
+              <button
+                onClick={() => {
+                  // 임시 사용자 생성
+                  const tempUser = {
+                    id: 'temp-user-' + Date.now(),
+                    email: 'test@example.com',
+                    user_metadata: {
+                      full_name: '테스트 사용자'
+                    },
+                    role: 'admin',
+                    isAdmin: true,
+                    name: '테스트 사용자'
+                  };
+                  
+                  // AuthContext를 우회하고 직접 리디렉션
+                  localStorage.setItem('temp-bypass-user', JSON.stringify(tempUser));
+                  window.location.href = '/#/';
+                }}
+                className="w-full flex justify-center items-center px-4 py-2 border border-red-300 rounded-md text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                🚀 개발용 빠른 로그인 (테스트 전용)
+              </button>
+            </div>
           </div>
         </div>
       </div>

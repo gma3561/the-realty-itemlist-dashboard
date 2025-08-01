@@ -10,25 +10,32 @@ const getEnvVar = (key, fallback = '') => {
   }
 };
 
-// GitHub Pages에서 환경변수가 없을 경우를 대비한 fallback 값들
+// 환경변수 설정
 export const ENV_CONFIG = {
-  // Supabase 설정 (확실한 fallback)
-  SUPABASE_URL: getEnvVar('VITE_SUPABASE_URL', 'https://qwxghpwasmvottahchky.supabase.co'),
-  SUPABASE_ANON_KEY: getEnvVar('VITE_SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3eGdocHdhc212b3R0YWhjaGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5MTI3NTksImV4cCI6MjA2ODQ4ODc1OX0.4a1Oc66k9mGmXLoHmrKyZiVeZISpyzgq1BERrb_-8n8'),
+  // Supabase 설정 (환경변수 필수)
+  SUPABASE_URL: getEnvVar('VITE_SUPABASE_URL', ''),
+  SUPABASE_ANON_KEY: getEnvVar('VITE_SUPABASE_ANON_KEY', ''),
 
   // 애플리케이션 설정
   ENVIRONMENT: getEnvVar('VITE_ENVIRONMENT', 'production'),
   APP_NAME: getEnvVar('VITE_APP_NAME', '팀 매물장'),
   APP_VERSION: getEnvVar('VITE_APP_VERSION', '2.0.0'),
 
-  // 관리자 설정
-  ADMIN_EMAILS: getEnvVar('VITE_ADMIN_EMAILS', 'jenny@the-realty.co.kr,lucas@the-realty.co.kr,hmlee@the-realty.co.kr'),
+  // 관리자 설정 (환경변수 필수)
+  ADMIN_EMAILS: getEnvVar('VITE_ADMIN_EMAILS', ''),
 
   // 기능 설정
   ENABLE_DEMO_BANNER: getEnvVar('VITE_ENABLE_DEMO_BANNER', 'true') !== 'false',
   ENABLE_PWA: getEnvVar('VITE_ENABLE_PWA', 'true') !== 'false',
-  USE_DUMMY_DATA: getEnvVar('VITE_USE_DUMMY_DATA', 'false') !== 'false', // Supabase 실제 데이터 사용
+  USE_DUMMY_DATA: getEnvVar('VITE_USE_DUMMY_DATA', 'false') !== 'false',
 };
+
+// Supabase 설정 검증
+if (!ENV_CONFIG.SUPABASE_URL || !ENV_CONFIG.SUPABASE_ANON_KEY) {
+  console.warn('⚠️ Supabase 환경변수가 설정되지 않았습니다.');
+  console.warn('더미 데이터 모드로 자동 전환됩니다.');
+  ENV_CONFIG.USE_DUMMY_DATA = true;
+}
 
 // 개발 모드에서 환경변수 정보 출력
 if (ENV_CONFIG.ENVIRONMENT === 'development') {

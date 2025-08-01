@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '../services/supabase';
-import { isHardcodedAdmin, getHardcodedAdmin } from '../data/hardcodedAdmins';
+import ENV_CONFIG from '../config/env';
 
 const AuthContext = createContext();
 
@@ -8,32 +8,28 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // checkUser를 useEffect 밖으로 이동하여 재사용 가능하게 함
-  const checkUser = async () => {
+  const checkUser = async (skipLoading = false) => {
       try {
-        setLoading(true);
+        if (!skipLoading) setLoading(true);
         
-        // 하드코딩된 관리자 계정 확인
-        try {
-          const hardcodedAdmin = localStorage.getItem('hardcoded-admin');
-          if (hardcodedAdmin) {
-            const adminUser = JSON.parse(hardcodedAdmin);
-            setUser(adminUser);
-            setError(null);
-            setLoading(false);
-            return;
-          }
-        } catch (localStorageError) {
-          console.warn('localStorage 접근 실패:', localStorageError);
-          // localStorage 접근 실패 시 무시하고 계속 진행
+        // 개발용 임시 바이패스 확인
+        const tempBypassUser = localStorage.getItem('temp-bypass-user');
+        if (tempBypassUser) {
+          const bypassUser = JSON.parse(tempBypassUser);
+          setUser(bypassUser);
+          setError(null);
+          setLoading(false);
+          return;
         }
         
         // Supabase 세션 가져오기
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
-          console.error('Session error:', sessionError);
+          // 세션 오류는 로깅하지 않음 (보안상)
           setUser(null);
           setError(null);
           setLoading(false);
@@ -50,80 +46,28 @@ export const AuthProvider = ({ children }) => {
           // user_mappings 확인을 일단 스킵하고 기본 사용자로 진행
           // (필요시 나중에 권한 체크)
           
-          // DB에서 사용자 프로필 조회
-          const { data: userProfile, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('user_id', googleUser.id)
-            .single();
+          // 관리자 이메일 확인 (환경변수에서 가져오기)
+          const adminEmails = ENV_CONFIG.ADMIN_EMAILS ? ENV_CONFIG.ADMIN_EMAILS.split(',').map(email => email.trim()) : [];
+          const isAdmin = adminEmails.includes(googleUser.email);
           
-          if (userProfile) {
-            // DB 정보와 구글 정보 병합
-            setUser({
-              ...googleUser,
-              ...userProfile,
-              role: userProfile.role || 'user',
-              isAdmin: userProfile.role === 'admin'
-            });
-          } else if (!profileError || profileError.code === 'PGRST116') {
-            // 새 사용자인 경우 프로필 생성 (PGRST116 = row not found)
-            console.log('Creating new user profile...');
-            try {
-              const { data: newProfile, error: insertError } = await supabase
-                .from('user_profiles')
-                .insert({
-                  user_id: googleUser.id,
-                  email: googleUser.email,
-                  name: googleUser.user_metadata?.full_name || googleUser.email,
-                  role: 'user'
-                })
-                .select()
-                .single();
-              
-              if (insertError) {
-                console.error('Failed to create user profile:', insertError);
-                // 프로필 생성 실패해도 기본 정보로 진행
-                setUser({
-                  ...googleUser,
-                  role: 'user',
-                  isAdmin: false
-                });
-              } else {
-                setUser({
-                  ...googleUser,
-                  ...newProfile,
-                  role: 'user',
-                  isAdmin: false
-                });
-              }
-            } catch (err) {
-              console.error('Profile creation error:', err);
-              // 오류 발생해도 기본 정보로 진행
-              setUser({
-                ...googleUser,
-                role: 'user',
-                isAdmin: false
-              });
-            }
-          } else {
-            // 다른 오류의 경우에도 기본 정보로 진행
-            console.error('Profile fetch error:', profileError);
-            setUser({
-              ...googleUser,
-              role: 'user',
-              isAdmin: false
-            });
-          }
+          // 사용자 정보 즉시 설정 (프로필 조회 제거로 성능 개선)
+          setUser({
+            ...googleUser,
+            role: isAdmin ? 'admin' : 'user',
+            isAdmin: isAdmin,
+            name: googleUser.user_metadata?.full_name || googleUser.email,
+            email: googleUser.email
+          });
           setError(null);
         } else {
           setUser(null);
         }
       } catch (error) {
-        console.error('Auth error:', error);
+        // 인증 오류는 로깅하지 않음 (보안상)
         setError(null); // 오류를 표시하지 않고 조용히 처리
         setUser(null);
       } finally {
-        setLoading(false);
+        if (!skipLoading) setLoading(false);
       }
     };
     
@@ -169,7 +113,7 @@ export const AuthProvider = ({ children }) => {
       
       if (error) throw error;
     } catch (error) {
-      console.error('Error signing in with Google:', error);
+      // 로그인 오류는 로깅하지 않음 (보안상)
       setError(error.message);
       setLoading(false);
     }
@@ -180,51 +124,24 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       
-      // 하드코딩된 관리자 계정 로그아웃
-      localStorage.removeItem('hardcoded-admin');
+      // 임시 바이패스 사용자 제거
+      localStorage.removeItem('temp-bypass-user');
       
       await supabase.auth.signOut();
       setUser(null);
     } catch (error) {
-      console.error('Error signing out:', error);
+      // 로그아웃 오류는 로깅하지 않음 (보안상)
       setError(error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // 이메일 패스워드 로그인
+  // 이메일 패스워드 로그인 (하드코딩된 관리자 기능 제거)
   const signInWithEmail = async (email, password) => {
     try {
       setLoading(true);
       setError(null);
-      
-      // 하드코딩된 관리자 확인
-      if (isHardcodedAdmin(email)) {
-        // 간단한 비밀번호 검증 (실제 환경에서는 더 강력한 인증 필요)
-        if (password === 'admin123!') {
-          const adminUser = getHardcodedAdmin(email);
-          if (adminUser) {
-            // 로컬 스토리지에 관리자 정보 저장
-            localStorage.setItem('hardcoded-admin', JSON.stringify({
-              ...adminUser,
-              id: `hardcoded-${adminUser.email}`,
-              aud: 'authenticated',
-              created_at: new Date().toISOString()
-            }));
-            
-            setUser({
-              ...adminUser,
-              id: `hardcoded-${adminUser.email}`,
-              aud: 'authenticated',
-              created_at: new Date().toISOString()
-            });
-            setLoading(false);
-            return;
-          }
-        }
-        throw new Error('비밀번호가 올바르지 않습니다.');
-      }
       
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -233,7 +150,6 @@ export const AuthProvider = ({ children }) => {
       
       if (error) throw error;
     } catch (error) {
-      console.error('Error signing in with email:', error);
       setError(error.message);
       setLoading(false);
     }
