@@ -39,21 +39,11 @@ const AuthProcess = () => {
 
           console.log('Session set successfully!', data);
           
-          // 세션이 제대로 설정되었는지 확인
-          const { data: { session } } = await supabase.auth.getSession();
-          console.log('Current session after setting:', !!session);
-          
-          if (!session) {
-            console.error('Session was not properly set');
-            navigate('/login');
-            return;
-          }
-          
-          // 대시보드로 이동
+          // 세션 설정 완료 후 바로 리다이렉션
           console.log('Redirecting to dashboard...');
           
-          // window.location을 사용하여 강제 리디렉션
-          window.location.href = '/the-realty-itemlist-dashboard/#/';
+          // React Router를 사용하여 빠른 리다이렉션
+          navigate('/', { replace: true });
         } catch (sessionError) {
           console.error('Session setup error:', sessionError);
           navigate('/login');

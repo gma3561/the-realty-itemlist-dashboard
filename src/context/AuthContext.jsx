@@ -48,21 +48,8 @@ export const AuthProvider = ({ children }) => {
           const googleUser = session.user;
           console.log('AuthContext: User found:', googleUser.email);
           
-          // 먼저 user_mappings에서 등록된 사용자인지 확인
-          const { data: userMapping, error: mappingError } = await supabase
-            .from('user_mappings')
-            .select('*')
-            .eq('email', googleUser.email)
-            .single();
-          
-          if (!userMapping && !mappingError) {
-            console.log('User not authorized:', googleUser.email);
-            await supabase.auth.signOut();
-            setUser(null);
-            setError('이 이메일은 등록되지 않은 사용자입니다. 관리자에게 문의하세요.');
-            setLoading(false);
-            return;
-          }
+          // user_mappings 확인을 일단 스킵하고 기본 사용자로 진행
+          // (필요시 나중에 권한 체크)
           
           // DB에서 사용자 프로필 조회
           const { data: userProfile, error: profileError } = await supabase
@@ -72,12 +59,12 @@ export const AuthProvider = ({ children }) => {
             .single();
           
           if (userProfile) {
-            // DB 정보와 구글 정보 병합 (userMapping의 role 우선)
+            // DB 정보와 구글 정보 병합
             setUser({
               ...googleUser,
               ...userProfile,
-              role: userMapping?.role || userProfile.role || 'user',
-              isAdmin: userMapping?.role === 'admin' || userProfile.role === 'admin'
+              role: userProfile.role || 'user',
+              isAdmin: userProfile.role === 'admin'
             });
           } else if (!profileError || profileError.code === 'PGRST116') {
             // 새 사용자인 경우 프로필 생성 (PGRST116 = row not found)
@@ -88,8 +75,8 @@ export const AuthProvider = ({ children }) => {
                 .insert({
                   user_id: googleUser.id,
                   email: googleUser.email,
-                  name: userMapping?.name || googleUser.user_metadata?.full_name || googleUser.email,
-                  role: userMapping?.role || 'user'
+                  name: googleUser.user_metadata?.full_name || googleUser.email,
+                  role: 'user'
                 })
                 .select()
                 .single();
@@ -151,21 +138,6 @@ export const AuthProvider = ({ children }) => {
         if (event === 'SIGNED_IN' && session?.user) {
           const googleUser = session.user;
           
-          // 먼저 user_mappings에서 등록된 사용자인지 확인
-          const { data: userMapping } = await supabase
-            .from('user_mappings')
-            .select('*')
-            .eq('email', googleUser.email)
-            .single();
-          
-          if (!userMapping) {
-            console.log('User not authorized in auth state change:', googleUser.email);
-            await supabase.auth.signOut();
-            setUser(null);
-            setError('이 이메일은 등록되지 않은 사용자입니다. 관리자에게 문의하세요.');
-            return;
-          }
-          
           // DB에서 사용자 프로필 조회
           const { data: userProfile } = await supabase
             .from('user_profiles')
@@ -189,8 +161,8 @@ export const AuthProvider = ({ children }) => {
                 .insert({
                   user_id: googleUser.id,
                   email: googleUser.email,
-                  name: userMapping?.name || googleUser.user_metadata?.full_name || googleUser.email,
-                  role: userMapping?.role || 'user'
+                  name: googleUser.user_metadata?.full_name || googleUser.email,
+                  role: 'user'
                 })
                 .select()
                 .single();
