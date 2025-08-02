@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { isHardcodedAdmin } from '../../data/hardcodedAdmins';
+import { getAuthorizedMenuItems, getUserRoleLabel, getUserRoleBadgeClass } from '../../utils/permissions';
 import { 
   Home, 
   Building2, 
@@ -15,7 +16,8 @@ import {
   ChevronDown,
   UserCircle,
   Bell,
-  User
+  User,
+  Upload
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -24,13 +26,22 @@ const Sidebar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [expandedMenu, setExpandedMenu] = useState(null);
 
-  const navigation = [
-    { name: '대시보드', href: '/', icon: Home },
-    { name: '매물 관리', href: '/properties', icon: Building2 },
-    { name: '내 매물 관리', href: '/my-properties', icon: User },
-    { name: '직원 관리', href: '/users', icon: Users, adminOnly: true },
-    { name: '성과 분석', href: '/analytics', icon: BarChart3 },
-  ];
+  // 아이콘 매핑
+  const iconMap = {
+    '📊': Home,
+    '🏠': User,
+    '🏢': Building2,
+    '👥': Users,
+    '📈': BarChart3,
+    '📁': Upload,
+    '⚙️': Settings
+  };
+
+  // 권한 기반 네비게이션 메뉴 생성
+  const navigation = getAuthorizedMenuItems(user).map(item => ({
+    ...item,
+    icon: iconMap[item.icon] || Home
+  }));
 
   const isActive = (path) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
@@ -77,28 +88,27 @@ const Sidebar = () => {
             <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
               <UserCircle className="w-6 h-6 text-primary-600" />
             </div>
-            <div className="ml-3">
+            <div className="ml-3 flex-1">
               <p className="text-sm font-medium text-gray-900">{user?.name || user?.email?.split('@')[0]}</p>
-              <p className="text-xs text-gray-500">{user?.role === 'admin' ? '관리자' : '직원'}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getUserRoleBadgeClass(user)}`}>
+                  {getUserRoleLabel(user)}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
         <nav className="sidebar-nav">
-          {navigation.map((item) => {
-            // 관리자 전용 메뉴 체크
-            if (item.adminOnly && !isHardcodedAdmin(user?.email)) {
-              return null;
-            }
-            
+          {navigation.filter(item => item.name !== 'Settings').map((item) => {
             const Icon = item.icon;
-            const active = isActive(item.href);
+            const active = isActive(item.path);
             
             return (
               <Link
                 key={item.name}
-                to={item.href}
+                to={item.path}
                 className={`sidebar-nav-item ${active ? 'active' : ''}`}
                 onClick={() => setIsMobileOpen(false)}
               >

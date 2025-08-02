@@ -6,6 +6,7 @@ import {
   dummyTransactionTypes, 
   dummyPropertyStatuses 
 } from '../data/dummyProperties';
+import { hasPropertyPermission, isAdmin } from '../utils/permissions';
 
 // 더미데이터 사용 여부
 const USE_DUMMY_DATA = ENV_CONFIG.USE_DUMMY_DATA;
@@ -96,18 +97,15 @@ export const getLookupTables = async () => {
 };
 
 // 매물 목록 조회 (권한 기반 필터링 포함)
-export const getProperties = async (filters = {}, userInfo = null) => {
+export const getProperties = async (filters = {}, user = null) => {
   if (USE_DUMMY_DATA) {
     console.log('🎭 더미데이터 모드: 매물 목록 반환');
     let filteredProperties = [...dummyProperties];
 
     // 권한 기반 필터링: 관리자가 아닌 경우 본인 매물만 조회
-    if (userInfo && !userInfo.isAdmin) {
+    if (user && !isAdmin(user)) {
       filteredProperties = filteredProperties.filter(p => 
-        p.user_id === userInfo.userId || // 구글 로그인 사용자 ID
-        p.manager_id === userInfo.userId || 
-        p.manager_id === userInfo.userEmail ||
-        p.manager_id === `hardcoded-${userInfo.userEmail}`
+        hasPropertyPermission(user, p, 'view')
       );
     }
 
@@ -139,9 +137,9 @@ export const getProperties = async (filters = {}, userInfo = null) => {
     let query = supabase.from('properties').select('*');
 
     // 권한 기반 필터링: 관리자가 아닌 경우 본인 매물만 조회
-    if (userInfo && !userInfo.isAdmin) {
+    if (user && !isAdmin(user)) {
       // user_id 또는 manager_id가 일치하는 매물 조회
-      query = query.or(`user_id.eq.${userInfo.userId},manager_id.eq.${userInfo.userId},manager_id.eq.${userInfo.userEmail}`);
+      query = query.or(`user_id.eq.${user.id},manager_id.eq.${user.id},manager_id.eq.${user.email}`);
     }
 
     // 기타 필터 적용 (실제 DB 컬럼명 사용)
@@ -167,11 +165,9 @@ export const getProperties = async (filters = {}, userInfo = null) => {
     console.error('매물 목록 조회 실패:', error);
     // 오류 시 더미데이터 반환 (권한 필터링 적용)
     let fallbackData = [...dummyProperties];
-    if (userInfo && !userInfo.isAdmin) {
+    if (user && !isAdmin(user)) {
       fallbackData = fallbackData.filter(p => 
-        p.manager_id === userInfo.userId || 
-        p.manager_id === userInfo.userEmail ||
-        p.manager_id === `hardcoded-${userInfo.userEmail}`
+        hasPropertyPermission(user, p, 'view')
       );
     }
     return { data: fallbackData, error: error.message };
@@ -202,12 +198,24 @@ export const getPropertyById = async (id) => {
   }
 };
 
-// 매물 추가
-export const createProperty = async (propertyData) => {
+// 매물 추가 (사용자 정보 자동 설정)
+export const createProperty = async (propertyData, user = null) => {
+  // 권한 체크
+  if (user && !hasPropertyPermission(user, null, 'create')) {
+    return { data: null, error: '매물을 등록할 권한이 없습니다.' };
+  }
+
+  // 사용자 정보를 자동으로 설정
+  const propertyWithUser = {
+    ...propertyData,
+    user_id: user?.id || propertyData.user_id,
+    manager_id: user?.id || user?.email || propertyData.manager_id
+  };
+
   if (USE_DUMMY_DATA) {
     console.log('🎭 더미데이터 모드: 매물 추가 시뮬레이션');
     const newProperty = {
-      ...propertyData,
+      ...propertyWithUser,
       id: `dummy-${Date.now()}`,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -219,7 +227,7 @@ export const createProperty = async (propertyData) => {
   try {
     const { data, error } = await supabase
       .from('properties')
-      .insert([propertyData])
+      .insert([propertyWithUser])
       .select()
       .single();
 
@@ -231,10 +239,17 @@ export const createProperty = async (propertyData) => {
   }
 };
 
-// 매물 수정
-export const updateProperty = async (id, updates) => {
+// 매물 수정 (권한 체크 포함)
+export const updateProperty = async (id, updates, user = null) => {
   if (USE_DUMMY_DATA) {
     console.log('🎭 더미데이터 모드: 매물 수정 시뮬레이션');
+    const property = dummyProperties.find(p => p.id === id);
+    
+    // 권한 체크
+    if (user && !hasPropertyPermission(user, property, 'edit')) {
+      return { data: null, error: '이 매물을 수정할 권한이 없습니다.' };
+    }
+    
     const index = dummyProperties.findIndex(p => p.id === id);
     if (index !== -1) {
       dummyProperties[index] = {
@@ -248,6 +263,14 @@ export const updateProperty = async (id, updates) => {
   }
 
   try {
+    // 먼저 매물 정보를 가져와서 권한 체크
+    if (user) {
+      const { data: property } = await getPropertyById(id);
+      if (!hasPropertyPermission(user, property, 'edit')) {
+        return { data: null, error: '이 매물을 수정할 권한이 없습니다.' };
+      }
+    }
+
     const { data, error } = await supabase
       .from('properties')
       .update(updates)
@@ -263,10 +286,17 @@ export const updateProperty = async (id, updates) => {
   }
 };
 
-// 매물 삭제
-export const deleteProperty = async (id) => {
+// 매물 삭제 (권한 체크 포함)
+export const deleteProperty = async (id, user = null) => {
   if (USE_DUMMY_DATA) {
     console.log('🎭 더미데이터 모드: 매물 삭제 시뮬레이션');
+    const property = dummyProperties.find(p => p.id === id);
+    
+    // 권한 체크
+    if (user && !hasPropertyPermission(user, property, 'delete')) {
+      return { error: '이 매물을 삭제할 권한이 없습니다.' };
+    }
+    
     const index = dummyProperties.findIndex(p => p.id === id);
     if (index !== -1) {
       dummyProperties.splice(index, 1);
@@ -276,6 +306,14 @@ export const deleteProperty = async (id) => {
   }
 
   try {
+    // 먼저 매물 정보를 가져와서 권한 체크
+    if (user) {
+      const { data: property } = await getPropertyById(id);
+      if (!hasPropertyPermission(user, property, 'delete')) {
+        return { error: '이 매물을 삭제할 권한이 없습니다.' };
+      }
+    }
+
     const { error } = await supabase
       .from('properties')
       .delete()

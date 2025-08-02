@@ -98,27 +98,49 @@ const Login = () => {
             {/* 개발용 임시 로그인 바이패스 */}
             <div className="mt-6 pt-6 border-t border-gray-200">
               <p className="text-xs text-gray-500 text-center mb-3">개발자 전용</p>
+              
+              {/* 관리자 로그인 */}
               <button
                 onClick={() => {
-                  // 임시 사용자 생성
-                  const tempUser = {
-                    id: 'temp-user-' + Date.now(),
-                    email: 'test@example.com',
+                  const tempAdminUser = {
+                    id: 'temp-admin-' + Date.now(),
+                    email: 'admin@example.com',
                     user_metadata: {
-                      full_name: '테스트 사용자'
+                      full_name: '테스트 관리자'
                     },
                     role: 'admin',
                     isAdmin: true,
+                    name: '테스트 관리자'
+                  };
+                  
+                  localStorage.setItem('temp-bypass-user', JSON.stringify(tempAdminUser));
+                  window.location.href = '/#/';
+                }}
+                className="w-full flex justify-center items-center px-4 py-2 mb-2 border border-red-300 rounded-md text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                🔑 관리자로 로그인 (모든 권한)
+              </button>
+              
+              {/* 일반사용자 로그인 */}
+              <button
+                onClick={() => {
+                  const tempRegularUser = {
+                    id: 'temp-user-' + Date.now(),
+                    email: 'user@example.com',
+                    user_metadata: {
+                      full_name: '테스트 사용자'
+                    },
+                    role: 'user',
+                    isAdmin: false,
                     name: '테스트 사용자'
                   };
                   
-                  // AuthContext를 우회하고 직접 리디렉션
-                  localStorage.setItem('temp-bypass-user', JSON.stringify(tempUser));
+                  localStorage.setItem('temp-bypass-user', JSON.stringify(tempRegularUser));
                   window.location.href = '/#/';
                 }}
-                className="w-full flex justify-center items-center px-4 py-2 border border-red-300 rounded-md text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                className="w-full flex justify-center items-center px-4 py-2 border border-blue-300 rounded-md text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                🚀 개발용 빠른 로그인 (테스트 전용)
+                👤 일반사용자로 로그인 (제한된 권한)
               </button>
             </div>
           </div>

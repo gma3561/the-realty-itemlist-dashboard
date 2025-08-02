@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Home, Calendar, Edit, Eye, Trash2, Phone } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { hasPropertyPermission } from '../../utils/permissions';
 
 const PropertyCard = ({ property, onEdit, onDelete, onView, showCustomerInfo = false }) => {
+  const { user } = useAuth();
   const getStatusColor = (status) => {
     const colors = {
       'available': 'bg-green-100 text-green-800 border-green-200',
@@ -187,7 +190,7 @@ const PropertyCard = ({ property, onEdit, onDelete, onView, showCustomerInfo = f
           </div>
         )}
 
-        {/* 액션 버튼들 */}
+        {/* 액션 버튼들 - 권한 기반 */}
         <div className="flex justify-between items-center pt-3 border-t border-gray-100">
           <div className="flex space-x-2">
             <button
@@ -197,16 +200,21 @@ const PropertyCard = ({ property, onEdit, onDelete, onView, showCustomerInfo = f
               <Eye className="w-4 h-4 mr-1" />
               보기
             </button>
-            <button
-              onClick={() => onEdit && onEdit(property)}
-              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <Edit className="w-4 h-4 mr-1" />
-              수정
-            </button>
+            
+            {/* 수정 버튼: 권한이 있는 경우에만 표시 */}
+            {hasPropertyPermission(user, property, 'edit') && (
+              <button
+                onClick={() => onEdit && onEdit(property)}
+                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <Edit className="w-4 h-4 mr-1" />
+                수정
+              </button>
+            )}
           </div>
           
-          {onDelete && (
+          {/* 삭제 버튼: 권한이 있는 경우에만 표시 */}
+          {onDelete && hasPropertyPermission(user, property, 'delete') && (
             <button
               onClick={() => onDelete(property)}
               className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-100 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500"

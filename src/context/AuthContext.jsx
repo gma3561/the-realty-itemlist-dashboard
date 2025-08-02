@@ -25,6 +25,15 @@ export const AuthProvider = ({ children }) => {
           return;
         }
         
+        // Supabase가 초기화되지 않은 경우 더미 데이터 모드로 전환
+        if (!supabase) {
+          console.warn('Supabase 클라이언트가 초기화되지 않았습니다. 더미 데이터 모드로 전환됩니다.');
+          setUser(null);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+        
         // Supabase 세션 가져오기
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
@@ -74,6 +83,11 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     checkUser();
     
+    // Supabase가 초기화되지 않은 경우 리스너 설정 안함
+    if (!supabase) {
+      return;
+    }
+    
     // 인증 상태 변경 리스너
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -99,6 +113,10 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
+      
+      if (!supabase) {
+        throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
+      }
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -127,7 +145,9 @@ export const AuthProvider = ({ children }) => {
       // 임시 바이패스 사용자 제거
       localStorage.removeItem('temp-bypass-user');
       
-      await supabase.auth.signOut();
+      if (supabase) {
+        await supabase.auth.signOut();
+      }
       setUser(null);
     } catch (error) {
       // 로그아웃 오류는 로깅하지 않음 (보안상)
@@ -142,6 +162,10 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
+      
+      if (!supabase) {
+        throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
+      }
       
       const { error } = await supabase.auth.signInWithPassword({
         email,

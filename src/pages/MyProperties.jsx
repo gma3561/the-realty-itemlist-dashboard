@@ -27,12 +27,13 @@ const MyProperties = () => {
   const { data: properties = [], isLoading, error, refetch } = useQuery(
     ['my-properties', filters, user?.email],
     async () => {
-      const userInfo = {
-        userId: user?.id,
-        userEmail: user?.email,
-        isAdmin: false // 강제로 false로 설정하여 본인 매물만 조회
+      // 이 페이지에서는 항상 본인 매물만 조회하도록 user 객체를 수정
+      const userForQuery = {
+        ...user,
+        isAdmin: false, // 강제로 false로 설정하여 본인 매물만 조회
+        role: 'user'
       };
-      const { data, error } = await propertyService.getProperties(filters, userInfo);
+      const { data, error } = await propertyService.getProperties(filters, userForQuery);
       if (error) throw error;
       return data || [];
     },
@@ -82,7 +83,7 @@ const MyProperties = () => {
   // 매물 삭제 mutation
   const deleteMutation = useMutation(
     async (propertyId) => {
-      const { error } = await propertyService.deleteProperty(propertyId);
+      const { error } = await propertyService.deleteProperty(propertyId, user);
       if (error) throw new Error(error);
       return propertyId;
     },
