@@ -6,7 +6,7 @@ export const usePropertyStatuses = () => {
     const { data, error } = await supabase
       .from('property_statuses')
       .select('*')
-      .order('name');
+      .order('display_order');
       
     if (error) throw error;
     return data;

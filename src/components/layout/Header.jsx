@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Menu, X, User, LogOut, Home, FileText, Settings, Users, Upload, UserCheck, Clock } from 'lucide-react';
+import { Menu, X, User, LogOut, Home, FileText, Settings, Users, Upload, UserCheck, Clock, TestTube } from 'lucide-react';
 import GlobalSearchBar from '../common/GlobalSearchBar';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, signOut, isQAUser } = useAuth();
   const location = useLocation();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -20,9 +20,8 @@ const Header = () => {
     { path: '/customers', icon: UserCheck, label: '고객관리', shortLabel: '고객' },
     { path: '/users', icon: Users, label: '사용자관리', shortLabel: '사용자' },
     { path: '/updates', icon: Clock, label: '업데이트', shortLabel: '업데이트' },
-    // 관리자만 CSV Import와 설정 메뉴 표시
+    // 관리자만 설정 메뉴 표시
     ...(user && (user.email === 'admin@the-realty.co.kr' || user.role === 'admin') ? [
-      { path: '/csv-import', icon: Upload, label: 'CSV가져오기', shortLabel: 'CSV' },
       { path: '/settings', icon: Settings, label: '설정', shortLabel: '설정' }
     ] : [])
   ];
@@ -65,9 +64,22 @@ const Header = () => {
           <div className="flex items-center">
             {user && (
               <div className="hidden md:ml-4 md:flex md:items-center md:space-x-3">
-                <span className="hidden lg:block text-sm font-medium text-gray-700 truncate max-w-32">
-                  {user.email}
-                </span>
+                <div className="flex items-center space-x-2">
+                  {isQAUser && (
+                    <div className="flex items-center px-2 py-1 text-xs font-medium text-orange-800 bg-orange-100 rounded-full border border-orange-200">
+                      <TestTube className="w-3 h-3 mr-1" />
+                      QA
+                    </div>
+                  )}
+                  <span className="hidden lg:block text-sm font-medium text-gray-700 truncate max-w-32">
+                    {user.name || user.email}
+                  </span>
+                  {user.role === 'admin' && (
+                    <div className="px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">
+                      관리자
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={signOut}
                   className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200"
@@ -128,9 +140,22 @@ const Header = () => {
           {user && (
             <div className="pt-4 pb-3 border-t border-gray-200">
               <div className="flex items-center px-4">
+                <div className="flex items-center space-x-2">
+                  {isQAUser && (
+                    <div className="flex items-center px-2 py-1 text-xs font-medium text-orange-800 bg-orange-100 rounded-full border border-orange-200">
+                      <TestTube className="w-3 h-3 mr-1" />
+                      QA
+                    </div>
+                  )}
+                  {user.role === 'admin' && (
+                    <div className="px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">
+                      관리자
+                    </div>
+                  )}
+                </div>
                 <div className="ml-3">
                   <div className="text-base font-medium text-gray-800">
-                    {user.email}
+                    {user.name || user.email}
                   </div>
                 </div>
               </div>

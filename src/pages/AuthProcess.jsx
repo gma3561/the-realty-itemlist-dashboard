@@ -14,9 +14,9 @@ const AuthProcess = () => {
         const accessToken = params.get('access_token');
         const refreshToken = params.get('refresh_token');
         
-        console.log('AuthProcess: Processing tokens...');
-        console.log('Access Token:', !!accessToken);
-        console.log('Refresh Token:', !!refreshToken);
+        // console.log('AuthProcess: Processing tokens...');
+        // console.log('Access Token:', !!accessToken);
+        // console.log('Refresh Token:', !!refreshToken);
         
         if (!accessToken) {
           console.error('No access token found');
@@ -37,10 +37,10 @@ const AuthProcess = () => {
             return;
           }
 
-          console.log('Session set successfully!', data);
+          // console.log('Session set successfully!', data);
           
           // 세션 설정 완료 후 바로 리다이렉션
-          console.log('Redirecting to dashboard...');
+          // console.log('Redirecting to dashboard...');
           
           // React Router를 사용하여 빠른 리다이렉션
           navigate('/', { replace: true });

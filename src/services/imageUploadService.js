@@ -88,7 +88,7 @@ class ImageUploadService {
     try {
       // Google Drive 폴더 생성 (한 번만)
       driveFolder = await googleDriveService.createPropertyFolder(propertyId, propertyName);
-      console.log('Google Drive folder created:', driveFolder.id);
+      // console.log('Google Drive folder created:', driveFolder.id);
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -112,7 +112,7 @@ class ImageUploadService {
             file.type
           );
 
-          console.log('Image uploaded to Google Drive:', driveFile.id);
+          // console.log('Image uploaded to Google Drive:', driveFile.id);
 
           // 3. 썸네일을 Supabase Storage에 업로드
           const thumbnailFileName = `${propertyId}/thumb_${displayOrder}_${file.name}`;
@@ -130,7 +130,7 @@ class ImageUploadService {
             throw thumbnailError;
           }
 
-          console.log('Thumbnail uploaded to Supabase:', thumbnailData.path);
+          // console.log('Thumbnail uploaded to Supabase:', thumbnailData.path);
 
           // 4. 썸네일 public URL 생성
           const { data: publicUrlData } = supabase.storage
@@ -162,7 +162,7 @@ class ImageUploadService {
             throw dbError;
           }
 
-          console.log('Image record saved to database:', imageRecord.id);
+          // console.log('Image record saved to database:', imageRecord.id);
           results.push(imageRecord);
 
         } catch (error) {
@@ -199,9 +199,9 @@ class ImageUploadService {
       // Google Drive에서 삭제
       try {
         await googleDriveService.deleteFile(image.google_drive_id);
-        console.log('Image deleted from Google Drive:', image.google_drive_id);
+        // console.log('Image deleted from Google Drive:', image.google_drive_id);
       } catch (driveError) {
-        console.warn('Google Drive 파일 삭제 실패:', driveError);
+        // console.warn('Google Drive 파일 삭제 실패:', driveError);
       }
 
       // Supabase 썸네일 삭제
@@ -211,12 +211,12 @@ class ImageUploadService {
           .remove([image.thumbnail_path]);
         
         if (storageError) {
-          console.warn('Supabase 썸네일 삭제 실패:', storageError);
+          // console.warn('Supabase 썸네일 삭제 실패:', storageError);
         } else {
-          console.log('Thumbnail deleted from Supabase:', image.thumbnail_path);
+          // console.log('Thumbnail deleted from Supabase:', image.thumbnail_path);
         }
       } catch (supabaseError) {
-        console.warn('Supabase 썸네일 삭제 실패:', supabaseError);
+        // console.warn('Supabase 썸네일 삭제 실패:', supabaseError);
       }
 
       // DB에서 삭제
@@ -229,7 +229,7 @@ class ImageUploadService {
         throw deleteError;
       }
 
-      console.log('Image record deleted from database:', imageId);
+      // console.log('Image record deleted from database:', imageId);
       return true;
 
     } catch (error) {
@@ -256,7 +256,7 @@ class ImageUploadService {
         }
       }
 
-      console.log('Images reordered successfully');
+      // console.log('Images reordered successfully');
       return true;
 
     } catch (error) {
@@ -283,7 +283,7 @@ class ImageUploadService {
         throw error;
       }
 
-      console.log('Primary image set successfully:', imageId);
+      // console.log('Primary image set successfully:', imageId);
       return true;
 
     } catch (error) {

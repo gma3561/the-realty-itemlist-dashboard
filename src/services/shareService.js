@@ -83,7 +83,7 @@ class ShareService {
         );
       }
       
-      console.log(`Copied ${images.length} images to share folder`);
+      // console.log(`Copied ${images.length} images to share folder`);
       
     } catch (error) {
       console.error('Failed to copy images to share folder:', error);
@@ -187,11 +187,11 @@ class ShareService {
         .eq('id', shareId);
 
       if (error) {
-        console.warn('Failed to increment view count:', error);
+        // console.warn('Failed to increment view count:', error);
       }
 
     } catch (error) {
-      console.warn('Failed to increment view count:', error);
+      // console.warn('Failed to increment view count:', error);
     }
   }
 
@@ -206,11 +206,11 @@ class ShareService {
         });
 
       if (error) {
-        console.warn('Failed to log share access:', error);
+        // console.warn('Failed to log share access:', error);
       }
 
     } catch (error) {
-      console.warn('Failed to log share access:', error);
+      // console.warn('Failed to log share access:', error);
     }
   }
 
@@ -255,7 +255,7 @@ class ShareService {
         try {
           await googleDriveService.deleteFile(shareData.share_folder_id);
         } catch (driveError) {
-          console.warn('Failed to delete Google Drive share folder:', driveError);
+          // console.warn('Failed to delete Google Drive share folder:', driveError);
         }
       }
 

@@ -19,7 +19,7 @@ export const useRealtimeProperties = () => {
           table: 'properties'
         },
         (payload) => {
-          console.log('실시간 변경 감지:', payload);
+          // console.log('실시간 변경 감지:', payload);
           
           // React Query 캐시 무효화
           queryClient.invalidateQueries(['properties']);
@@ -37,7 +37,7 @@ export const useRealtimeProperties = () => {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('✅ 실시간 구독 활성화됨');
+          // console.log('✅ 실시간 구독 활성화됨');
         }
       });
 

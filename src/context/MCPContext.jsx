@@ -11,7 +11,7 @@ export function MCPProvider({ children }) {
   // MCP 연결 상태 알림
   useEffect(() => {
     if (mcpClient.connected) {
-      console.log('✅ MCP 서버 연결됨');
+      // console.log('✅ MCP 서버 연결됨');
       // 개발 환경에서만 토스트 표시
       if (window.location.hostname === 'localhost') {
         addToast('MCP 서버에 연결되었습니다', 'success');

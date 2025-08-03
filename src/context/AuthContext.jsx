@@ -1,6 +1,12 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '../services/supabase';
 import ENV_CONFIG from '../config/env';
+import { 
+  isBypassEnabled, 
+  getBypassUser, 
+  clearBypassUser,
+  setBypassUser
+} from '../config/bypass';
 
 const AuthContext = createContext();
 
@@ -15,19 +21,20 @@ export const AuthProvider = ({ children }) => {
       try {
         if (!skipLoading) setLoading(true);
         
-        // 개발용 임시 바이패스 확인
-        const tempBypassUser = localStorage.getItem('temp-bypass-user');
-        if (tempBypassUser) {
-          const bypassUser = JSON.parse(tempBypassUser);
-          setUser(bypassUser);
-          setError(null);
-          setLoading(false);
-          return;
+        // QA 바이패스 사용자 확인 (조건부 활성화)
+        if (isBypassEnabled()) {
+          const bypassUser = getBypassUser();
+          if (bypassUser) {
+            setUser(bypassUser);
+            setError(null);
+            setLoading(false);
+            return;
+          }
         }
         
         // Supabase가 초기화되지 않은 경우 더미 데이터 모드로 전환
         if (!supabase) {
-          console.warn('Supabase 클라이언트가 초기화되지 않았습니다. 더미 데이터 모드로 전환됩니다.');
+          // console.warn('Supabase 클라이언트가 초기화되지 않았습니다. 더미 데이터 모드로 전환됩니다.');
           setUser(null);
           setError(null);
           setLoading(false);
@@ -45,12 +52,12 @@ export const AuthProvider = ({ children }) => {
           return;
         }
         
-        console.log('AuthContext: Session check result:', !!session);
+        // console.log('AuthContext: Session check result:', !!session);
         
         if (session?.user) {
           // 구글 로그인 사용자 정보 처리
           const googleUser = session.user;
-          console.log('AuthContext: User found:', googleUser.email);
+          // console.log('AuthContext: User found:', googleUser.email);
           
           // user_mappings 확인을 일단 스킵하고 기본 사용자로 진행
           // (필요시 나중에 권한 체크)
@@ -91,7 +98,7 @@ export const AuthProvider = ({ children }) => {
     // 인증 상태 변경 리스너
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('AuthContext: Auth state changed:', event, !!session);
+        // console.log('AuthContext: Auth state changed:', event, !!session);
         
         if (event === 'SIGNED_OUT') {
           setUser(null);
@@ -121,7 +128,7 @@ export const AuthProvider = ({ children }) => {
       // 환경에 따른 리디렉션 URL 설정
       const isDevelopment = window.location.hostname === 'localhost';
       const redirectUrl = isDevelopment
-        ? `${window.location.origin}/`
+        ? `${window.location.origin}/#/auth/callback`
         : 'https://gma3561.github.io/the-realty-itemlist-dashboard/oauth-callback.html';
       
       const { error } = await supabase.auth.signInWithOAuth({
@@ -143,13 +150,43 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // QA 바이패스 로그인 함수들
+  const signInWithBypass = async (userType = 'admin') => {
+    if (!isBypassEnabled()) {
+      setError('QA 바이패스 기능이 비활성화되어 있습니다.');
+      return false;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const success = setBypassUser(userType);
+      if (success) {
+        // 사용자 정보 즉시 업데이트
+        await checkUser(true);
+        return true;
+      } else {
+        setError('바이패스 로그인에 실패했습니다.');
+        return false;
+      }
+    } catch (error) {
+      setError(error.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // 로그아웃
   const signOut = async () => {
     try {
       setLoading(true);
       
-      // 임시 바이패스 사용자 제거
-      localStorage.removeItem('temp-bypass-user');
+      // QA 바이패스 사용자 제거 (조건부)
+      if (isBypassEnabled()) {
+        clearBypassUser();
+      }
       
       if (supabase) {
         await supabase.auth.signOut();
@@ -169,7 +206,11 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     signInWithGoogle,
+    signInWithBypass,
     signOut,
+    // QA 관련 헬퍼 함수들
+    isBypassEnabled: isBypassEnabled(),
+    isQAUser: user?.isQAUser || false,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

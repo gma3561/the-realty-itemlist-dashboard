@@ -164,10 +164,10 @@ export const securityLog = (level, message, data = {}) => {
       console.error('🔒 Security Error:', logData);
       break;
     case LOG_LEVELS.WARN:
-      console.warn('🔒 Security Warning:', logData);
+      // console.warn('🔒 Security Warning:', logData);
       break;
     case LOG_LEVELS.INFO:
-      console.info('🔒 Security Info:', logData);
+      // console.info('🔒 Security Info:', logData);
       break;
     case LOG_LEVELS.DEBUG:
       console.debug('🔒 Security Debug:', logData);
@@ -177,7 +177,7 @@ export const securityLog = (level, message, data = {}) => {
 
 // 개발 모드에서만 콘솔 출력
 if (IS_DEVELOPMENT) {
-  console.info('🔒 보안 설정이 로드되었습니다.', {
+  // console.info('🔒 보안 설정이 로드되었습니다.', {
     environment: ENVIRONMENT,
     appVersion: APP_CONFIG.version,
     securityPolicies: Object.keys(SECURITY_POLICIES)

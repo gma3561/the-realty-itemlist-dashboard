@@ -7,7 +7,7 @@ import { isHardcodedAdmin } from '../data/hardcodedAdmins';
 import { PlusCircle, Search, RefreshCw, Building2, MapPin, Calendar, Grid, List, User, Trash2, Hash } from 'lucide-react';
 import PropertyCard from '../components/property/PropertyCard';
 import propertyService from '../services/propertyService';
-import { dummyPropertyTypes, dummyTransactionTypes, dummyPropertyStatuses } from '../data/dummyProperties';
+import { getRealtorNameByEmail } from '../data/realtorNameMap';
 import ENV_CONFIG from '../config/env';
 
 const PropertyList = () => {
@@ -25,13 +25,11 @@ const PropertyList = () => {
   
   // 매물 데이터 가져오기
   const { data: properties = [], isLoading, error, refetch } = useQuery(
-    ['properties', filters, user?.email],
+    ['properties', filters, JSON.parse(localStorage.getItem('temp-bypass-user') || '{}').id],
     async () => {
-      const userInfo = {
-        userId: user?.id,
-        userEmail: user?.email,
-        isAdmin: isHardcodedAdmin(user?.email)
-      };
+      // 임시 로그인 사용자 정보 가져오기
+      const tempUser = JSON.parse(localStorage.getItem('temp-bypass-user') || '{}');
+      const userInfo = tempUser.id ? tempUser : user;
       const { data, error } = await propertyService.getProperties(filters, userInfo);
       if (error) throw error;
       return data || [];
@@ -70,12 +68,18 @@ const PropertyList = () => {
   };
 
   const getDisplayManager = (property) => {
-    // 더미데이터에서는 manager_id에서 이메일 추출
+    // manager_name이 있으면 우선 사용
+    if (property.manager_name) {
+      return property.manager_name;
+    }
+    
+    // manager_id가 이메일 형식이면 이름으로 변환
     if (property.manager_id?.includes('@')) {
       const email = property.manager_id.replace('hardcoded-', '');
-      const name = email.split('@')[0].toUpperCase();
-      return name;
+      return getRealtorNameByEmail(email);
     }
+    
+    // users 테이블 조인 데이터가 있으면 사용
     return property.users?.name || property.users?.email || '미지정';
   };
 
@@ -261,9 +265,9 @@ const PropertyList = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">전체</option>
-                  <option value="거래가능">거래가능</option>
-                  <option value="거래완료">거래완료</option>
-                  <option value="거래보류">거래보류</option>
+                  {lookupData.propertyStatuses?.map(status => (
+                    <option key={status.id} value={status.name}>{status.name}</option>
+                  ))}
                 </select>
               </div>
               
@@ -277,10 +281,9 @@ const PropertyList = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">전체</option>
-                  <option value="아파트">아파트</option>
-                  <option value="오피스텔">오피스텔</option>
-                  <option value="빌라/연립">빌라/연립</option>
-                  <option value="단독주택">단독주택</option>
+                  {lookupData.propertyTypes?.map(type => (
+                    <option key={type.id} value={type.name}>{type.name}</option>
+                  ))}
                 </select>
               </div>
               
@@ -294,9 +297,9 @@ const PropertyList = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">전체</option>
-                  <option value="매매">매매</option>
-                  <option value="전세">전세</option>
-                  <option value="월세">월세</option>
+                  {lookupData.transactionTypes?.map(type => (
+                    <option key={type.id} value={type.name}>{type.name}</option>
+                  ))}
                 </select>
               </div>
               
@@ -371,7 +374,7 @@ const PropertyList = () => {
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center text-sm text-gray-500">
                                 <Hash className="w-4 h-4 mr-1" />
-                                <span className="font-mono text-xs">{property.id.slice(0, 8)}</span>
+                                <span className="font-mono text-xs">{property.id}</span>
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">

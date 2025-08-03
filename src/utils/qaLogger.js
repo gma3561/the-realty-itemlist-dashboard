@@ -6,7 +6,7 @@ class QALogger {
     this.logEventKey = 'qa_log_event';
     
     if (this.enabled) {
-      console.log('🔍 QA 모드 활성화됨');
+      // console.log('🔍 QA 모드 활성화됨');
       this.initializeInterceptors();
     }
   }
@@ -60,7 +60,7 @@ class QALogger {
     localStorage.setItem(this.logEventKey, JSON.stringify(log));
 
     // 콘솔에도 출력
-    console.log(`[QA ${type.toUpperCase()}]`, message, details);
+    // console.log(`[QA ${type.toUpperCase()}]`, message, details);
   }
 
   // API 요청 인터셉터

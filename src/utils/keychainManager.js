@@ -1,7 +1,5 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+// Browser-compatible version of KeychainManager
+// Node.js modules are not available in browser environment
 
 class KeychainManager {
   constructor() {
@@ -10,35 +8,35 @@ class KeychainManager {
 
   async storeSecret(key, value) {
     try {
-      const command = `security add-generic-password -a "${key}" -s "${this.serviceName}" -w "${value}" -U`;
-      await execAsync(command);
-      console.log(`Secret stored in keychain: ${key}`);
+      // In browser, use localStorage as fallback
+      localStorage.setItem(`${this.serviceName}_${key}`, value);
+      // console.log(`Secret stored in localStorage: ${key}`);
       return true;
     } catch (error) {
-      console.error(`Failed to store secret in keychain: ${key}`, error);
+      console.error(`Failed to store secret: ${key}`, error);
       return false;
     }
   }
 
   async getSecret(key) {
     try {
-      const command = `security find-generic-password -a "${key}" -s "${this.serviceName}" -w`;
-      const { stdout } = await execAsync(command);
-      return stdout.trim();
+      // In browser, use localStorage as fallback
+      const value = localStorage.getItem(`${this.serviceName}_${key}`);
+      return value || null;
     } catch (error) {
-      console.warn(`Secret not found in keychain: ${key}`);
+      // console.warn(`Secret not found: ${key}`);
       return null;
     }
   }
 
   async deleteSecret(key) {
     try {
-      const command = `security delete-generic-password -a "${key}" -s "${this.serviceName}"`;
-      await execAsync(command);
-      console.log(`Secret deleted from keychain: ${key}`);
+      // In browser, use localStorage as fallback
+      localStorage.removeItem(`${this.serviceName}_${key}`);
+      // console.log(`Secret deleted: ${key}`);
       return true;
     } catch (error) {
-      console.error(`Failed to delete secret from keychain: ${key}`, error);
+      console.error(`Failed to delete secret: ${key}`, error);
       return false;
     }
   }
@@ -54,11 +52,11 @@ class KeychainManager {
 
   async initializeGoogleDriveKeys() {
     const keys = {
-      'GOOGLE_CLIENT_EMAIL': process.env.GOOGLE_CLIENT_EMAIL,
-      'GOOGLE_PRIVATE_KEY': process.env.GOOGLE_PRIVATE_KEY,
-      'GOOGLE_PROJECT_ID': process.env.GOOGLE_PROJECT_ID,
-      'GOOGLE_DRIVE_ROOT_FOLDER_ID': process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID,
-      'GOOGLE_DRIVE_SHARE_FOLDER_ID': process.env.GOOGLE_DRIVE_SHARE_FOLDER_ID
+      'GOOGLE_CLIENT_EMAIL': import.meta.env?.VITE_GOOGLE_CLIENT_EMAIL || '',
+      'GOOGLE_PRIVATE_KEY': import.meta.env?.VITE_GOOGLE_PRIVATE_KEY || '',
+      'GOOGLE_PROJECT_ID': import.meta.env?.VITE_GOOGLE_PROJECT_ID || '',
+      'GOOGLE_DRIVE_ROOT_FOLDER_ID': import.meta.env?.VITE_GOOGLE_DRIVE_ROOT_FOLDER_ID || '',
+      'GOOGLE_DRIVE_SHARE_FOLDER_ID': import.meta.env?.VITE_GOOGLE_DRIVE_SHARE_FOLDER_ID || ''
     };
 
     const results = {};
@@ -97,8 +95,31 @@ class KeychainManager {
     }
   }
 
+  async getPublicDataApiKey() {
+    try {
+      const apiKey = await this.getSecret('PUBLIC_DATA_API_KEY');
+      if (!apiKey) {
+        throw new Error('공공데이터포털 API 키가 설정되지 않았습니다.');
+      }
+      return apiKey;
+    } catch (error) {
+      console.error('Failed to get Public Data API key from keychain:', error);
+      throw error;
+    }
+  }
+
+  async setPublicDataApiKey(apiKey) {
+    try {
+      const stored = await this.storeSecret('PUBLIC_DATA_API_KEY', apiKey);
+      return stored;
+    } catch (error) {
+      console.error('Failed to store Public Data API key in keychain:', error);
+      throw error;
+    }
+  }
+
   async setupInitialKeys() {
-    console.log('Setting up keychain for The Realty Dashboard...');
+    // console.log('Setting up keychain for The Realty Dashboard...');
     
     const prompts = [
       'Google 서비스 계정 이메일을 입력하세요:',
@@ -116,43 +137,9 @@ class KeychainManager {
       'GOOGLE_DRIVE_SHARE_FOLDER_ID'
     ];
 
-    const readline = require('readline');
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
-
-    const askQuestion = (question) => {
-      return new Promise((resolve) => {
-        rl.question(question + ' ', resolve);
-      });
-    };
-
-    try {
-      const values = {};
-      for (let i = 0; i < prompts.length; i++) {
-        const value = await askQuestion(prompts[i]);
-        if (value.trim()) {
-          values[keys[i]] = value.trim();
-        }
-      }
-
-      rl.close();
-
-      // 키체인에 저장
-      const results = {};
-      for (const [key, value] of Object.entries(values)) {
-        results[key] = await this.storeSecret(key, value);
-      }
-
-      console.log('Keychain setup completed:', results);
-      return results;
-
-    } catch (error) {
-      rl.close();
-      console.error('Keychain setup failed:', error);
-      throw error;
-    }
+    // In browser environment, this method is not supported
+    // console.warn('setupInitialKeys is not supported in browser environment');
+    return {};
   }
 
   async listStoredKeys() {
@@ -161,7 +148,8 @@ class KeychainManager {
       'GOOGLE_PRIVATE_KEY',
       'GOOGLE_PROJECT_ID', 
       'GOOGLE_DRIVE_ROOT_FOLDER_ID',
-      'GOOGLE_DRIVE_SHARE_FOLDER_ID'
+      'GOOGLE_DRIVE_SHARE_FOLDER_ID',
+      'PUBLIC_DATA_API_KEY'
     ];
 
     const status = {};
@@ -178,7 +166,8 @@ class KeychainManager {
       'GOOGLE_PRIVATE_KEY',
       'GOOGLE_PROJECT_ID',
       'GOOGLE_DRIVE_ROOT_FOLDER_ID', 
-      'GOOGLE_DRIVE_SHARE_FOLDER_ID'
+      'GOOGLE_DRIVE_SHARE_FOLDER_ID',
+      'PUBLIC_DATA_API_KEY'
     ];
 
     const results = {};

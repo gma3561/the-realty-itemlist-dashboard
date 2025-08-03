@@ -2,11 +2,23 @@ import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getRealtorByEmail } from '../data/realtorList';
+import { getBypassStatus } from '../config/bypass';
 
 const Login = () => {
-  const { user, loading, signInWithGoogle, error: authError } = useAuth();
+  const { 
+    user, 
+    loading, 
+    signInWithGoogle, 
+    signInWithBypass,
+    isBypassEnabled,
+    error: authError 
+  } = useAuth();
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showBypassOptions, setShowBypassOptions] = useState(false);
+
+  // 바이패스 상태 정보
+  const bypassStatus = getBypassStatus();
 
   // 이미 로그인한 경우 대시보드로 리디렉션
   if (user && !loading) {
@@ -23,6 +35,25 @@ const Login = () => {
     } catch (err) {
       console.error('구글 로그인 오류:', err);
       setError(err.message);
+      setIsLoading(false);
+    }
+  };
+
+  const handleBypassLogin = async (userType) => {
+    setError(null);
+    setIsLoading(true);
+    
+    try {
+      const success = await signInWithBypass(userType);
+      if (success) {
+        // 로그인 성공 시 자동으로 대시보드로 이동
+      } else {
+        setError('QA 바이패스 로그인에 실패했습니다.');
+      }
+    } catch (err) {
+      console.error('바이패스 로그인 오류:', err);
+      setError(err.message);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -79,6 +110,84 @@ const Login = () => {
               </button>
             </div>
 
+            {/* QA 바이패스 로그인 섹션 */}
+            {isBypassEnabled && (
+              <div className="mt-6">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-orange-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-orange-600 font-medium">QA 테스트 로그인</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 bg-orange-50 border border-orange-200 rounded-md p-4">
+                  <div className="flex items-center mb-3">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-orange-800">개발/QA 환경 전용</h3>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setShowBypassOptions(!showBypassOptions)}
+                    className="text-sm text-orange-700 hover:text-orange-900 underline"
+                  >
+                    {showBypassOptions ? '바이패스 옵션 숨기기' : 'QA 바이패스 로그인 옵션 보기'}
+                  </button>
+
+                  {showBypassOptions && (
+                    <div className="mt-4 space-y-2">
+                      <p className="text-xs text-orange-700 mb-3">
+                        환경: {bypassStatus.isProduction ? '프로덕션' : '개발/QA'} | 
+                        호스트: {bypassStatus.environment?.hostname}
+                      </p>
+                      
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                        <button
+                          onClick={() => handleBypassLogin('admin')}
+                          disabled={isLoading}
+                          className="px-3 py-2 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          관리자로 로그인
+                          <div className="text-xs opacity-75">(모든 권한)</div>
+                        </button>
+                        
+                        <button
+                          onClick={() => handleBypassLogin('user')}
+                          disabled={isLoading}
+                          className="px-3 py-2 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          일반사용자로 로그인
+                          <div className="text-xs opacity-75">(제한된 권한)</div>
+                        </button>
+                        
+                        <button
+                          onClick={() => handleBypassLogin('manager')}
+                          disabled={isLoading}
+                          className="px-3 py-2 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          매니저로 로그인
+                          <div className="text-xs opacity-75">(매니저 권한)</div>
+                        </button>
+                      </div>
+                      
+                      <div className="mt-3 text-xs text-orange-600">
+                        <p>• QA 바이패스는 테스트 목적으로만 사용됩니다</p>
+                        <p>• 프로덕션 환경에서는 자동으로 비활성화됩니다</p>
+                        <p>• 모든 QA 활동은 로깅됩니다</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="mt-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
@@ -94,6 +203,9 @@ const Login = () => {
                 <p>• 처음 로그인 시 자동으로 계정이 생성됩니다</p>
                 <p>• 관리자 권한은 별도로 부여됩니다</p>
                 <p>• 빠르고 안전한 Google OAuth 로그인을 사용합니다</p>
+                {isBypassEnabled && (
+                  <p className="text-orange-600 font-medium">• QA 환경: 바이패스 로그인 사용 가능</p>
+                )}
               </div>
             </div>
           </div>

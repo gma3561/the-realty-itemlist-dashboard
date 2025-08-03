@@ -15,41 +15,91 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const API_KEY = '7c89f463dd39450188bd645b78e1e6d5';
+        const API_KEY = 'DaOcFjXVfRLbVEKIMinVRm7U7TplWb3BlYPCH+LKjX95ccKsA6g+omTkMw0mc7N6YGLgLq4Ro2FmiOobGsSjLw==';
         
         function RealEstateApp() {
             const [data, setData] = useState([]);
             const [loading, setLoading] = useState(false);
             const [error, setError] = useState(null);
             const [region, setRegion] = useState('11110'); // 기본값: 종로구
-            const [dealYmd, setDealYmd] = useState('202501'); // 기본값: 2025년 1월
+            const [dealYmd, setDealYmd] = useState('202412'); // 기본값: 2024년 12월
+            const [apiType, setApiType] = useState('apartment'); // API 타입
 
             const fetchRealEstateData = async () => {
                 setLoading(true);
                 setError(null);
                 
                 try {
-                    // 아파트 실거래가 API 호출
-                    const url = `https://apis.data.go.kr/1613000/RTMSDataSvcAptTradeDev/getRTMSDataSvcAptTradeDev`;
+                    // API 선택에 따른 URL 설정
+                    const apiConfigs = {
+                        apartment: {
+                            url: 'https://apis.data.go.kr/1613000/RTMSDataSvcAptTrade/getRTMSDataSvcAptTrade',
+                            name: '아파트 매매'
+                        },
+                        apartmentRent: {
+                            url: 'https://apis.data.go.kr/1613000/RTMSDataSvcAptRent/getRTMSDataSvcAptRent', 
+                            name: '아파트 전월세'
+                        },
+                        house: {
+                            url: 'https://apis.data.go.kr/1613000/RTMSDataSvcSHTrade/getRTMSDataSvcSHTrade',
+                            name: '단독/다가구 매매'
+                        },
+                        villa: {
+                            url: 'https://apis.data.go.kr/1613000/RTMSDataSvcRHTrade/getRTMSDataSvcRHTrade',
+                            name: '연립다세대 매매'
+                        }
+                    };
+                    
+                    const config = apiConfigs[apiType];
                     const params = new URLSearchParams({
                         serviceKey: API_KEY,
                         LAWD_CD: region,
                         DEAL_YMD: dealYmd,
                         pageNo: '1',
-                        numOfRows: '100',
-                        _type: 'json'
+                        numOfRows: '100'
                     });
 
-                    const response = await fetch(`${url}?${params}`);
-                    const result = await response.json();
+                    const response = await fetch(`${config.url}?${params}`);
+                    const result = await response.text();
                     
                     console.log('API 응답:', result);
                     
-                    if (result.response?.body?.items) {
-                        setData(result.response.body.items.item || []);
+                    // XML 파싱
+                    if (result.includes('<resultCode>000</resultCode>')) {
+                        // 간단한 XML 파싱
+                        const items = [];
+                        const itemMatches = result.match(/<item>(.*?)<\/item>/gs);
+                        
+                        if (itemMatches) {
+                            itemMatches.forEach(itemXml => {
+                                const extractValue = (tag) => {
+                                    const match = itemXml.match(new RegExp(`<${tag}>(.*?)<\/${tag}>`));
+                                    return match ? match[1].trim() : '';
+                                };
+                                
+                                items.push({
+                                    거래일: extractValue('dealDay'),
+                                    거래월: extractValue('dealMonth'),
+                                    거래년: extractValue('dealYear'),
+                                    거래금액: extractValue('dealAmount'),
+                                    건축년도: extractValue('buildYear'),
+                                    시군구: extractValue('sggNm'),
+                                    법정동: extractValue('bjdongNm'),
+                                    지번: extractValue('jibun'),
+                                    주택유형: extractValue('houseType'),
+                                    대지권면적: extractValue('plottageAr'),
+                                    건물면적: extractValue('totFloorAr')
+                                });
+                            });
+                        }
+                        
+                        setData(items);
+                        if (items.length === 0) {
+                            setError('해당 기간/지역에 거래 데이터가 없습니다.');
+                        }
                     } else {
                         setData([]);
-                        setError('데이터가 없습니다.');
+                        setError('API 호출에 실패했습니다.');
                     }
                 } catch (err) {
                     console.error('API 호출 오류:', err);
@@ -64,16 +114,29 @@
                 fetchRealEstateData();
                 const interval = setInterval(fetchRealEstateData, 3 * 60 * 60 * 1000);
                 return () => clearInterval(interval);
-            }, [region, dealYmd]);
+            }, [region, dealYmd, apiType]);
 
             return (
                 <div className="min-h-screen bg-gray-50 p-6">
                     <div className="max-w-7xl mx-auto">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-8">부동산 거래 데이터 실시간 조회</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-8">부동산 실거래가 실시간 조회</h1>
                         
                         {/* 검색 조건 */}
                         <div className="bg-white p-6 rounded-lg shadow mb-6">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">부동산 유형</label>
+                                    <select 
+                                        value={apiType} 
+                                        onChange={(e) => setApiType(e.target.value)}
+                                        className="w-full p-2 border border-gray-300 rounded-md"
+                                    >
+                                        <option value="apartment">아파트 매매</option>
+                                        <option value="apartmentRent">아파트 전월세</option>
+                                        <option value="house">단독/다가구 매매</option>
+                                        <option value="villa">연립다세대 매매</option>
+                                    </select>
+                                </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">지역코드</label>
                                     <select 

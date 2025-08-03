@@ -43,9 +43,12 @@ const ManagerAssignment = ({ propertyId, currentManagerId }) => {
           id,
           changed_at,
           reason,
-          previous_manager:previous_manager_id(id, name, email),
-          new_manager:new_manager_id(id, name, email),
-          changed_by:changed_by(id, name, email)
+          previous_manager_id,
+          new_manager_id,
+          changed_by,
+          previous_manager:previous_manager_id(name),
+          new_manager:new_manager_id(name),
+          changer:changed_by(name)
         `)
         .eq('property_id', propertyId)
         .order('changed_at', { ascending: false });
@@ -208,7 +211,7 @@ const ManagerAssignment = ({ propertyId, currentManagerId }) => {
                       {history.new_manager?.name || '-'}
                     </td>
                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                      {history.changed_by?.name || '-'}
+                      {history.changer?.name || '-'}
                     </td>
                   </tr>
                 ))}

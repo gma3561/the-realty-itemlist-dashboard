@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = 'https://aekgsysvipnwxhwixglg.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFla2dzeXN2aXBud3hod2l4Z2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc3NjI0MTgsImV4cCI6MjA1MzMzODQxOH0.z7C6bXL0Y6kCJEPIu6AlKLGi1vgfwdD9QQ0rtjcqe5g';
 
-console.log('🔗 Supabase 연결 설정:', {
+// console.log('🔗 Supabase 연결 설정:', {
   url: supabaseUrl,
   keyLength: supabaseAnonKey.length
 });
@@ -24,7 +24,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 // 연결 테스트 함수
 export const testConnection = async () => {
   try {
-    console.log('🔄 Supabase 연결 테스트 시작...');
+    // console.log('🔄 Supabase 연결 테스트 시작...');
     
     const { data, error } = await supabase
       .from('properties')
@@ -36,7 +36,7 @@ export const testConnection = async () => {
       throw error;
     }
     
-    console.log('✅ Supabase 연결 성공!');
+    // console.log('✅ Supabase 연결 성공!');
     return true;
   } catch (error) {
     console.error('❌ Supabase 연결 실패:', error.message);

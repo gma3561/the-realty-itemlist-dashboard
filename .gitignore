@@ -48,3 +48,29 @@ lerna-debug.log*
 
 # Google OAuth Credentials - NEVER COMMIT
 GOOGLE_OAUTH_CREDENTIALS.md
+
+# Backup and temporary files
+/backup/
+.session_data/
+*.backup
+*.tmp
+*.temp
+
+# Test results and screenshots
+/test-results/
+/playwright-report/
+*.png
+*.jpg
+*.jpeg
+
+# Archive folders
+/archive/
+
+# CSV data files
+*.csv
+
+# Temporary JSON files
+*_errors_*.json
+*_statistics_*.json
+*_duplicates_*.json
+cleaned_properties_*.json

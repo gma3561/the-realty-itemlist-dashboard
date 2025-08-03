@@ -30,6 +30,7 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
+import { getRealtorNameByEmail } from '../../data/realtorNameMap';
 
 const PropertyStatsChart = ({ properties = [], lookupData = {} }) => {
   // 매물 유형별 통계
@@ -137,14 +138,15 @@ const PropertyStatsChart = ({ properties = [], lookupData = {} }) => {
       const managerId = property.manager_id;
       if (!managerId) return acc;
       
-      const managerName = managerId.includes('jenny') ? '정연서' :
-                         managerId.includes('lucas') ? '하상현' :
-                         managerId.includes('hmlee') ? '이혜만' :
-                         managerId.includes('jma') ? '장민아' :
-                         managerId.includes('jed') ? '정이든' :
-                         managerId.includes('jsh') ? '장승환' :
-                         managerId.includes('pjh') ? '박지혜' :
-                         managerId.split('@')[0] || '미지정';
+      // manager_name이 있으면 우선 사용
+      let managerName = property.manager_name;
+      if (!managerName && managerId.includes('@')) {
+        const email = managerId.replace('hardcoded-', '');
+        managerName = getRealtorNameByEmail(email);
+      }
+      if (!managerName) {
+        managerName = '미지정';
+      }
       
       if (!acc[managerName]) {
         acc[managerName] = {

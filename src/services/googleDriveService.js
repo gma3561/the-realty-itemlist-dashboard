@@ -27,7 +27,7 @@ class GoogleDriveService {
       
       this.drive = google.drive({ version: 'v3', auth: this.auth });
       this.initialized = true;
-      console.log('Google Drive service initialized successfully from keychain');
+      // console.log('Google Drive service initialized successfully from keychain');
     } catch (error) {
       console.error('Failed to initialize Google Drive service:', error);
       throw error;
@@ -133,7 +133,7 @@ class GoogleDriveService {
       await this.drive.files.delete({
         fileId: fileId
       });
-      console.log(`File ${fileId} deleted successfully`);
+      // console.log(`File ${fileId} deleted successfully`);
     } catch (error) {
       console.error(`Failed to delete file ${fileId}:`, error);
       throw error;

@@ -14,7 +14,7 @@ describe('Supabase Integration Tests', () => {
 
   it('should connect to Supabase successfully', async () => {
     if (!supabase) {
-      console.log('Skipping integration test - Supabase not configured')
+      // console.log('Skipping integration test - Supabase not configured')
       return
     }
 
@@ -27,14 +27,14 @@ describe('Supabase Integration Tests', () => {
       expect(error).toBeNull()
       expect(data).toBeDefined()
     } catch (error) {
-      console.log('Integration test failed:', error.message)
+      // console.log('Integration test failed:', error.message)
       expect(error).toBeInstanceOf(Error)
     }
   })
 
   it('should be able to query property types', async () => {
     if (!supabase) {
-      console.log('Skipping integration test - Supabase not configured')
+      // console.log('Skipping integration test - Supabase not configured')
       return
     }
 
@@ -47,14 +47,14 @@ describe('Supabase Integration Tests', () => {
       expect(error).toBeNull()
       expect(Array.isArray(data)).toBe(true)
     } catch (error) {
-      console.log('Property types query failed:', error.message)
+      // console.log('Property types query failed:', error.message)
       expect(error).toBeInstanceOf(Error)
     }
   })
 
   it('should be able to query transaction types', async () => {
     if (!supabase) {
-      console.log('Skipping integration test - Supabase not configured')
+      // console.log('Skipping integration test - Supabase not configured')
       return
     }
 
@@ -67,14 +67,14 @@ describe('Supabase Integration Tests', () => {
       expect(error).toBeNull()
       expect(Array.isArray(data)).toBe(true)
     } catch (error) {
-      console.log('Transaction types query failed:', error.message)
+      // console.log('Transaction types query failed:', error.message)
       expect(error).toBeInstanceOf(Error)
     }
   })
 
   it('should have proper RLS policies (should fail without auth)', async () => {
     if (!supabase) {
-      console.log('Skipping integration test - Supabase not configured')
+      // console.log('Skipping integration test - Supabase not configured')
       return
     }
 
@@ -89,10 +89,10 @@ describe('Supabase Integration Tests', () => {
         expect(error.message).toContain('RLS')
       } else {
         // 만약 성공했다면 RLS가 제대로 설정되지 않았을 수 있음
-        console.warn('Warning: Users table accessible without authentication')
+        // console.warn('Warning: Users table accessible without authentication')
       }
     } catch (error) {
-      console.log('RLS test completed:', error.message)
+      // console.log('RLS test completed:', error.message)
     }
   })
 })

@@ -3,7 +3,7 @@ import { supabase } from '../services/supabase';
 
 export const setupDatabase = async () => {
   try {
-    console.log('🚀 데이터베이스 셋업 시작...');
+    // console.log('🚀 데이터베이스 셋업 시작...');
     
     // 현재 사용자 확인
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -11,12 +11,12 @@ export const setupDatabase = async () => {
       throw new Error('로그인이 필요합니다');
     }
     
-    console.log('✅ 사용자 인증됨:', user.email);
+    // console.log('✅ 사용자 인증됨:', user.email);
     
     const results = [];
     
     // 1. 매물 종류 데이터
-    console.log('매물 종류 데이터 삽입...');
+    // console.log('매물 종류 데이터 삽입...');
     const propertyTypes = [
       { name: '원룸' }, { name: '투룸' }, { name: '쓰리룸' }, 
       { name: '오피스텔' }, { name: '아파트' }, { name: '빌라' }, 
@@ -30,15 +30,15 @@ export const setupDatabase = async () => {
         .select();
       
       if (ptError) throw ptError;
-      console.log(`✅ 매물 종류 ${ptData.length}개 삽입 완료`);
+      // console.log(`✅ 매물 종류 ${ptData.length}개 삽입 완료`);
       results.push({ table: 'property_types', success: true, count: ptData.length });
     } catch (error) {
-      console.log(`❌ 매물 종류 삽입 실패: ${error.message}`);
+      // console.log(`❌ 매물 종류 삽입 실패: ${error.message}`);
       results.push({ table: 'property_types', success: false, error: error.message });
     }
     
     // 2. 진행 상태 데이터
-    console.log('진행 상태 데이터 삽입...');
+    // console.log('진행 상태 데이터 삽입...');
     const propertyStatuses = [
       { name: '매물확보' }, { name: '광고진행' }, { name: '계약진행' }, 
       { name: '거래완료' }, { name: '매물취소' }
@@ -51,15 +51,15 @@ export const setupDatabase = async () => {
         .select();
       
       if (psError) throw psError;
-      console.log(`✅ 진행 상태 ${psData.length}개 삽입 완료`);
+      // console.log(`✅ 진행 상태 ${psData.length}개 삽입 완료`);
       results.push({ table: 'property_statuses', success: true, count: psData.length });
     } catch (error) {
-      console.log(`❌ 진행 상태 삽입 실패: ${error.message}`);
+      // console.log(`❌ 진행 상태 삽입 실패: ${error.message}`);
       results.push({ table: 'property_statuses', success: false, error: error.message });
     }
     
     // 3. 거래 유형 데이터
-    console.log('거래 유형 데이터 삽입...');
+    // console.log('거래 유형 데이터 삽입...');
     const transactionTypes = [
       { name: '매매' }, { name: '전세' }, { name: '월세' }, { name: '단기임대' }
     ];
@@ -71,15 +71,15 @@ export const setupDatabase = async () => {
         .select();
       
       if (ttError) throw ttError;
-      console.log(`✅ 거래 유형 ${ttData.length}개 삽입 완료`);
+      // console.log(`✅ 거래 유형 ${ttData.length}개 삽입 완료`);
       results.push({ table: 'transaction_types', success: true, count: ttData.length });
     } catch (error) {
-      console.log(`❌ 거래 유형 삽입 실패: ${error.message}`);
+      // console.log(`❌ 거래 유형 삽입 실패: ${error.message}`);
       results.push({ table: 'transaction_types', success: false, error: error.message });
     }
     
     // 4. 소유주 데이터
-    console.log('소유주 데이터 삽입...');
+    // console.log('소유주 데이터 삽입...');
     const owners = [
       { name: '김소유자', phone: '010-1234-5678', contact_relation: '본인' },
       { name: '박소유자', phone: '010-2345-6789', contact_relation: '본인' },
@@ -106,12 +106,12 @@ export const setupDatabase = async () => {
           ownerCount++;
         }
       } catch (error) {
-        console.log(`❌ 소유주 '${owner.name}' 삽입 실패: ${error.message}`);
+        // console.log(`❌ 소유주 '${owner.name}' 삽입 실패: ${error.message}`);
       }
     }
     
     if (ownerCount > 0) {
-      console.log(`✅ 소유주 ${ownerCount}개 삽입 완료`);
+      // console.log(`✅ 소유주 ${ownerCount}개 삽입 완료`);
       results.push({ table: 'owners', success: true, count: ownerCount });
     } else {
       results.push({ table: 'owners', success: false, error: '소유주 데이터 삽입 실패' });
@@ -121,10 +121,10 @@ export const setupDatabase = async () => {
     const successful = results.filter(r => r.success);
     const failed = results.filter(r => !r.success);
     
-    console.log(`\n📊 결과: 성공 ${successful.length}개, 실패 ${failed.length}개`);
+    // console.log(`\n📊 결과: 성공 ${successful.length}개, 실패 ${failed.length}개`);
     
     if (failed.length > 0) {
-      console.log('실패한 테이블:', failed.map(f => f.table).join(', '));
+      // console.log('실패한 테이블:', failed.map(f => f.table).join(', '));
     }
     
     return {
@@ -141,7 +141,7 @@ export const setupDatabase = async () => {
 
 export const testPropertyInsert = async () => {
   try {
-    console.log('🔍 매물 등록 테스트 시작...');
+    // console.log('🔍 매물 등록 테스트 시작...');
     
     // 룩업 데이터 조회
     const [ptResult, psResult, ttResult, ownerResult] = await Promise.all([
@@ -180,7 +180,7 @@ export const testPropertyInsert = async () => {
       special_notes: '클라이언트 테스트용 매물입니다'
     };
 
-    console.log('매물 등록 시도...');
+    // console.log('매물 등록 시도...');
     const { data: insertedProperty, error: insertError } = await supabase
       .from('properties')
       .insert([testProperty])
@@ -190,8 +190,8 @@ export const testPropertyInsert = async () => {
       throw insertError;
     }
 
-    console.log('✅ 매물 등록 성공!');
-    console.log('등록된 매물:', insertedProperty[0]);
+    // console.log('✅ 매물 등록 성공!');
+    // console.log('등록된 매물:', insertedProperty[0]);
     
     return { success: true, property: insertedProperty[0] };
 
@@ -209,7 +209,7 @@ export const runFullSetupAndTest = async () => {
     const testResult = await testPropertyInsert();
     return { setupResult, testResult };
   } else {
-    console.log('⚠️ 룩업 테이블 설정이 불완전하여 매물 등록 테스트를 건너뜁니다.');
+    // console.log('⚠️ 룩업 테이블 설정이 불완전하여 매물 등록 테스트를 건너뜁니다.');
     return { setupResult, testResult: { success: false, error: '셋업 불완전' } };
   }
 };

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { useAuth } from '../context/AuthContext';
-import { isHardcodedAdmin } from '../data/hardcodedAdmins';
+import { isAdmin } from '../utils/permissions';
 import userService from '../services/userService';
 import propertyService from '../services/propertyService';
 import { 
@@ -28,9 +28,9 @@ const StaffPerformance = () => {
   const [dateRange, setDateRange] = useState('month'); // month, quarter, year, all
   
   // 관리자 권한 확인
-  const isAdmin = isHardcodedAdmin(user?.email);
+  const isAdminUser = isAdmin(user);
   
-  if (!isAdmin) {
+  if (!isAdminUser) {
     return (
       <div className="bg-white shadow rounded-lg p-6">
         <h2 className="text-xl font-semibold mb-4">접근 권한 없음</h2>

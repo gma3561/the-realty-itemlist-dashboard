@@ -44,13 +44,13 @@ if (IS_DEVELOPMENT && supabase) {
     .limit(1)
     .then(({ data, error }) => {
       if (error) {
-        console.warn('Supabase 연결 실패'); // 민감한 정보 제거
+        console.warn('Supabase 연결 실패');
       } else {
         console.log('✅ Supabase 연결 성공');
       }
     })
     .catch((error) => {
-      console.warn('Supabase 연결 테스트 실패'); // 민감한 정보 제거
+      console.warn('Supabase 연결 테스트 실패');
     });
 }
 

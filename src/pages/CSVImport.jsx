@@ -198,7 +198,7 @@ const CSVImport = () => {
     setError(null);
     
     try {
-      console.log('처리된 CSV 데이터를 Supabase에 업로드 시작...');
+      // console.log('처리된 CSV 데이터를 Supabase에 업로드 시작...');
       
       // processed_properties.json 파일에서 데이터 로드
       const response = await fetch('/processed_properties.json');
@@ -207,7 +207,7 @@ const CSVImport = () => {
       }
       
       const processedData = await response.json();
-      console.log(`${processedData.length}개의 처리된 매물 데이터를 로드했습니다`);
+      // console.log(`${processedData.length}개의 처리된 매물 데이터를 로드했습니다`);
       
       // propertyService를 사용하여 일괄 업로드
       const result = await bulkUploadProperties(processedData, user?.id || 'admin');
@@ -223,7 +223,7 @@ const CSVImport = () => {
       });
       
       if (result.success && result.uploadedCount > 0) {
-        console.log(`✅ 업로드 완료! 총 ${result.uploadedCount}개 매물이 성공적으로 업로드되었습니다.`);
+        // console.log(`✅ 업로드 완료! 총 ${result.uploadedCount}개 매물이 성공적으로 업로드되었습니다.`);
       } else if (!result.success) {
         throw new Error(`업로드 실패: ${result.errors.join(', ')}`);
       }

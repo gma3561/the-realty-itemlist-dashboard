@@ -34,6 +34,33 @@ module.exports = defineConfig(({ command, mode }) => {
       })
     ],
     base: mode === 'production' ? '/the-realty-itemlist-dashboard/' : '/',
+    build: {
+      outDir: 'dist',
+      sourcemap: false,
+      // 프로덕션 빌드 최적화
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,      // console.* 제거
+          drop_debugger: true,     // debugger 제거
+          pure_funcs: ['console.log', 'console.warn', 'console.info']
+        },
+        mangle: true,
+        format: {
+          comments: false          // 주석 제거
+        }
+      },
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // 벤더 청크 분리
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'supabase-vendor': ['@supabase/supabase-js'],
+            'ui-vendor': ['lucide-react', 'recharts']
+          }
+        }
+      }
+    },
     // 환경변수를 명시적으로 정의
     define: {
       'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL || ''),

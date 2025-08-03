@@ -9,8 +9,8 @@ const AuthCallback = () => {
     const handleCallback = async () => {
       try {
         // 디버깅을 위한 URL 로그
-        console.log('Current URL:', window.location.href);
-        console.log('Hash:', window.location.hash);
+        // console.log('Current URL:', window.location.href);
+        // console.log('Hash:', window.location.hash);
         
         // Hash에서 토큰 가져오기 (Implicit Flow)
         // HashRouter 사용 시 #/auth/callback#access_token=... 형태가 됨
@@ -28,8 +28,8 @@ const AuthCallback = () => {
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
         
-        console.log('Access Token found:', !!accessToken);
-        console.log('Refresh Token found:', !!refreshToken);
+        // console.log('Access Token found:', !!accessToken);
+        // console.log('Refresh Token found:', !!refreshToken);
         
         if (!accessToken) {
           console.error('No access token found in URL');
@@ -49,16 +49,16 @@ const AuthCallback = () => {
           return;
         }
 
-        console.log('Session set successfully:', data);
+        // console.log('Session set successfully:', data);
 
         // 세션이 설정된 후 잠시 대기
         await new Promise(resolve => setTimeout(resolve, 500));
         
         // 세션이 성공적으로 설정되면 대시보드로 이동
-        console.log('Auth successful, redirecting to dashboard...');
+        // console.log('Auth successful, redirecting to dashboard...');
         
-        // 강제로 페이지 새로고침하여 대시보드로 이동
-        window.location.href = '/the-realty-itemlist-dashboard/#/';
+        // 로컬 개발 환경에서는 상대 경로로 리디렉션
+        window.location.href = '/#/';
       } catch (error) {
         console.error('Unexpected error during auth callback:', error);
         navigate('/login');

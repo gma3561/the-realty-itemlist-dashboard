@@ -5,7 +5,7 @@ import userService from '../services/userService';
 import propertyService from '../services/propertyService';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
-import { Plus, Edit, Trash, AlertTriangle, CheckCircle, X, User, UserPlus, Check, Mail, Phone, Shield, Activity, BarChart3, Users, TrendingUp } from 'lucide-react';
+import { Plus, Edit, Trash, AlertTriangle, CheckCircle, X, User, UserPlus, Check, Mail, Phone, Shield, Activity, BarChart3, Users, TrendingUp, Key } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { isHardcodedAdmin } from '../data/hardcodedAdmins';
 import { getUserStats } from '../data/dummyUsers';
@@ -156,6 +156,25 @@ const UserManagement = () => {
     setIsAdding(true);
   };
 
+  const handleToggleRole = async (targetUser) => {
+    const newRole = targetUser.role === 'admin' ? 'user' : 'admin';
+    const confirmMessage = `${targetUser.name}님의 권한을 ${newRole === 'admin' ? '관리자' : '일반'}로 변경하시겠습니까?`;
+    
+    if (window.confirm(confirmMessage)) {
+      try {
+        const { error } = await userService.updateUser(targetUser.id, { role: newRole });
+        if (error) throw new Error(error);
+        
+        setSuccess(`${targetUser.name}님의 권한이 변경되었습니다.`);
+        queryClient.invalidateQueries('users');
+        setTimeout(() => setSuccess(null), 3000);
+      } catch (error) {
+        setError(`권한 변경 실패: ${error.message}`);
+        setTimeout(() => setError(null), 5000);
+      }
+    }
+  };
+
   const handleToggleStatus = (userData) => {
     if (userData.id === user?.id) {
       setError('자신의 계정 상태는 변경할 수 없습니다.');
@@ -165,6 +184,40 @@ const UserManagement = () => {
     const newStatus = userData.status === 'active' ? 'inactive' : 'active';
     if (window.confirm(`${userData.name} 사용자의 상태를 ${newStatus === 'inactive' ? '비활성화' : '활성화'} 하시겠습니까?`)) {
       toggleUserStatusMutation.mutate({ id: userData.id, status: newStatus });
+    }
+  };
+
+  // 비밀번호 재설정 함수
+  const handleResetPassword = async (targetUser) => {
+    if (!window.confirm(`${targetUser.name}님의 비밀번호를 재설정하시겠습니까?\n새로운 임시 비밀번호가 해당 이메일로 전송됩니다.`)) {
+      return;
+    }
+
+    try {
+      // 랜덤 비밀번호 생성
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+      let newPassword = '';
+      for (let i = 0; i < 12; i++) {
+        newPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+
+      // Supabase Admin API를 통한 비밀번호 재설정
+      const { error } = await userService.resetUserPassword(targetUser.id, newPassword);
+      
+      if (error) {
+        throw new Error(error);
+      }
+
+      // 성공 메시지
+      setSuccess(`${targetUser.name}님의 비밀번호가 재설정되었습니다.\n임시 비밀번호: ${newPassword}\n\n이 정보를 안전하게 전달해주세요.`);
+      
+      // 클립보드에 복사
+      navigator.clipboard.writeText(`${targetUser.email}의 임시 비밀번호: ${newPassword}`);
+      
+      setTimeout(() => setSuccess(null), 10000);
+    } catch (error) {
+      setError(`비밀번호 재설정 실패: ${error.message}`);
+      setTimeout(() => setError(null), 5000);
     }
   };
 
@@ -376,9 +429,18 @@ const UserManagement = () => {
                     {user.phone || '-'}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm">
-                    <span className={`px-2 py-1 rounded-full text-xs ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
-                      {user.role === 'admin' ? '관리자' : '일반 사용자'}
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className={`px-2 py-1 rounded-full text-xs ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                        {user.role === 'admin' ? '관리자' : '일반'}
+                      </span>
+                      <button
+                        onClick={() => handleToggleRole(user)}
+                        className="text-xs text-gray-600 hover:text-gray-800 underline"
+                        title="권한 변경"
+                      >
+                        변경
+                      </button>
+                    </div>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm">
                     <span className={`px-2 py-1 rounded-full text-xs ${user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
@@ -409,6 +471,13 @@ const UserManagement = () => {
                         title="수정"
                       >
                         <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleResetPassword(user)}
+                        className="text-yellow-600 hover:text-yellow-800"
+                        title="비밀번호 재설정"
+                      >
+                        <Key className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleToggleStatus(user)}

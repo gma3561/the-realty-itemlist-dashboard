@@ -7,6 +7,7 @@ import Button from '../components/common/Button';
 import ManagerAssignment from '../components/matching/ManagerAssignment';
 import CoBrokerManagement from '../components/matching/CoBrokerManagement';
 import PropertyContactInfo from '../components/property/PropertyContactInfo';
+import PropertyComments from '../components/property/PropertyComments';
 import { Edit, Trash2, AlertTriangle, ArrowLeft } from 'lucide-react';
 
 const PropertyDetail = () => {
@@ -376,6 +377,9 @@ const PropertyDetail = () => {
           <CoBrokerManagement propertyId={id} />
         </div>
       </div>
+      
+      {/* 타인 매물 코멘트 섹션 */}
+      <PropertyComments propertyId={id} />
       
       {/* 삭제 확인 모달 */}
       {showConfirmation && (

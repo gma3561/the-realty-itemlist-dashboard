@@ -90,6 +90,9 @@ const PropertyImageUpload = ({ propertyId, propertyName, onUploadComplete, class
     disabled: uploading
   });
 
+  // 모바일 기기 감지
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
   // 파일 거부 메시지 표시
   const fileRejectionItems = fileRejections.map(({ file, errors }) => (
     <div key={file.path} className="text-red-600 text-sm mt-2">
@@ -126,17 +129,45 @@ const PropertyImageUpload = ({ propertyId, propertyName, onUploadComplete, class
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
             <p className="text-lg font-medium text-gray-900 mb-2">
-              {isDragActive ? '여기에 파일을 놓으세요' : '이미지를 드래그하거나 클릭하여 업로드'}
+              {isDragActive ? '여기에 파일을 놓으세요' : 
+               isMobile ? '터치하여 사진 업로드' : '이미지를 드래그하거나 클릭하여 업로드'}
             </p>
             <p className="text-sm text-gray-500">
               JPG, PNG, WebP 파일 지원 (최대 10MB)
             </p>
             <p className="text-xs text-gray-400 mt-2">
-              여러 파일을 한 번에 선택할 수 있습니다
+              {isMobile ? '아래 버튼을 눌러 갤러리에서 사진을 선택하세요' : '여러 파일을 한 번에 선택할 수 있습니다'}
             </p>
           </div>
         )}
       </div>
+
+      {/* 모바일 전용 사진 선택 버튼 */}
+      {isMobile && !uploading && (
+        <div className="mt-4">
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={(e) => {
+              if (e.target.files) {
+                onDrop(Array.from(e.target.files));
+              }
+            }}
+            className="hidden"
+            id="mobile-photo-input"
+          />
+          <label
+            htmlFor="mobile-photo-input"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg text-center cursor-pointer transition-colors block"
+          >
+            📱 사진 선택하기
+          </label>
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            갤러리에서 여러 장 선택 가능
+          </p>
+        </div>
+      )}
 
       {/* 파일 거부 메시지 표시 */}
       {fileRejectionItems.length > 0 && (
@@ -152,6 +183,9 @@ const PropertyImageUpload = ({ propertyId, propertyName, onUploadComplete, class
           <p>• 첫 번째로 업로드되는 이미지가 대표 이미지로 설정됩니다</p>
           <p>• 이미지는 자동으로 썸네일이 생성되며, 원본은 Google Drive에 안전하게 저장됩니다</p>
           <p>• 업로드 후 이미지 순서 변경 및 대표 이미지 설정이 가능합니다</p>
+          {isMobile && (
+            <p>• 📱 <strong>사진 선택</strong>: 갤러리에서 여러 장의 사진을 한 번에 선택 가능</p>
+          )}
         </div>
       )}
     </div>

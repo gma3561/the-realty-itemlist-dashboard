@@ -29,7 +29,7 @@ export function useMCPClient() {
         transport = new WebSocketClientTransport(mcpServerUrl);
       } else {
         // 프로덕션에서는 다른 방식 사용 (HTTP 폴백 등)
-        console.warn('MCP WebSocket not available in production');
+        // console.warn('MCP WebSocket not available in production');
         setConnecting(false);
         return;
       }
@@ -46,7 +46,7 @@ export function useMCPClient() {
       
       // 서버 정보 가져오기
       const serverInfo = await mcpClient.getServerInfo();
-      console.log('📡 Connected to MCP server:', serverInfo);
+      // console.log('📡 Connected to MCP server:', serverInfo);
       
       // 서버 capabilities 확인
       const caps = {
@@ -89,9 +89,9 @@ export function useMCPClient() {
     }
 
     try {
-      console.log(`🔧 Calling tool: ${toolName}`, args);
+      // console.log(`🔧 Calling tool: ${toolName}`, args);
       const result = await client.callTool(toolName, args);
-      console.log(`✅ Tool result:`, result);
+      // console.log(`✅ Tool result:`, result);
       return result;
     } catch (err) {
       console.error(`Tool call failed: ${toolName}`, err);
@@ -106,7 +106,7 @@ export function useMCPClient() {
     }
 
     try {
-      console.log(`📊 Reading resource: ${resourceUri}`);
+      // console.log(`📊 Reading resource: ${resourceUri}`);
       const result = await client.readResource(resourceUri);
       
       // JSON 파싱

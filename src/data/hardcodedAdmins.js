@@ -1,46 +1,26 @@
-// 환경변수 기반 관리자 목록 (보안 강화)
-import ENV_CONFIG from '../config/env.js';
+// 환경변수 기반 관리자 관리
+import ENV_CONFIG from '../config/env';
 
-const getAdminEmailsFromEnv = () => {
-  const adminEmails = ENV_CONFIG.ADMIN_EMAILS;
-  if (adminEmails) {
-    return adminEmails.split(',').map(email => email.trim());
-  }
-  
-  // fallback 관리자 목록
-  return [
-    'jenny@the-realty.co.kr',
-    'lucas@the-realty.co.kr', 
-    'hmlee@the-realty.co.kr'
-  ];
+// 환경변수에서 관리자 목록 가져오기
+const getAdminEmails = () => {
+  const adminEmails = ENV_CONFIG.ADMIN_EMAILS || '';
+  return adminEmails.split(',').map(email => email.trim()).filter(Boolean);
 };
-
-// 하드코딩된 관리자 목록 (환경변수 기반)
-export const hardcodedAdmins = getAdminEmailsFromEnv().map((email, index) => {
-  // 이메일별 이름 매핑
-  const nameMap = {
-    'jenny@the-realty.co.kr': '정연서',
-    'lucas@the-realty.co.kr': '하상현',
-    'hmlee@the-realty.co.kr': '이혜만'
-  };
-  
-  const name = nameMap[email] || email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase());
-  
-  return {
-    email,
-    name,
-    role: 'admin'
-  };
-});
 
 // 이메일로 관리자 확인
 export const isHardcodedAdmin = (email) => {
   if (!email) return false;
-  return hardcodedAdmins.some(admin => admin.email.toLowerCase() === email.toLowerCase());
+  const adminEmails = getAdminEmails();
+  return adminEmails.some(adminEmail => adminEmail.toLowerCase() === email.toLowerCase());
 };
 
-// 관리자 정보 가져오기
+// 관리자 정보 가져오기 (환경변수 기반이므로 이메일만 반환)
 export const getHardcodedAdmin = (email) => {
   if (!email) return null;
-  return hardcodedAdmins.find(admin => admin.email.toLowerCase() === email.toLowerCase());
+  const isAdmin = isHardcodedAdmin(email);
+  return isAdmin ? { email, role: 'admin' } : null;
 };
+
+// 임시 하드코딩 데이터 (마이그레이션 기간 동안만 사용)
+// TODO: 데이터베이스 기반으로 완전 전환 후 제거
+export const hardcodedAdmins = [];

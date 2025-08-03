@@ -3,7 +3,7 @@ import { supabase } from '../services/supabase';
 // 처리된 매물 데이터를 Supabase에 업로드하는 함수
 export const uploadProcessedProperties = async (queryClient) => {
   try {
-    console.log('매물 데이터 업로드 시작...');
+    // console.log('매물 데이터 업로드 시작...');
     
     // 기존 데이터 확인
     const { data: existingProperties, error: fetchError } = await supabase
@@ -15,7 +15,7 @@ export const uploadProcessedProperties = async (queryClient) => {
       console.error('기존 데이터 확인 중 오류:', fetchError);
     }
     
-    console.log('기존 매물 수:', existingProperties?.length || 0);
+    // console.log('기존 매물 수:', existingProperties?.length || 0);
     
     // 첫 번째 배치 - 테스트용 작은 데이터셋
     const testBatch = [
@@ -146,7 +146,7 @@ export const uploadProcessedProperties = async (queryClient) => {
       }
     ];
     
-    console.log(`테스트 배치 ${testBatch.length}개 매물 업로드 시작`);
+    // console.log(`테스트 배치 ${testBatch.length}개 매물 업로드 시작`);
     
     const { data, error } = await supabase
       .from('properties')
@@ -158,7 +158,7 @@ export const uploadProcessedProperties = async (queryClient) => {
       throw error;
     }
     
-    console.log(`${data.length}개 매물이 성공적으로 업로드되었습니다`);
+    // console.log(`${data.length}개 매물이 성공적으로 업로드되었습니다`);
     
     // 캐시 무효화
     if (queryClient) {

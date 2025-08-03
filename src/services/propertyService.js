@@ -1,45 +1,36 @@
 import { supabase } from './supabase';
 import ENV_CONFIG from '../config/env';
-import { 
-  dummyProperties, 
-  dummyPropertyTypes, 
-  dummyTransactionTypes, 
-  dummyPropertyStatuses 
-} from '../data/dummyProperties';
 import { hasPropertyPermission, isAdmin } from '../utils/permissions';
-
-// 더미데이터 사용 여부
-const USE_DUMMY_DATA = ENV_CONFIG.USE_DUMMY_DATA;
 
 // 룩업 테이블 데이터 초기화 함수
 export const initializeLookupTables = async () => {
-  if (USE_DUMMY_DATA) {
-    console.log('🎭 더미데이터 모드: 룩업 테이블 초기화 스킵');
-    return { success: true, results: [] };
-  }
-
   try {
     // 매물 종류 초기화
     const propertyTypes = [
-      { id: 'apt', name: '아파트', order: 1 },
-      { id: 'officetel', name: '오피스텔', order: 2 },
-      { id: 'villa', name: '빌라/연립', order: 3 },
-      { id: 'house', name: '단독주택', order: 4 },
-      { id: 'commercial', name: '상가', order: 5 }
+      { id: 'apt', name: '아파트', display_order: 1 },
+      { id: 'officetel', name: '오피스텔', display_order: 2 },
+      { id: 'villa', name: '빌라/연립', display_order: 3 },
+      { id: 'house', name: '단독주택', display_order: 4 },
+      { id: 'commercial', name: '상가', display_order: 5 }
     ];
 
     // 거래 유형 초기화
     const transactionTypes = [
-      { id: 'sale', name: '매매', order: 1 },
-      { id: 'lease', name: '전세', order: 2 },
-      { id: 'rent', name: '월세', order: 3 }
+      { id: 'presale', name: '분양', display_order: 1 },
+      { id: 'developer', name: '시행사매물', display_order: 2 },
+      { id: 'sale', name: '매매', display_order: 3 },
+      { id: 'lease', name: '전세', display_order: 4 },
+      { id: 'rent', name: '월세/렌트', display_order: 5 },
+      { id: 'short', name: '단기', display_order: 6 }
     ];
 
     // 매물 상태 초기화
     const propertyStatuses = [
-      { id: 'available', name: '거래가능', order: 1 },
-      { id: 'reserved', name: '거래보류', order: 2 },
-      { id: 'completed', name: '거래완료', order: 3 }
+      { id: 'available', name: '거래가능', display_order: 1 },
+      { id: 'completed', name: '거래완료', display_order: 2 },
+      { id: 'hold', name: '거래보류', display_order: 3 },
+      { id: 'cancelled', name: '거래철회', display_order: 4 },
+      { id: 'inspection_available', name: '임장가능', display_order: 5 }
     ];
 
     // 각 테이블에 데이터 삽입 (ON CONFLICT DO NOTHING으로 중복 방지)
@@ -49,7 +40,7 @@ export const initializeLookupTables = async () => {
       supabase.from('property_statuses').upsert(propertyStatuses, { onConflict: 'id' })
     ]);
 
-    console.log('룩업 테이블 초기화 완료:', results);
+    // console.log('룩업 테이블 초기화 완료:', results);
     return { success: true, results };
   } catch (error) {
     console.error('룩업 테이블 초기화 실패:', error);
@@ -59,20 +50,11 @@ export const initializeLookupTables = async () => {
 
 // 룩업 테이블 데이터 조회
 export const getLookupTables = async () => {
-  if (USE_DUMMY_DATA) {
-    console.log('🎭 더미데이터 모드: 룩업 테이블 반환');
-    return {
-      propertyTypes: dummyPropertyTypes,
-      transactionTypes: dummyTransactionTypes,
-      propertyStatuses: dummyPropertyStatuses
-    };
-  }
-
   try {
     const [propertyTypesResult, transactionTypesResult, propertyStatusesResult] = await Promise.all([
-      supabase.from('property_types').select('*').order('created_at'),
-      supabase.from('transaction_types').select('*').order('created_at'),
-      supabase.from('property_statuses').select('*').order('created_at')
+      supabase.from('property_types').select('*').order('display_order'),
+      supabase.from('transaction_types').select('*').order('display_order'),
+      supabase.from('property_statuses').select('*').order('display_order')
     ]);
 
     if (propertyTypesResult.error) throw propertyTypesResult.error;
@@ -86,101 +68,45 @@ export const getLookupTables = async () => {
     };
   } catch (error) {
     console.error('룩업 테이블 조회 실패:', error);
-    
-    // 룩업 테이블이 없거나 조회 실패 시 더미데이터 반환
-    return {
-      propertyTypes: dummyPropertyTypes,
-      transactionTypes: dummyTransactionTypes,
-      propertyStatuses: dummyPropertyStatuses
-    };
+    throw error;
   }
 };
 
 // 매물 목록 조회 (권한 기반 필터링 포함)
 export const getProperties = async (filters = {}, user = null) => {
-  if (USE_DUMMY_DATA) {
-    console.log('🎭 더미데이터 모드: 매물 목록 반환');
-    let filteredProperties = [...dummyProperties];
-
-    // 권한 기반 필터링: 관리자가 아닌 경우 본인 매물만 조회
-    if (user && !isAdmin(user)) {
-      filteredProperties = filteredProperties.filter(p => 
-        hasPropertyPermission(user, p, 'view')
-      );
-    }
-
-    // 기타 필터 적용
-    if (filters.property_type_id) {
-      filteredProperties = filteredProperties.filter(p => p.property_type_id === filters.property_type_id);
-    }
-    if (filters.transaction_type_id) {
-      filteredProperties = filteredProperties.filter(p => p.transaction_type_id === filters.transaction_type_id);
-    }
-    if (filters.property_status_id) {
-      filteredProperties = filteredProperties.filter(p => p.property_status_id === filters.property_status_id);
-    }
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filteredProperties = filteredProperties.filter(p => 
-        p.property_name.toLowerCase().includes(searchLower) ||
-        p.location.toLowerCase().includes(searchLower)
-      );
-    }
-
-    return {
-      data: filteredProperties,
-      error: null
-    };
-  }
-
   try {
     let query = supabase.from('properties').select('*');
 
-    // 권한 기반 필터링: 관리자가 아닌 경우 본인 매물만 조회
-    if (user && !isAdmin(user)) {
-      // user_id 또는 manager_id가 일치하는 매물 조회
-      query = query.or(`user_id.eq.${user.id},manager_id.eq.${user.id},manager_id.eq.${user.email}`);
-    }
-
-    // 기타 필터 적용 (실제 DB 컬럼명 사용)
+    // 필터 적용
     if (filters.property_type_id) {
-      query = query.eq('property_type', filters.property_type_id);
+      query = query.eq('property_type_id', filters.property_type_id);
     }
     if (filters.transaction_type_id) {
-      query = query.eq('transaction_type', filters.transaction_type_id);
+      query = query.eq('transaction_type_id', filters.transaction_type_id);
     }
     if (filters.property_status_id) {
-      query = query.eq('property_status', filters.property_status_id);
+      query = query.eq('property_status_id', filters.property_status_id);
     }
     if (filters.search) {
       query = query.or(`property_name.ilike.%${filters.search}%,location.ilike.%${filters.search}%`);
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+    // Supabase 기본 1000개 제한을 우회하여 전체 데이터 가져오기
+    const { data, error } = await query
+      .order('created_at', { ascending: false })
+      .range(0, 49); // 페이지당 50개로 제한 (TODO: 페이지네이션 구현)
 
     if (error) throw error;
 
     return { data: data || [], error: null };
   } catch (error) {
     console.error('매물 목록 조회 실패:', error);
-    // 오류 시 더미데이터 반환 (권한 필터링 적용)
-    let fallbackData = [...dummyProperties];
-    if (user && !isAdmin(user)) {
-      fallbackData = fallbackData.filter(p => 
-        hasPropertyPermission(user, p, 'view')
-      );
-    }
-    return { data: fallbackData, error: error.message };
+    return { data: [], error: error.message };
   }
 };
 
 // 매물 상세 조회
 export const getPropertyById = async (id) => {
-  if (USE_DUMMY_DATA) {
-    const property = dummyProperties.find(p => p.id === id);
-    return { data: property, error: property ? null : 'Property not found' };
-  }
-
   try {
     const { data, error } = await supabase
       .from('properties')
@@ -192,9 +118,7 @@ export const getPropertyById = async (id) => {
     return { data, error: null };
   } catch (error) {
     console.error('매물 상세 조회 실패:', error);
-    // 오류 시 더미데이터에서 찾기
-    const property = dummyProperties.find(p => p.id === id);
-    return { data: property, error: property ? null : error.message };
+    return { data: null, error: error.message };
   }
 };
 
@@ -211,18 +135,6 @@ export const createProperty = async (propertyData, user = null) => {
     user_id: user?.id || propertyData.user_id,
     manager_id: user?.id || user?.email || propertyData.manager_id
   };
-
-  if (USE_DUMMY_DATA) {
-    console.log('🎭 더미데이터 모드: 매물 추가 시뮬레이션');
-    const newProperty = {
-      ...propertyWithUser,
-      id: `dummy-${Date.now()}`,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    dummyProperties.push(newProperty);
-    return { data: newProperty, error: null };
-  }
 
   try {
     const { data, error } = await supabase
@@ -241,27 +153,6 @@ export const createProperty = async (propertyData, user = null) => {
 
 // 매물 수정 (권한 체크 포함)
 export const updateProperty = async (id, updates, user = null) => {
-  if (USE_DUMMY_DATA) {
-    console.log('🎭 더미데이터 모드: 매물 수정 시뮬레이션');
-    const property = dummyProperties.find(p => p.id === id);
-    
-    // 권한 체크
-    if (user && !hasPropertyPermission(user, property, 'edit')) {
-      return { data: null, error: '이 매물을 수정할 권한이 없습니다.' };
-    }
-    
-    const index = dummyProperties.findIndex(p => p.id === id);
-    if (index !== -1) {
-      dummyProperties[index] = {
-        ...dummyProperties[index],
-        ...updates,
-        updated_at: new Date().toISOString()
-      };
-      return { data: dummyProperties[index], error: null };
-    }
-    return { data: null, error: 'Property not found' };
-  }
-
   try {
     // 먼저 매물 정보를 가져와서 권한 체크
     if (user) {
@@ -288,23 +179,6 @@ export const updateProperty = async (id, updates, user = null) => {
 
 // 매물 삭제 (권한 체크 포함)
 export const deleteProperty = async (id, user = null) => {
-  if (USE_DUMMY_DATA) {
-    console.log('🎭 더미데이터 모드: 매물 삭제 시뮬레이션');
-    const property = dummyProperties.find(p => p.id === id);
-    
-    // 권한 체크
-    if (user && !hasPropertyPermission(user, property, 'delete')) {
-      return { error: '이 매물을 삭제할 권한이 없습니다.' };
-    }
-    
-    const index = dummyProperties.findIndex(p => p.id === id);
-    if (index !== -1) {
-      dummyProperties.splice(index, 1);
-      return { error: null };
-    }
-    return { error: 'Property not found' };
-  }
-
   try {
     // 먼저 매물 정보를 가져와서 권한 체크
     if (user) {
@@ -356,25 +230,6 @@ export const validatePropertyData = (propertyData) => {
 
 // 매물 일괄 업로드
 export const bulkUploadProperties = async (properties, userId) => {
-  if (USE_DUMMY_DATA) {
-    console.log('🎭 더미데이터 모드: 일괄 업로드 시뮬레이션');
-    const newProperties = properties.map((p, index) => ({
-      ...p,
-      id: `bulk-${Date.now()}-${index}`,
-      manager_id: userId || 'admin',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }));
-    dummyProperties.push(...newProperties);
-    return {
-      success: true,
-      totalCount: properties.length,
-      uploadedCount: properties.length,
-      failedCount: 0,
-      errors: []
-    };
-  }
-
   try {
     // 룩업 테이블 먼저 초기화
     await initializeLookupTables();
@@ -394,7 +249,7 @@ export const bulkUploadProperties = async (properties, userId) => {
       }));
       
       try {
-        console.log(`배치 ${Math.floor(i/BATCH_SIZE) + 1} 업로드 중... (${batch.length}개 매물)`);
+        // console.log(`배치 ${Math.floor(i/BATCH_SIZE) + 1} 업로드 중... (${batch.length}개 매물)`);
         
         // 데이터 검증
         for (const property of batchWithManagerId) {
@@ -412,7 +267,7 @@ export const bulkUploadProperties = async (properties, userId) => {
         if (error) throw error;
         
         uploadedCount += batch.length;
-        console.log(`배치 ${Math.floor(i/BATCH_SIZE) + 1} 완료: ${batch.length}개 업로드 (총 ${uploadedCount}개)`);
+        // console.log(`배치 ${Math.floor(i/BATCH_SIZE) + 1} 완료: ${batch.length}개 업로드 (총 ${uploadedCount}개)`);
         
         // 배치 간 잠시 대기 (API 제한 방지)
         if (i + BATCH_SIZE < properties.length) {

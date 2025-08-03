@@ -39,3 +39,5 @@ export const useToast = () => {
   }
   return context;
 };
+
+export default ToastContext;

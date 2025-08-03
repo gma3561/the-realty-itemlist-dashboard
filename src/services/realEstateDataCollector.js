@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import keychainManager from '../utils/keychainManager.js';
 
 class RealEstateDataCollector {
   constructor() {
@@ -13,8 +14,11 @@ class RealEstateDataCollector {
     this.supabase = createClient(this.supabaseUrl, this.supabaseKey);
     
     // 공공데이터포털 API 설정
-    this.apiKey = null; // 사용자가 설정할 API 키
+    this.apiKey = null; // 사용자가 설정할 API 키 (키체인에서 자동 로드)
     this.baseUrl = 'https://openapi.molit.go.kr/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc';
+    
+    // 키체인에서 API 키 자동 로드 시도
+    this.loadApiKeyFromKeychain();
     
     // 3시간 간격 (밀리초)
     this.intervalTime = 3 * 60 * 60 * 1000;
@@ -35,11 +39,26 @@ class RealEstateDataCollector {
   }
 
   /**
+   * 키체인에서 API 키 로드
+   */
+  async loadApiKeyFromKeychain() {
+    try {
+      const apiKey = await keychainManager.getPublicDataApiKey();
+      if (apiKey) {
+        this.apiKey = apiKey;
+        // console.log('✅ 키체인에서 공공데이터포털 API 키를 자동으로 불러왔습니다.');
+      }
+    } catch (error) {
+      // console.log('ℹ️ 키체인에 저장된 API 키가 없습니다. 수동으로 설정해주세요.');
+    }
+  }
+
+  /**
    * API 키 설정
    */
   setApiKey(apiKey) {
     this.apiKey = apiKey;
-    console.log('✅ 공공데이터포털 API 키가 설정되었습니다.');
+    // console.log('✅ 공공데이터포털 API 키가 설정되었습니다.');
   }
 
   /**
@@ -163,7 +182,7 @@ class RealEstateDataCollector {
         throw error;
       }
 
-      console.log(`✅ ${areaInfo.name}: ${processedData.length}건 데이터 저장 완료`);
+      // console.log(`✅ ${areaInfo.name}: ${processedData.length}건 데이터 저장 완료`);
       return processedData.length;
     } catch (error) {
       console.error(`데이터 저장 실패 - ${areaInfo.name}:`, error);
@@ -186,7 +205,7 @@ class RealEstateDataCollector {
       const currentMonth = this.getCurrentYearMonth();
       const lastMonth = this.getLastMonth();
       
-      console.log(`🔍 ${areaInfo.name} 데이터 수집 시작...`);
+      // console.log(`🔍 ${areaInfo.name} 데이터 수집 시작...`);
       
       let totalSaved = 0;
       
@@ -223,7 +242,7 @@ class RealEstateDataCollector {
     }
 
     const startTime = new Date();
-    console.log(`🚀 부동산 데이터 수집 시작: ${startTime.toISOString()}`);
+    // console.log(`🚀 부동산 데이터 수집 시작: ${startTime.toISOString()}`);
     
     let totalCollected = 0;
     
@@ -239,10 +258,10 @@ class RealEstateDataCollector {
       this.lastCollectionTime = new Date();
       const duration = this.lastCollectionTime - startTime;
       
-      console.log(`✅ 데이터 수집 완료!`);
-      console.log(`   - 총 수집 건수: ${totalCollected}건`);
-      console.log(`   - 소요 시간: ${Math.round(duration / 1000)}초`);
-      console.log(`   - 다음 수집 예정: ${new Date(Date.now() + this.intervalTime).toISOString()}`);
+      // console.log(`✅ 데이터 수집 완료!`);
+      // console.log(`   - 총 수집 건수: ${totalCollected}건`);
+      // console.log(`   - 소요 시간: ${Math.round(duration / 1000)}초`);
+      // console.log(`   - 다음 수집 예정: ${new Date(Date.now() + this.intervalTime).toISOString()}`);
       
       // 수집 로그 저장
       await this.saveCollectionLog(totalCollected, duration);
@@ -282,12 +301,12 @@ class RealEstateDataCollector {
    */
   startAutoCollection() {
     if (this.isRunning) {
-      console.log('⚠️ 이미 자동 수집이 실행 중입니다.');
+      // console.log('⚠️ 이미 자동 수집이 실행 중입니다.');
       return;
     }
 
     this.isRunning = true;
-    console.log('🎯 부동산 데이터 자동 수집 시작 (3시간 간격)');
+    // console.log('🎯 부동산 데이터 자동 수집 시작 (3시간 간격)');
     
     // 즉시 첫 번째 수집 실행
     this.collectAllData();
@@ -303,7 +322,7 @@ class RealEstateDataCollector {
    */
   stopAutoCollection() {
     if (!this.isRunning) {
-      console.log('⚠️ 자동 수집이 실행되고 있지 않습니다.');
+      // console.log('⚠️ 자동 수집이 실행되고 있지 않습니다.');
       return;
     }
 
@@ -313,7 +332,7 @@ class RealEstateDataCollector {
       this.intervalId = null;
     }
     
-    console.log('⏹️ 부동산 데이터 자동 수집이 중지되었습니다.');
+    // console.log('⏹️ 부동산 데이터 자동 수집이 중지되었습니다.');
   }
 
   /**

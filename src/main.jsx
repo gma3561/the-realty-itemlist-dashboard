@@ -1,11 +1,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
-import './index.css'
+import './styles/tailwind.css'
 
-// 전역 오류 처리
+// 전역 오류 처리 - MAIN 브랜치에서 수정됨
 window.addEventListener('error', (event) => {
   console.error('전역 JavaScript 오류:', event.error);
+  // console.log('현재 브랜치: MAIN');
 });
 
 window.addEventListener('unhandledrejection', (event) => {

@@ -7,7 +7,6 @@ import { isHardcodedAdmin } from '../data/hardcodedAdmins';
 import { PlusCircle, Search, RefreshCw, Building2, MapPin, Calendar, Grid, List, User, Trash2, Hash } from 'lucide-react';
 import PropertyCard from '../components/property/PropertyCard';
 import propertyService from '../services/propertyService';
-import { dummyPropertyTypes, dummyTransactionTypes, dummyPropertyStatuses } from '../data/dummyProperties';
 import ENV_CONFIG from '../config/env';
 
 const MyProperties = () => {
@@ -272,9 +271,9 @@ const MyProperties = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">전체</option>
-                  <option value="거래가능">거래가능</option>
-                  <option value="거래완료">거래완료</option>
-                  <option value="거래보류">거래보류</option>
+                  {lookupData.propertyStatuses?.map(status => (
+                    <option key={status.id} value={status.name}>{status.name}</option>
+                  ))}
                 </select>
               </div>
               
@@ -288,10 +287,9 @@ const MyProperties = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">전체</option>
-                  <option value="아파트">아파트</option>
-                  <option value="오피스텔">오피스텔</option>
-                  <option value="빌라/연립">빌라/연립</option>
-                  <option value="단독주택">단독주택</option>
+                  {lookupData.propertyTypes?.map(type => (
+                    <option key={type.id} value={type.name}>{type.name}</option>
+                  ))}
                 </select>
               </div>
               
@@ -305,9 +303,9 @@ const MyProperties = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">전체</option>
-                  <option value="매매">매매</option>
-                  <option value="전세">전세</option>
-                  <option value="월세">월세</option>
+                  {lookupData.transactionTypes?.map(type => (
+                    <option key={type.id} value={type.name}>{type.name}</option>
+                  ))}
                 </select>
               </div>
               

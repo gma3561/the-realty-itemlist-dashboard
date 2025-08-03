@@ -6,7 +6,7 @@ export const useTransactionTypes = () => {
     const { data, error } = await supabase
       .from('transaction_types')
       .select('*')
-      .order('name');
+      .order('display_order');
       
     if (error) throw error;
     return data;

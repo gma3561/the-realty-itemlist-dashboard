@@ -6,7 +6,7 @@ const getEnvVar = (key, fallback = '') => {
   try {
     return import.meta.env[key] || fallback;
   } catch (error) {
-    console.warn('환경변수 접근 실패, fallback 사용:', fallback);
+    // console.warn('환경변수 접근 실패, fallback 사용:', fallback);
     return fallback;
   }
 };
@@ -37,14 +37,13 @@ export const ENV_CONFIG = {
   // 기능 설정
   ENABLE_DEMO_BANNER: isGitHubPages ? PRODUCTION_ENV.ENABLE_DEMO_BANNER : (getEnvVar('VITE_ENABLE_DEMO_BANNER', 'true') !== 'false'),
   ENABLE_PWA: isGitHubPages ? PRODUCTION_ENV.ENABLE_PWA : (getEnvVar('VITE_ENABLE_PWA', 'true') !== 'false'),
-  USE_DUMMY_DATA: isGitHubPages ? PRODUCTION_ENV.USE_DUMMY_DATA : (getEnvVar('VITE_USE_DUMMY_DATA', 'false') !== 'false'),
+  USE_DUMMY_DATA: false, // 더미 데이터 비활성화
 };
 
 // Supabase 설정 검증
 if (!ENV_CONFIG.SUPABASE_URL || !ENV_CONFIG.SUPABASE_ANON_KEY) {
-  console.warn('⚠️ Supabase 환경변수가 설정되지 않았습니다.');
-  console.warn('더미 데이터 모드로 자동 전환됩니다.');
-  ENV_CONFIG.USE_DUMMY_DATA = true;
+  console.error('❌ Supabase 환경변수가 설정되지 않았습니다.');
+  console.error('실제 데이터베이스 연결이 필요합니다.');
 }
 
 // 개발 모드에서 환경변수 정보 출력

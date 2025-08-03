@@ -9,11 +9,13 @@ export const PERMISSIONS = {
   // 매물 관련 권한
   VIEW_ALL_PROPERTIES: 'view_all_properties',
   VIEW_OWN_PROPERTIES: 'view_own_properties',
+  VIEW_CUSTOMER_INFO: 'view_customer_info', // 고객정보 조회 권한
   CREATE_PROPERTY: 'create_property',
   EDIT_ALL_PROPERTIES: 'edit_all_properties',
   EDIT_OWN_PROPERTIES: 'edit_own_properties',
   DELETE_ALL_PROPERTIES: 'delete_all_properties',
   DELETE_OWN_PROPERTIES: 'delete_own_properties',
+  COMMENT_ON_PROPERTIES: 'comment_on_properties', // 타인 매물 코멘트 권한
   
   // 사용자 관리 권한
   VIEW_USERS: 'view_users',
@@ -33,11 +35,13 @@ const ROLE_PERMISSIONS = {
     // 관리자는 모든 권한을 가짐
     PERMISSIONS.VIEW_ALL_PROPERTIES,
     PERMISSIONS.VIEW_OWN_PROPERTIES,
+    PERMISSIONS.VIEW_CUSTOMER_INFO,
     PERMISSIONS.CREATE_PROPERTY,
     PERMISSIONS.EDIT_ALL_PROPERTIES,
     PERMISSIONS.EDIT_OWN_PROPERTIES,
     PERMISSIONS.DELETE_ALL_PROPERTIES,
     PERMISSIONS.DELETE_OWN_PROPERTIES,
+    PERMISSIONS.COMMENT_ON_PROPERTIES,
     PERMISSIONS.VIEW_USERS,
     PERMISSIONS.MANAGE_USERS,
     PERMISSIONS.VIEW_ALL_PERFORMANCE,
@@ -50,7 +54,8 @@ const ROLE_PERMISSIONS = {
     PERMISSIONS.CREATE_PROPERTY,
     PERMISSIONS.EDIT_OWN_PROPERTIES,
     PERMISSIONS.DELETE_OWN_PROPERTIES,
-    PERMISSIONS.VIEW_OWN_PERFORMANCE
+    PERMISSIONS.VIEW_OWN_PERFORMANCE,
+    PERMISSIONS.COMMENT_ON_PROPERTIES
   ]
 };
 
@@ -91,7 +96,7 @@ export const isRegularUser = (user) => {
  * 매물에 대한 권한이 있는지 확인
  * @param {Object} user - 사용자 객체
  * @param {Object} property - 매물 객체
- * @param {string} action - 수행할 작업 (view, edit, delete)
+ * @param {string} action - 수행할 작업 (view, edit, delete, comment)
  * @returns {boolean} 권한 보유 여부
  */
 export const hasPropertyPermission = (user, property, action) => {
@@ -100,7 +105,7 @@ export const hasPropertyPermission = (user, property, action) => {
   // 관리자는 모든 매물에 대한 모든 권한을 가짐
   if (isAdmin(user)) return true;
   
-  // 일반 사용자는 본인 매물에만 권한이 있음
+  // 일반 사용자는 본인 매물에만 편집/삭제 권한이 있음
   if (isRegularUser(user)) {
     // 매물이 없는 경우 (새 매물 생성 등)
     if (!property) {
@@ -114,10 +119,58 @@ export const hasPropertyPermission = (user, property, action) => {
       property.manager_id === user.email ||
       property.manager_id === `hardcoded-${user.email}`;
     
-    return isOwner;
+    // 조회는 모든 매물 가능, 편집/삭제는 본인 매물만
+    if (action === 'view') return true;
+    if (action === 'comment') return true; // 모든 매물에 코멘트 가능
+    
+    return isOwner; // edit, delete는 본인 매물만
   }
   
   return false;
+};
+
+/**
+ * 고객정보 조회 권한이 있는지 확인
+ * @param {Object} user - 사용자 객체
+ * @param {Object} property - 매물 객체
+ * @returns {boolean} 고객정보 조회 권한 보유 여부
+ */
+export const canViewCustomerInfo = (user, property) => {
+  if (!user || !property) return false;
+  
+  // 관리자는 모든 고객정보 조회 가능
+  if (isAdmin(user)) return true;
+  
+  // 일반 사용자는 본인 매물의 고객정보만 조회 가능
+  const isOwner = 
+    property.user_id === user.id ||
+    property.manager_id === user.id ||
+    property.manager_id === user.email ||
+    property.manager_id === `hardcoded-${user.email}`;
+  
+  return isOwner;
+};
+
+/**
+ * 매물 상태 변경 권한이 있는지 확인
+ * @param {Object} user - 사용자 객체
+ * @param {Object} property - 매물 객체
+ * @returns {boolean} 상태 변경 권한 보유 여부
+ */
+export const canChangePropertyStatus = (user, property) => {
+  if (!user || !property) return false;
+  
+  // 관리자는 모든 매물 상태 변경 가능
+  if (isAdmin(user)) return true;
+  
+  // 일반 사용자는 본인 매물의 상태만 변경 가능 (단, '확인필요' 상태는 제외)
+  const isOwner = 
+    property.user_id === user.id ||
+    property.manager_id === user.id ||
+    property.manager_id === user.email ||
+    property.manager_id === `hardcoded-${user.email}`;
+  
+  return isOwner;
 };
 
 /**
@@ -212,6 +265,43 @@ export const getUserRoleBadgeClass = (user) => {
   return 'bg-gray-100 text-gray-800 border-gray-200';
 };
 
+/**
+ * 고객 정보를 마스킹 처리
+ * @param {string} info - 마스킹할 정보 (전화번호, 이메일 등)
+ * @param {Object} user - 사용자 객체
+ * @param {Object} property - 매물 객체
+ * @returns {string} 마스킹된 정보 또는 원본 정보
+ */
+export const maskCustomerInfo = (info, user, property) => {
+  if (!info) return '';
+  
+  // 관리자이거나 본인 매물이면 원본 정보 표시
+  if (canViewCustomerInfo(user, property)) {
+    return info;
+  }
+  
+  // 전화번호 마스킹
+  if (info.includes('-') && info.length >= 10) {
+    return info.replace(/(\d{3})-(\d{3,4})-(\d{4})/, '$1-****-$3');
+  }
+  
+  // 이메일 마스킹
+  if (info.includes('@')) {
+    const [local, domain] = info.split('@');
+    const maskedLocal = local.length > 2 ? 
+      local.substring(0, 2) + '*'.repeat(local.length - 2) : 
+      local;
+    return `${maskedLocal}@${domain}`;
+  }
+  
+  // 기타 정보 마스킹
+  if (info.length > 4) {
+    return info.substring(0, 2) + '*'.repeat(info.length - 4) + info.substring(info.length - 2);
+  }
+  
+  return '***';
+};
+
 export default {
   ROLES,
   PERMISSIONS,
@@ -219,6 +309,9 @@ export default {
   isAdmin,
   isRegularUser,
   hasPropertyPermission,
+  canViewCustomerInfo,
+  canChangePropertyStatus,
+  maskCustomerInfo,
   getAuthorizedMenuItems,
   getUserRoleLabel,
   getUserRoleBadgeClass
