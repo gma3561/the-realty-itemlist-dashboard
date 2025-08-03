@@ -83,15 +83,26 @@ export const AuthProvider = ({ children }) => {
         setError(null); // 오류를 표시하지 않고 조용히 처리
         setUser(null);
       } finally {
-        if (!skipLoading) setLoading(false);
+        if (!skipLoading) {
+          setLoading(false);
+          // 추가 안전장치: 다음 틱에서도 확실히 로딩 완료
+          setTimeout(() => setLoading(false), 0);
+        }
       }
     };
     
   useEffect(() => {
     checkUser();
     
+    // 안전장치: 10초 후에도 로딩 중이면 강제로 로딩 완료
+    const loadingTimeout = setTimeout(() => {
+      console.warn('AuthContext: Loading timeout reached, forcing loading to false');
+      setLoading(false);
+    }, 10000);
+    
     // Supabase가 초기화되지 않은 경우 리스너 설정 안함
     if (!supabase) {
+      clearTimeout(loadingTimeout);
       return;
     }
     
@@ -103,15 +114,18 @@ export const AuthProvider = ({ children }) => {
         if (event === 'SIGNED_OUT') {
           setUser(null);
           setLoading(false);
+          clearTimeout(loadingTimeout);
         } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           // checkUser 함수를 재사용하여 중복 제거
           await checkUser();
+          clearTimeout(loadingTimeout);
         }
       }
     );
     
     return () => {
       authListener?.subscription?.unsubscribe();
+      clearTimeout(loadingTimeout);
     };
   }, []);
 
