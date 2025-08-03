@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '../services/supabase';
 import ENV_CONFIG from '../config/env';
 

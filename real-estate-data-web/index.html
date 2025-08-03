@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>부동산 거래 데이터 조회</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const API_KEY = '7c89f463dd39450188bd645b78e1e6d5';
+        
+        function RealEstateApp() {
+            const [data, setData] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState(null);
+            const [region, setRegion] = useState('11110'); // 기본값: 종로구
+            const [dealYmd, setDealYmd] = useState('202501'); // 기본값: 2025년 1월
+
+            const fetchRealEstateData = async () => {
+                setLoading(true);
+                setError(null);
+                
+                try {
+                    // 아파트 실거래가 API 호출
+                    const url = `https://apis.data.go.kr/1613000/RTMSDataSvcAptTradeDev/getRTMSDataSvcAptTradeDev`;
+                    const params = new URLSearchParams({
+                        serviceKey: API_KEY,
+                        LAWD_CD: region,
+                        DEAL_YMD: dealYmd,
+                        pageNo: '1',
+                        numOfRows: '100',
+                        _type: 'json'
+                    });
+
+                    const response = await fetch(`${url}?${params}`);
+                    const result = await response.json();
+                    
+                    console.log('API 응답:', result);
+                    
+                    if (result.response?.body?.items) {
+                        setData(result.response.body.items.item || []);
+                    } else {
+                        setData([]);
+                        setError('데이터가 없습니다.');
+                    }
+                } catch (err) {
+                    console.error('API 호출 오류:', err);
+                    setError('데이터를 불러오는 중 오류가 발생했습니다.');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            // 3시간마다 자동 갱신
+            useEffect(() => {
+                fetchRealEstateData();
+                const interval = setInterval(fetchRealEstateData, 3 * 60 * 60 * 1000);
+                return () => clearInterval(interval);
+            }, [region, dealYmd]);
+
+            return (
+                <div className="min-h-screen bg-gray-50 p-6">
+                    <div className="max-w-7xl mx-auto">
+                        <h1 className="text-3xl font-bold text-gray-900 mb-8">부동산 거래 데이터 실시간 조회</h1>
+                        
+                        {/* 검색 조건 */}
+                        <div className="bg-white p-6 rounded-lg shadow mb-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">지역코드</label>
+                                    <select 
+                                        value={region} 
+                                        onChange={(e) => setRegion(e.target.value)}
+                                        className="w-full p-2 border border-gray-300 rounded-md"
+                                    >
+                                        <option value="11110">종로구</option>
+                                        <option value="11140">중구</option>
+                                        <option value="11170">용산구</option>
+                                        <option value="11200">성동구</option>
+                                        <option value="11215">광진구</option>
+                                        <option value="11230">동대문구</option>
+                                        <option value="11260">중랑구</option>
+                                        <option value="11290">성북구</option>
+                                        <option value="11305">강북구</option>
+                                        <option value="11320">도봉구</option>
+                                        <option value="11350">노원구</option>
+                                        <option value="11380">은평구</option>
+                                        <option value="11410">서대문구</option>
+                                        <option value="11440">마포구</option>
+                                        <option value="11470">양천구</option>
+                                        <option value="11500">강서구</option>
+                                        <option value="11530">구로구</option>
+                                        <option value="11545">금천구</option>
+                                        <option value="11560">영등포구</option>
+                                        <option value="11590">동작구</option>
+                                        <option value="11620">관악구</option>
+                                        <option value="11650">서초구</option>
+                                        <option value="11680">강남구</option>
+                                        <option value="11710">송파구</option>
+                                        <option value="11740">강동구</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">조회 년월</label>
+                                    <input 
+                                        type="month" 
+                                        value={dealYmd.slice(0,4) + '-' + dealYmd.slice(4,6)}
+                                        onChange={(e) => setDealYmd(e.target.value.replace('-', ''))}
+                                        className="w-full p-2 border border-gray-300 rounded-md"
+                                    />
+                                </div>
+                                <div className="flex items-end">
+                                    <button 
+                                        onClick={fetchRealEstateData}
+                                        disabled={loading}
+                                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                    >
+                                        {loading ? '조회 중...' : '데이터 조회'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 에러 메시지 */}
+                        {error && (
+                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                                {error}
+                            </div>
+                        )}
+
+                        {/* 로딩 상태 */}
+                        {loading && (
+                            <div className="text-center py-8">
+                                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                <p className="mt-2 text-gray-600">데이터를 불러오고 있습니다...</p>
+                            </div>
+                        )}
+
+                        {/* 데이터 테이블 */}
+                        {!loading && data.length > 0 && (
+                            <div className="bg-white rounded-lg shadow overflow-hidden">
+                                <div className="px-6 py-4 bg-gray-50 border-b">
+                                    <h2 className="text-lg font-semibold text-gray-900">
+                                        거래 데이터 ({data.length}건)
+                                    </h2>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">거래일</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">아파트명</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">전용면적</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">거래금액</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">층</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">건축년도</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">지역</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {data.map((item, index) => (
+                                                <tr key={index} className="hover:bg-gray-50">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        {item.거래일 || item.dealDay}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                        {item.아파트 || item.aptNm}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        {item.전용면적 || item.excluUseAr}㎡
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600">
+                                                        {(item.거래금액 || item.dealAmount).replace(/,/g, '')} 만원
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        {item.층 || item.floor}층
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        {item.건축년도 || item.buildYear}년
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        {(item.시군구 || item.sggNm)} {(item.법정동 || item.bjdongNm)}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 데이터 없음 */}
+                        {!loading && data.length === 0 && !error && (
+                            <div className="text-center py-12">
+                                <p className="text-gray-500">해당 조건의 거래 데이터가 없습니다.</p>
+                            </div>
+                        )}
+
+                        {/* 마지막 업데이트 시간 */}
+                        <div className="mt-6 text-center text-sm text-gray-500">
+                            <p>자동 갱신: 3시간마다</p>
+                            <p>마지막 업데이트: {new Date().toLocaleString('ko-KR')}</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<RealEstateApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>

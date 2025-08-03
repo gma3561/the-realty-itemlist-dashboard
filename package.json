@@ -39,6 +39,7 @@
     "googleapis": "^118.0.0",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.338.0",
+    "node-fetch": "^3.3.2",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
