@@ -12,7 +12,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false); // 강제로 false 시작
+  const [loading, setLoading] = useState(true); // 초기 로딩 상태를 true로 설정
   const [error, setError] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -142,8 +142,8 @@ export const AuthProvider = ({ children }) => {
       // 환경에 따른 리디렉션 URL 설정
       const isDevelopment = window.location.hostname === 'localhost';
       const redirectUrl = isDevelopment
-        ? `${window.location.origin}/#/auth/callback`
-        : 'https://gma3561.github.io/the-realty-itemlist-dashboard/oauth-callback.html';
+        ? `${window.location.origin}/auth/callback`
+        : 'https://gma3561.github.io/the-realty-itemlist-dashboard/auth/callback';
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
