@@ -118,6 +118,12 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
       }
       
+      // 환경에 따른 리디렉션 URL 설정
+      const isDevelopment = window.location.hostname === 'localhost';
+      const redirectUrl = isDevelopment
+        ? `${window.location.origin}/`
+        : 'https://gma3561.github.io/the-realty-itemlist-dashboard/oauth-callback.html';
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -125,7 +131,7 @@ export const AuthProvider = ({ children }) => {
             access_type: 'offline',
             prompt: 'consent',
           },
-          redirectTo: 'https://gma3561.github.io/the-realty-itemlist-dashboard/oauth-callback.html',
+          redirectTo: redirectUrl,
         },
       });
       
@@ -157,34 +163,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 이메일 패스워드 로그인 (하드코딩된 관리자 기능 제거)
-  const signInWithEmail = async (email, password) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      if (!supabase) {
-        throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
-      }
-      
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (error) throw error;
-    } catch (error) {
-      setError(error.message);
-      setLoading(false);
-    }
-  };
 
   const value = {
     user,
     loading,
     error,
     signInWithGoogle,
-    signInWithEmail,
     signOut,
   };
 

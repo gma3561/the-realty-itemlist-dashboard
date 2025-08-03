@@ -128,13 +128,13 @@ export const hasPropertyPermission = (user, property, action) => {
 export const getAuthorizedMenuItems = (user) => {
   const menuItems = [
     {
-      name: 'Dashboard',
+      name: '대시보드',
       path: '/',
       permission: PERMISSIONS.VIEW_OWN_PROPERTIES,
       icon: '📊'
     },
     {
-      name: 'My Properties',
+      name: '내 매물',
       path: '/my-properties', 
       permission: PERMISSIONS.VIEW_OWN_PROPERTIES,
       icon: '🏠'
@@ -145,31 +145,25 @@ export const getAuthorizedMenuItems = (user) => {
   if (isAdmin(user)) {
     menuItems.push(
       {
-        name: 'All Properties',
+        name: '전체 매물',
         path: '/properties',
         permission: PERMISSIONS.VIEW_ALL_PROPERTIES,
         icon: '🏢'
       },
       {
-        name: 'User Management',
+        name: '직원 관리',
         path: '/users',
         permission: PERMISSIONS.MANAGE_USERS,
         icon: '👥'
       },
       {
-        name: 'Staff Performance',
+        name: '직원 성과',
         path: '/performance',
         permission: PERMISSIONS.VIEW_ALL_PERFORMANCE,
         icon: '📈'
       },
       {
-        name: 'CSV Import',
-        path: '/csv-import',
-        permission: PERMISSIONS.BULK_UPLOAD,
-        icon: '📁'
-      },
-      {
-        name: 'Data Collection',
+        name: '데이터 수집',
         path: '/data-collection',
         permission: PERMISSIONS.BULK_UPLOAD,
         icon: '🔄'
@@ -179,7 +173,7 @@ export const getAuthorizedMenuItems = (user) => {
   
   // 설정은 모든 사용자가 접근 가능
   menuItems.push({
-    name: 'Settings',
+    name: '설정',
     path: '/settings',
     permission: null, // 모든 사용자 허용
     icon: '⚙️'

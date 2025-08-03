@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getRealtorByEmail } from '../data/realtorList';
 
 const Login = () => {
   const { user, loading, signInWithGoogle, error: authError } = useAuth();
@@ -92,56 +93,8 @@ const Login = () => {
                 <p>• Google 계정으로만 로그인이 가능합니다</p>
                 <p>• 처음 로그인 시 자동으로 계정이 생성됩니다</p>
                 <p>• 관리자 권한은 별도로 부여됩니다</p>
+                <p>• 빠르고 안전한 Google OAuth 로그인을 사용합니다</p>
               </div>
-            </div>
-
-            {/* 개발용 임시 로그인 바이패스 */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-xs text-gray-500 text-center mb-3">개발자 전용</p>
-              
-              {/* 관리자 로그인 */}
-              <button
-                onClick={() => {
-                  const tempAdminUser = {
-                    id: 'temp-admin-' + Date.now(),
-                    email: 'admin@example.com',
-                    user_metadata: {
-                      full_name: '테스트 관리자'
-                    },
-                    role: 'admin',
-                    isAdmin: true,
-                    name: '테스트 관리자'
-                  };
-                  
-                  localStorage.setItem('temp-bypass-user', JSON.stringify(tempAdminUser));
-                  window.location.href = '/the-realty-itemlist-dashboard/#/dashboard';
-                }}
-                className="w-full flex justify-center items-center px-4 py-2 mb-2 border border-red-300 rounded-md text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                🔑 관리자로 로그인 (모든 권한)
-              </button>
-              
-              {/* 일반사용자 로그인 */}
-              <button
-                onClick={() => {
-                  const tempRegularUser = {
-                    id: 'temp-user-' + Date.now(),
-                    email: 'user@example.com',
-                    user_metadata: {
-                      full_name: '테스트 사용자'
-                    },
-                    role: 'user',
-                    isAdmin: false,
-                    name: '테스트 사용자'
-                  };
-                  
-                  localStorage.setItem('temp-bypass-user', JSON.stringify(tempRegularUser));
-                  window.location.href = '/the-realty-itemlist-dashboard/#/dashboard';
-                }}
-                className="w-full flex justify-center items-center px-4 py-2 border border-blue-300 rounded-md text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                👤 일반사용자로 로그인 (제한된 권한)
-              </button>
             </div>
           </div>
         </div>
