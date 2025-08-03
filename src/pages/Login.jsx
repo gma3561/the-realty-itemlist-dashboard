@@ -114,7 +114,7 @@ const Login = () => {
                   };
                   
                   localStorage.setItem('temp-bypass-user', JSON.stringify(tempAdminUser));
-                  window.location.href = '/#/';
+                  window.location.href = '/the-realty-itemlist-dashboard/#/dashboard';
                 }}
                 className="w-full flex justify-center items-center px-4 py-2 mb-2 border border-red-300 rounded-md text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               >
@@ -136,7 +136,7 @@ const Login = () => {
                   };
                   
                   localStorage.setItem('temp-bypass-user', JSON.stringify(tempRegularUser));
-                  window.location.href = '/#/';
+                  window.location.href = '/the-realty-itemlist-dashboard/#/dashboard';
                 }}
                 className="w-full flex justify-center items-center px-4 py-2 border border-blue-300 rounded-md text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
