@@ -167,6 +167,12 @@ export const getAuthorizedMenuItems = (user) => {
         path: '/csv-import',
         permission: PERMISSIONS.BULK_UPLOAD,
         icon: '📁'
+      },
+      {
+        name: 'Data Collection',
+        path: '/data-collection',
+        permission: PERMISSIONS.BULK_UPLOAD,
+        icon: '🔄'
       }
     );
   }

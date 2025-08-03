@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>매물장 대시보드 수동 테스트</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .test-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+        }
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0055aa;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏢 부동산 매물장 대시보드 수동 테스트</h1>
+    
+    <div class="test-section">
+        <h2>1. 애플리케이션 접속 테스트</h2>
+        <div class="test-item">
+            <p>로컬 개발 서버 확인</p>
+            <button onclick="testLocalServer()">로컬 서버 테스트</button>
+            <button onclick="openLocalApp()">로컬 앱 열기</button>
+            <div id="local-result" class="result"></div>
+        </div>
+        <div class="test-item">
+            <p>프로덕션 서버 확인</p>
+            <button onclick="testProdServer()">프로덕션 서버 테스트</button>
+            <button onclick="openProdApp()">프로덕션 앱 열기</button>
+            <div id="prod-result" class="result"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Supabase 연결 테스트</h2>
+        <div class="test-item">
+            <button onclick="testSupabaseConnection()">Supabase 연결 확인</button>
+            <div id="supabase-result" class="result"></div>
+        </div>
+        <div class="test-item">
+            <button onclick="testSupabaseData()">데이터 조회 테스트</button>
+            <div id="data-result" class="result"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. 로그인 테스트</h2>
+        <div class="test-item">
+            <p>관리자 계정: jenny@the-realty.co.kr / admin123!</p>
+            <button onclick="testAdminLogin()">관리자 로그인 테스트</button>
+            <div id="login-result" class="result"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. 애플리케이션 미리보기</h2>
+        <button onclick="loadAppInIframe()">애플리케이션 로드</button>
+        <iframe id="app-iframe" style="display:none;"></iframe>
+    </div>
+
+    <script>
+        // Supabase 설정
+        const SUPABASE_URL = 'https://aekgsysvipnwxhwixglg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFla2dzeXN2aXBud3hod2l4Z2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc3NjI0MTgsImV4cCI6MjA1MzMzODQxOH0.z7C6bXL0Y6kCJEPIu6AlKLGi1vgfwdD9QQ0rtjcqe5g';
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.textContent = message;
+        }
+
+        function testLocalServer() {
+            fetch('http://localhost:5174/the-realty-itemlist-dashboard/')
+                .then(response => {
+                    if (response.ok) {
+                        showResult('local-result', '✅ 로컬 서버가 정상적으로 실행 중입니다.', 'success');
+                    } else {
+                        showResult('local-result', `❌ 응답 코드: ${response.status}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    showResult('local-result', '❌ 로컬 서버에 연결할 수 없습니다. 개발 서버를 실행하세요.', 'error');
+                });
+        }
+
+        function openLocalApp() {
+            window.open('http://localhost:5174/the-realty-itemlist-dashboard/', '_blank');
+        }
+
+        function testProdServer() {
+            fetch('https://gma3561.github.io/the-realty-itemlist-dashboard/')
+                .then(response => {
+                    if (response.ok) {
+                        showResult('prod-result', '✅ 프로덕션 서버가 정상적으로 실행 중입니다.', 'success');
+                    } else {
+                        showResult('prod-result', `❌ 응답 코드: ${response.status}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    showResult('prod-result', '❌ 프로덕션 서버에 연결할 수 없습니다.', 'error');
+                });
+        }
+
+        function openProdApp() {
+            window.open('https://gma3561.github.io/the-realty-itemlist-dashboard/', '_blank');
+        }
+
+        async function testSupabaseConnection() {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/properties?limit=1`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+                
+                if (response.ok) {
+                    showResult('supabase-result', '✅ Supabase 연결 성공!', 'success');
+                } else {
+                    const error = await response.text();
+                    showResult('supabase-result', `❌ 연결 실패: ${response.status} - ${error}`, 'error');
+                }
+            } catch (error) {
+                showResult('supabase-result', `❌ 연결 오류: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSupabaseData() {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/properties?select=id,title,status_id&limit=5`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('data-result', `✅ 데이터 조회 성공! ${data.length}개의 매물을 조회했습니다.`, 'success');
+                    console.log('조회된 데이터:', data);
+                } else {
+                    const error = await response.text();
+                    showResult('data-result', `❌ 데이터 조회 실패: ${response.status} - ${error}`, 'error');
+                }
+            } catch (error) {
+                showResult('data-result', `❌ 조회 오류: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAdminLogin() {
+            try {
+                // 로그인 API 테스트
+                const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'jenny@the-realty.co.kr',
+                        password: 'admin123!'
+                    })
+                });
+                
+                if (response.ok) {
+                    showResult('login-result', '✅ 로그인 테스트 성공!', 'success');
+                } else {
+                    const error = await response.text();
+                    showResult('login-result', `⚠️ 하드코딩된 관리자 계정으로 로그인해야 합니다. (${response.status})`, 'info');
+                }
+            } catch (error) {
+                showResult('login-result', `❌ 로그인 테스트 오류: ${error.message}`, 'error');
+            }
+        }
+
+        function loadAppInIframe() {
+            const iframe = document.getElementById('app-iframe');
+            iframe.src = 'http://localhost:5174/the-realty-itemlist-dashboard/';
+            iframe.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

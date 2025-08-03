@@ -34,6 +34,7 @@ const Sidebar = () => {
     '👥': Users,
     '📈': BarChart3,
     '📁': Upload,
+    '🔄': FileText,
     '⚙️': Settings
   };
 

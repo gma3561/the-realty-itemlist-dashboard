@@ -33,7 +33,7 @@ module.exports = defineConfig(({ command, mode }) => {
         }
       })
     ],
-    base: '/the-realty-itemlist-dashboard/',
+    base: mode === 'production' ? '/the-realty-itemlist-dashboard/' : '/',
     // 환경변수를 명시적으로 정의
     define: {
       'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL || ''),

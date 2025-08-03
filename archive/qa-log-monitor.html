@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA 로그 모니터</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: #1a1a1a;
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            color: #fff;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .controls input {
+            padding: 8px 12px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 4px;
+            width: 300px;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .controls button:hover {
+            background: #0056b3;
+        }
+        
+        .controls button.clear {
+            background: #dc3545;
+        }
+        
+        .controls button.clear:hover {
+            background: #c82333;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .log-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+        }
+        
+        .log-entry {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            border-left: 3px solid #444;
+            transition: all 0.2s;
+        }
+        
+        .log-entry:hover {
+            background: #222;
+            border-left-color: #007bff;
+        }
+        
+        .log-entry.error {
+            border-left-color: #dc3545;
+        }
+        
+        .log-entry.success {
+            border-left-color: #28a745;
+        }
+        
+        .log-entry.warning {
+            border-left-color: #ffc107;
+        }
+        
+        .log-entry.info {
+            border-left-color: #17a2b8;
+        }
+        
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 11px;
+            opacity: 0.7;
+        }
+        
+        .log-type {
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+        
+        .log-type.error { background: #dc3545; color: white; }
+        .log-type.success { background: #28a745; color: white; }
+        .log-type.warning { background: #ffc107; color: #000; }
+        .log-type.info { background: #17a2b8; color: white; }
+        
+        .log-content {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .log-details {
+            background: #0a0a0a;
+            padding: 10px;
+            border-radius: 3px;
+            margin-top: 8px;
+            font-size: 12px;
+            display: none;
+        }
+        
+        .log-entry.expanded .log-details {
+            display: block;
+        }
+        
+        .log-data {
+            color: #4fc3f7;
+        }
+        
+        .log-url {
+            color: #81c784;
+        }
+        
+        .log-method {
+            color: #ffb74d;
+        }
+        
+        .stats {
+            background: #1a1a1a;
+            padding: 15px 20px;
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 30px;
+            font-size: 14px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .stat-label {
+            opacity: 0.7;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+        }
+        
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            opacity: 0.5;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 5px;
+            margin-right: 20px;
+        }
+        
+        .filter-tab {
+            padding: 6px 12px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #aaa;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .filter-tab.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+        .timestamp {
+            font-size: 11px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 QA 로그 모니터</h1>
+        <div class="controls">
+            <div class="filter-tabs">
+                <div class="filter-tab active" data-filter="all">전체</div>
+                <div class="filter-tab" data-filter="error">에러</div>
+                <div class="filter-tab" data-filter="success">성공</div>
+                <div class="filter-tab" data-filter="warning">경고</div>
+                <div class="filter-tab" data-filter="info">정보</div>
+            </div>
+            <input type="text" id="searchInput" placeholder="로그 검색... (예: properties, error, POST)">
+            <button onclick="exportLogs()">📥 내보내기</button>
+            <button class="clear" onclick="clearLogs()">🗑️ 초기화</button>
+            <div class="status">
+                <div class="status-indicator"></div>
+                <span>실시간 모니터링 중</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="log-container" id="logContainer">
+        <div class="empty-state">
+            <h3>로그가 없습니다</h3>
+            <p>다른 탭에서 팀 매물장을 열고 작업을 시작하면 여기에 로그가 표시됩니다.</p>
+        </div>
+    </div>
+    
+    <div class="stats">
+        <div class="stat-item">
+            <span class="stat-label">총 로그:</span>
+            <span class="stat-value" id="totalLogs">0</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">에러:</span>
+            <span class="stat-value" id="errorCount" style="color: #dc3545;">0</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">성공:</span>
+            <span class="stat-value" id="successCount" style="color: #28a745;">0</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">경고:</span>
+            <span class="stat-value" id="warningCount" style="color: #ffc107;">0</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">세션 시작:</span>
+            <span class="stat-value" id="sessionStart">-</span>
+        </div>
+    </div>
+
+    <script>
+        let logs = [];
+        let currentFilter = 'all';
+        const sessionStart = new Date();
+        
+        // 세션 시작 시간 표시
+        document.getElementById('sessionStart').textContent = sessionStart.toLocaleTimeString();
+        
+        // localStorage를 통한 로그 공유
+        const LOG_STORAGE_KEY = 'qa_logs';
+        const LOG_EVENT_KEY = 'qa_log_event';
+        
+        // 로그 추가 함수 (다른 페이지에서 호출)
+        window.addLog = function(type, message, details = {}) {
+            const log = {
+                id: Date.now() + Math.random(),
+                type,
+                message,
+                details,
+                timestamp: new Date().toISOString(),
+                url: window.location.href,
+                userAgent: navigator.userAgent
+            };
+            
+            // localStorage에 저장
+            const existingLogs = JSON.parse(localStorage.getItem(LOG_STORAGE_KEY) || '[]');
+            existingLogs.push(log);
+            
+            // 최대 1000개 로그 유지
+            if (existingLogs.length > 1000) {
+                existingLogs.shift();
+            }
+            
+            localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(existingLogs));
+            
+            // 이벤트 발생
+            localStorage.setItem(LOG_EVENT_KEY, JSON.stringify(log));
+        };
+        
+        // 로그 표시 함수
+        function displayLog(log) {
+            const container = document.getElementById('logContainer');
+            const emptyState = container.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${log.type}`;
+            logEntry.dataset.type = log.type;
+            
+            const timestamp = new Date(log.timestamp).toLocaleTimeString();
+            const timeDiff = ((new Date() - new Date(log.timestamp)) / 1000).toFixed(1);
+            
+            logEntry.innerHTML = `
+                <div class="log-header">
+                    <div>
+                        <span class="log-type ${log.type}">${log.type}</span>
+                        <span class="timestamp">${timestamp} (${timeDiff}초 전)</span>
+                    </div>
+                    <div>
+                        <span class="log-url">${log.url || ''}</span>
+                    </div>
+                </div>
+                <div class="log-content">${escapeHtml(log.message)}</div>
+                ${Object.keys(log.details).length > 0 ? `
+                    <div class="log-details">
+                        <pre>${JSON.stringify(log.details, null, 2)}</pre>
+                    </div>
+                ` : ''}
+            `;
+            
+            logEntry.onclick = function() {
+                this.classList.toggle('expanded');
+            };
+            
+            container.insertBefore(logEntry, container.firstChild);
+            updateStats();
+        }
+        
+        // HTML 이스케이프
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // 통계 업데이트
+        function updateStats() {
+            const visibleLogs = Array.from(document.querySelectorAll('.log-entry:not([style*="display: none"])'));
+            document.getElementById('totalLogs').textContent = visibleLogs.length;
+            document.getElementById('errorCount').textContent = visibleLogs.filter(el => el.classList.contains('error')).length;
+            document.getElementById('successCount').textContent = visibleLogs.filter(el => el.classList.contains('success')).length;
+            document.getElementById('warningCount').textContent = visibleLogs.filter(el => el.classList.contains('warning')).length;
+        }
+        
+        // 로그 초기화
+        function clearLogs() {
+            if (confirm('모든 로그를 삭제하시겠습니까?')) {
+                localStorage.removeItem(LOG_STORAGE_KEY);
+                document.getElementById('logContainer').innerHTML = `
+                    <div class="empty-state">
+                        <h3>로그가 없습니다</h3>
+                        <p>다른 탭에서 팀 매물장을 열고 작업을 시작하면 여기에 로그가 표시됩니다.</p>
+                    </div>
+                `;
+                logs = [];
+                updateStats();
+            }
+        }
+        
+        // 로그 내보내기
+        function exportLogs() {
+            const logData = {
+                sessionStart: sessionStart.toISOString(),
+                exportTime: new Date().toISOString(),
+                logs: logs
+            };
+            
+            const blob = new Blob([JSON.stringify(logData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `qa-logs-${new Date().toISOString().replace(/:/g, '-')}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // 필터 탭 이벤트
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                filterLogs();
+            });
+        });
+        
+        // 검색 이벤트
+        document.getElementById('searchInput').addEventListener('input', filterLogs);
+        
+        // 로그 필터링
+        function filterLogs() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const entries = document.querySelectorAll('.log-entry');
+            
+            entries.forEach(entry => {
+                const matchesFilter = currentFilter === 'all' || entry.dataset.type === currentFilter;
+                const matchesSearch = !searchTerm || entry.textContent.toLowerCase().includes(searchTerm);
+                
+                entry.style.display = matchesFilter && matchesSearch ? 'block' : 'none';
+            });
+            
+            updateStats();
+        }
+        
+        // storage 이벤트 리스너 (다른 탭에서의 변경 감지)
+        window.addEventListener('storage', (e) => {
+            if (e.key === LOG_EVENT_KEY && e.newValue) {
+                const log = JSON.parse(e.newValue);
+                logs.push(log);
+                displayLog(log);
+            }
+        });
+        
+        // 초기 로드
+        function loadExistingLogs() {
+            const existingLogs = JSON.parse(localStorage.getItem(LOG_STORAGE_KEY) || '[]');
+            logs = existingLogs;
+            
+            // 최근 100개만 표시 (성능 최적화)
+            const recentLogs = existingLogs.slice(-100);
+            recentLogs.forEach(log => displayLog(log));
+        }
+        
+        // 페이지 로드 시 기존 로그 표시
+        loadExistingLogs();
+        
+        // 5초마다 자동 새로고침 (missed 이벤트 대비)
+        setInterval(() => {
+            const latestLogs = JSON.parse(localStorage.getItem(LOG_STORAGE_KEY) || '[]');
+            const newLogs = latestLogs.filter(log => !logs.find(l => l.id === log.id));
+            newLogs.forEach(log => {
+                logs.push(log);
+                displayLog(log);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

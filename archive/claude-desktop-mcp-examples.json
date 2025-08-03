@@ -1,0 +1,83 @@
+{
+  "mcpServers": {
+    "// 우리가 만든 부동산 MCP 서버": {
+      "command": "node",
+      "args": ["/Users/tere.remote/the-realty-itemlist-dashboard/src/mcp/mcp-server-final.mjs"],
+      "env": {}
+    },
+    
+    "// 파일시스템 접근 MCP (Smithery에서 인기)": {
+      "filesystem": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/tere.remote/Documents"],
+        "env": {}
+      }
+    },
+    
+    "// GitHub MCP 서버": {
+      "github": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-github"],
+        "env": {
+          "GITHUB_PERSONAL_ACCESS_TOKEN": "your-github-token-here"
+        }
+      }
+    },
+    
+    "// 웹 검색 MCP (DuckDuckGo)": {
+      "brave-search": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+        "env": {
+          "BRAVE_API_KEY": "your-brave-api-key"
+        }
+      }
+    },
+    
+    "// 메모리 MCP": {
+      "memory": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-memory"],
+        "env": {}
+      }
+    },
+    
+    "// Postgres 데이터베이스 MCP": {
+      "postgres": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/mydb"],
+        "env": {}
+      }
+    },
+    
+    "// Puppeteer 브라우저 자동화 MCP": {
+      "puppeteer": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+        "env": {}
+      }
+    },
+    
+    "// Slack MCP": {
+      "slack": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-slack"],
+        "env": {
+          "SLACK_BOT_TOKEN": "your-slack-bot-token",
+          "SLACK_TEAM_ID": "your-team-id"
+        }
+      }
+    },
+    
+    "// Google Drive MCP": {
+      "gdrive": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-gdrive"],
+        "env": {
+          "GDRIVE_CLIENT_ID": "your-client-id",
+          "GDRIVE_CLIENT_SECRET": "your-client-secret"
+        }
+      }
+    }
+  }
+}

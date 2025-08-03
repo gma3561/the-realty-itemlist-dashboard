@@ -19,6 +19,7 @@ import StaffPerformance from './pages/StaffPerformance';
 import CSVImport from './pages/CSVImport';
 import Settings from './pages/Settings';
 import UpdateHistory from './pages/UpdateHistory';
+import DataCollection from './pages/DataCollection';
 import MainLayout from './components/layout/MainLayout';
 
 // 고객 관리 페이지
@@ -73,6 +74,7 @@ function App() {
               <Route path="/users" element={<UserManagement />} />
               <Route path="/users/:userId/performance" element={<StaffPerformance />} />
               <Route path="/csv-import" element={<CSVImport />} />
+              <Route path="/data-collection" element={<DataCollection />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/updates" element={<UpdateHistory />} />
               

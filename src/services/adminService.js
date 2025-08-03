@@ -2,7 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 // 하드코딩된 환경변수 (GitHub Pages 배포 안정성을 위해)
-const supabaseUrl = 'https://aekgsysvipnwxhwixglg.supabase.co';
+const supabaseUrl = 'https://qwxghpwasmvottahchky.supabase.co';
 const supabaseServiceKey = ''; // Service Role Key는 보안상 비워둠 (관리자 기능 비활성화)
 
 // 관리자 전용 Supabase 클라이언트 (Service Role Key 사용)

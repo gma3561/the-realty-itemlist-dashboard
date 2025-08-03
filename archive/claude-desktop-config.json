@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "realty-dashboard": {
+      "command": "node",
+      "args": ["/Users/tere.remote/the-realty-itemlist-dashboard/src/mcp/mcp-server-final.mjs"],
+      "env": {}
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
+import SimpleApp from './SimpleApp.jsx'
 import './index.css'
 
 // 전역 오류 처리
@@ -22,7 +22,7 @@ try {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <React.StrictMode>
-      <App />
+      <SimpleApp />
     </React.StrictMode>
   );
 } catch (error) {
