@@ -11,7 +11,12 @@ module.exports = defineConfig(({ command, mode }) => {
     plugins: [
       react(),
       VitePWA({
-        registerType: 'autoUpdate',
+        registerType: 'skipWaiting', // 즉시 업데이트
+        workbox: {
+          skipWaiting: true,
+          clientsClaim: true,
+          runtimeCaching: [] // 런타임 캐싱 비활성화
+        },
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'logo192.png'],
         manifest: {
           name: 'The Realty 팀 매물장',
@@ -57,7 +62,11 @@ module.exports = defineConfig(({ command, mode }) => {
             'react-vendor': ['react', 'react-dom', 'react-router-dom'],
             'supabase-vendor': ['@supabase/supabase-js'],
             'ui-vendor': ['lucide-react', 'recharts']
-          }
+          },
+          // 캐시 무력화를 위한 해시 추가
+          entryFileNames: 'assets/[name]-[hash].js',
+          chunkFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash].[ext]'
         }
       }
     },

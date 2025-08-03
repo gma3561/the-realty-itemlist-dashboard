@@ -191,18 +191,18 @@ export const getAuthorizedMenuItems = (user) => {
       path: '/my-properties', 
       permission: PERMISSIONS.VIEW_OWN_PROPERTIES,
       icon: '🏠'
+    },
+    {
+      name: '매물 목록',
+      path: '/properties',
+      permission: PERMISSIONS.VIEW_OWN_PROPERTIES, // 모든 사용자가 매물 목록을 볼 수 있도록 수정
+      icon: '🏢'
     }
   ];
   
   // 관리자 전용 메뉴
   if (isAdmin(user)) {
     menuItems.push(
-      {
-        name: '전체 매물',
-        path: '/properties',
-        permission: PERMISSIONS.VIEW_ALL_PROPERTIES,
-        icon: '🏢'
-      },
       {
         name: '직원 관리',
         path: '/users',

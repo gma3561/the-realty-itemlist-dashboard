@@ -160,24 +160,36 @@
   font-size: 24px;
 }
 
-/* Mobile optimized data cards */
+/* Mobile optimized data cards with touch targets */
 @media (max-width: 768px) {
   .data-card {
-    padding: var(--space-md);
+    padding: var(--space-lg);
+    min-height: 120px; /* 충분한 터치 영역 확보 */
   }
   
   .data-card-value {
-    font-size: 1.75rem;
+    font-size: 1.875rem;
   }
   
   .data-card-label {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
   }
   
   .data-card-icon {
-    width: 36px;
-    height: 36px;
-    font-size: 18px;
+    width: 48px; /* 터치 친화적 크기로 확대 */
+    height: 48px;
+    font-size: 24px;
+  }
+
+  /* 터치 타겟 최소 크기 보장 */
+  button, .btn, a[role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* 모바일 터치 피드백 강화 */
+  .group:active {
+    transform: scale(0.98);
   }
 }
 
@@ -464,12 +476,64 @@
   color: var(--error-600);
 }
 
-/* Animations */
+/* Modern Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); }
+}
+
 .fade-in {
   animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.4s ease-out;
+}
+
+.glow-pulse {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+/* 21st.dev 스타일 글래스모피즘 */
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 
+    0 16px 48px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* 현대적 그라데이션 버튼 */
+.gradient-button {
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gradient-button:hover {
+  background: linear-gradient(135deg, var(--primary-700), var(--primary-800));
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+}
+
+.gradient-button:active {
+  transform: translateY(0) scale(0.98);
 }

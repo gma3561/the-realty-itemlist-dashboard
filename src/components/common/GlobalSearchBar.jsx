@@ -144,21 +144,21 @@ const GlobalSearchBar = () => {
   return (
     <div className="relative w-full max-w-lg" ref={searchRef}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4 sm:w-5 sm:h-5" />
         <input
           type="text"
           value={searchTerm}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder="매물명, 지역 검색..."
-          className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full pl-8 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 bg-white border border-slate-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 hover:border-slate-300 text-sm"
         />
         {searchTerm && (
           <button
             onClick={clearSearch}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-2.5 sm:right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         )}
       </div>
@@ -167,36 +167,36 @@ const GlobalSearchBar = () => {
       {isOpen && (
         <div 
           ref={resultsRef}
-          className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-96 overflow-y-auto"
+          className="absolute top-full left-0 right-0 mt-1 sm:mt-2 bg-white border border-slate-100 rounded-lg shadow-xl z-50 max-h-80 sm:max-h-96 overflow-y-auto"
         >
           {isLoading ? (
-            <div className="p-4 text-center text-gray-500">
-              <div className="inline-block w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mr-2"></div>
-              검색 중...
+            <div className="p-3 sm:p-4 text-center text-slate-500">
+              <div className="inline-block w-4 h-4 sm:w-5 sm:h-5 border-2 border-slate-200 border-t-slate-500 rounded-full animate-spin mr-2"></div>
+              <span className="text-xs sm:text-sm font-medium">검색 중...</span>
             </div>
           ) : searchResults.length > 0 ? (
             <>
               {searchResults.map((property, index) => (
                 <div
                   key={property.id}
-                  className={`p-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 ${
-                    index === selectedIndex ? 'bg-blue-50' : ''
+                  className={`p-3 sm:p-4 cursor-pointer border-b border-slate-50 last:border-b-0 hover:bg-slate-50 transition-all duration-200 ${
+                    index === selectedIndex ? 'bg-slate-50 border-l-2 border-l-slate-500' : ''
                   }`}
                   onClick={() => handleSelectProperty(property)}
                 >
                   <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900 truncate">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-slate-900 truncate mb-1 text-sm">
                         {property.property_name}
                       </h4>
-                      <p className="text-sm text-gray-600 truncate">
+                      <p className="text-xs sm:text-sm text-slate-500 truncate mb-2">
                         {property.location}
                       </p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded">
+                      <div className="flex items-center space-x-1.5 sm:space-x-2">
+                        <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md font-medium">
                           {getPropertyTypeDisplay(property.property_type)}
                         </span>
-                        <span className={`text-xs font-medium ${getStatusColor(property.property_status)}`}>
+                        <span className={`text-xs px-2 py-0.5 rounded-md font-medium ${getStatusColor(property.property_status)} bg-opacity-10`}>
                           {getStatusDisplay(property.property_status)}
                         </span>
                       </div>
@@ -204,22 +204,24 @@ const GlobalSearchBar = () => {
                   </div>
                 </div>
               ))}
-              <div className="p-2 text-center border-t border-gray-100">
+              <div className="p-2 sm:p-3 text-center border-t border-slate-50 bg-slate-50">
                 <button
                   onClick={() => {
                     navigate(`/properties?search=${encodeURIComponent(searchTerm)}`);
                     setIsOpen(false);
                     setSearchTerm('');
                   }}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  className="text-xs sm:text-sm text-slate-600 hover:text-slate-700 font-semibold transition-colors duration-200"
                 >
-                  모든 검색 결과 보기
+                  모든 검색 결과 보기 →
                 </button>
               </div>
             </>
           ) : debouncedSearch.trim() ? (
-            <div className="p-4 text-center text-gray-500">
-              검색 결과가 없습니다
+            <div className="p-4 sm:p-6 text-center text-slate-400">
+              <div className="text-2xl sm:text-3xl mb-2">🔍</div>
+              <p className="font-medium text-sm">검색 결과가 없습니다</p>
+              <p className="text-xs mt-1">다른 키워드로 검색해보세요</p>
             </div>
           ) : null}
         </div>

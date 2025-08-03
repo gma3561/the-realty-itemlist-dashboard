@@ -12,7 +12,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // 강제로 false 시작
   const [error, setError] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
