@@ -1,0 +1,58 @@
+{
+  "timestamp": "2025-08-03T17:10:26.293Z",
+  "url": "https://gma3561.github.io/the-realty-itemlist-dashboard/",
+  "tests": [
+    {
+      "name": "차트 요소 검증",
+      "status": "failed",
+      "details": {
+        "error": "차트 요소를 찾을 수 없음",
+        "chartElements": []
+      },
+      "timestamp": "2025-08-03T17:10:26.447Z"
+    },
+    {
+      "name": "네비게이션 메뉴 테스트",
+      "status": "failed",
+      "details": {
+        "error": "작동하는 네비게이션 요소가 없음",
+        "navigationTests": []
+      },
+      "timestamp": "2025-08-03T17:10:26.453Z"
+    },
+    {
+      "name": "접근성 및 반응형 테스트",
+      "status": "passed",
+      "details": {
+        "accessibilityTests": [
+          {
+            "viewport": "Desktop",
+            "dimensions": "1920x1080",
+            "visibleElements": 0,
+            "screenshot": "./test-results/screenshots/responsive-desktop.png"
+          },
+          {
+            "viewport": "Tablet",
+            "dimensions": "1024x768",
+            "visibleElements": 0,
+            "screenshot": "./test-results/screenshots/responsive-tablet.png"
+          },
+          {
+            "viewport": "Mobile",
+            "dimensions": "375x667",
+            "visibleElements": 0,
+            "screenshot": "./test-results/screenshots/responsive-mobile.png"
+          }
+        ]
+      },
+      "timestamp": "2025-08-03T17:10:29.549Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "passed": 1,
+    "failed": 2,
+    "performance": {},
+    "screenshots": []
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "timestamp": "2025-08-03T17:10:29.719Z",
+  "config": {
+    "baseURL": "https://gma3561.github.io/the-realty-itemlist-dashboard/",
+    "testUser": {
+      "email": "jenny@the-realty.co.kr",
+      "password": "admin123!"
+    },
+    "testData": {
+      "property": {
+        "name": "테스트 매물",
+        "location": "서울시 강남구 테스트동",
+        "address": "123-45",
+        "price": 1000000000,
+        "area": 84,
+        "description": "자동화 테스트용 매물입니다"
+      },
+      "customer": {
+        "name": "테스트 고객",
+        "phone": "010-1234-5678",
+        "email": "test@example.com"
+      }
+    }
+  },
+  "features": [
+    {
+      "name": "대시보드",
+      "tests": [
+        {
+          "name": "통계 표시",
+          "status": "failed",
+          "details": {
+            "error": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m"
+          },
+          "timestamp": "2025-08-03T17:10:30.406Z"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "skipped": 0
+  }
+}

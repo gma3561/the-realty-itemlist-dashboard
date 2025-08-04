@@ -1,0 +1,4212 @@
+[
+  {
+    "row": 23,
+    "property_name": "힐탑빌",
+    "location": "한남동 1-241"
+  },
+  {
+    "row": 37,
+    "property_name": "루카831 D타입",
+    "location": "역삼동 831-11"
+  },
+  {
+    "row": 38,
+    "property_name": "루카831 D타입",
+    "location": "역삼동 831-11"
+  },
+  {
+    "row": 71,
+    "property_name": "힐탑빌",
+    "location": "한남동 1-241"
+  },
+  {
+    "row": 72,
+    "property_name": "힐탑빌",
+    "location": "한남동 1-241"
+  },
+  {
+    "row": 73,
+    "property_name": "힐탑빌",
+    "location": "한남동 1-241"
+  },
+  {
+    "row": 75,
+    "property_name": "루카831 D타입",
+    "location": "역삼동 831-11"
+  },
+  {
+    "row": 76,
+    "property_name": "230-103",
+    "location": "구기동 230-103"
+  },
+  {
+    "row": 88,
+    "property_name": "2",
+    "location": "희담재"
+  },
+  {
+    "row": 92,
+    "property_name": "230-17",
+    "location": "구기동 230-17"
+  },
+  {
+    "row": 98,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 100,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 107,
+    "property_name": "윤원재",
+    "location": "평창동 93-3"
+  },
+  {
+    "row": 108,
+    "property_name": "윤원재",
+    "location": "평창동 93-3"
+  },
+  {
+    "row": 109,
+    "property_name": "윤원재",
+    "location": "평창동 93-3"
+  },
+  {
+    "row": 118,
+    "property_name": "A",
+    "location": "윤원재"
+  },
+  {
+    "row": 119,
+    "property_name": "A",
+    "location": "윤원재"
+  },
+  {
+    "row": 121,
+    "property_name": "루카831",
+    "location": "역삼동 831-11"
+  },
+  {
+    "row": 124,
+    "property_name": "여의도 금호리첸시아",
+    "location": "여의도동 61"
+  },
+  {
+    "row": 133,
+    "property_name": "523-20",
+    "location": "평창동 523-20"
+  },
+  {
+    "row": 136,
+    "property_name": "C",
+    "location": "한남 힐사이드"
+  },
+  {
+    "row": 137,
+    "property_name": "E",
+    "location": "한남 힐사이드"
+  },
+  {
+    "row": 139,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 145,
+    "property_name": "힐탑빌라 복층세대",
+    "location": "한남동 1-241"
+  },
+  {
+    "row": 158,
+    "property_name": "한남동 코피어스빌2",
+    "location": "한남동 657-169"
+  },
+  {
+    "row": 159,
+    "property_name": "한남동 코피어스빌2",
+    "location": "한남동 657-169"
+  },
+  {
+    "row": 171,
+    "property_name": "압구정 에테르노",
+    "location": "청담동 82-7"
+  },
+  {
+    "row": 178,
+    "property_name": "102",
+    "location": "롯데캐슬이스트폴"
+  },
+  {
+    "row": 183,
+    "property_name": "롯데캐슬이스트폴",
+    "location": "자양동 680-63번지 일대"
+  },
+  {
+    "row": 185,
+    "property_name": "103",
+    "location": "롯데캐슬이스트폴"
+  },
+  {
+    "row": 191,
+    "property_name": "포도 더 블랙 A타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 193,
+    "property_name": "포도 더 블랙 B타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 195,
+    "property_name": "포도 더 블랙 C타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 215,
+    "property_name": "서초동 끄레메빌",
+    "location": "서초동 1630-4"
+  },
+  {
+    "row": 218,
+    "property_name": "15",
+    "location": "강남원효성빌라"
+  },
+  {
+    "row": 220,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 221,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 222,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 223,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 224,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 226,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 227,
+    "property_name": "2",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 228,
+    "property_name": "2",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 233,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 234,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 235,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 236,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 240,
+    "property_name": "2동",
+    "location": "마크힐스2단지1701호"
+  },
+  {
+    "row": 241,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 242,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 243,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 244,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 245,
+    "property_name": "2",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 246,
+    "property_name": "2",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 262,
+    "property_name": "동빙고 플래티앙1차",
+    "location": "동빙고동 1-67"
+  },
+  {
+    "row": 274,
+    "property_name": "104",
+    "location": "논현동 브라이튼N40"
+  },
+  {
+    "row": 278,
+    "property_name": "213-9",
+    "location": "이태원동 213-9"
+  },
+  {
+    "row": 284,
+    "property_name": "101",
+    "location": "용산구 리첸시아"
+  },
+  {
+    "row": 303,
+    "property_name": "루카831",
+    "location": "역삼동 831-11"
+  },
+  {
+    "row": 309,
+    "property_name": "삼성동 동일파크스위트",
+    "location": "삼성동 100-14"
+  },
+  {
+    "row": 315,
+    "property_name": "442-46",
+    "location": "서교동 442-46"
+  },
+  {
+    "row": 331,
+    "property_name": "아크로서울포레스트",
+    "location": "성수동1가 685-700"
+  },
+  {
+    "row": 335,
+    "property_name": "17-36",
+    "location": "구기동 17-36"
+  },
+  {
+    "row": 337,
+    "property_name": "시그니엘 I타입",
+    "location": "신천동 29"
+  },
+  {
+    "row": 342,
+    "property_name": "101",
+    "location": "용산구 리첸시아"
+  },
+  {
+    "row": 343,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 349,
+    "property_name": "판교 산운 아펠바움",
+    "location": "운중동 994"
+  },
+  {
+    "row": 355,
+    "property_name": "청담동 삼호빌라",
+    "location": "청담동 113-16"
+  },
+  {
+    "row": 364,
+    "property_name": "금호 리첸시아",
+    "location": "여의도동 61"
+  },
+  {
+    "row": 370,
+    "property_name": "삼성리버스위트",
+    "location": "이촌동 426"
+  },
+  {
+    "row": 371,
+    "property_name": "월드메르디앙오페라하우스",
+    "location": "서초동 1450-1"
+  },
+  {
+    "row": 375,
+    "property_name": "롯데캐슬이스트폴",
+    "location": "자양동 680-63번지 일대"
+  },
+  {
+    "row": 382,
+    "property_name": "서초그랑자이",
+    "location": "서초동 1757"
+  },
+  {
+    "row": 385,
+    "property_name": "101",
+    "location": "용산구 리첸시아"
+  },
+  {
+    "row": 395,
+    "property_name": "523-20",
+    "location": "평창동 523-20"
+  },
+  {
+    "row": 399,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 400,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 401,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 402,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 403,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 404,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 405,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 406,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 407,
+    "property_name": "브라이튼 여의도 30층 이상",
+    "location": "여의도동31"
+  },
+  {
+    "row": 410,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 411,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 414,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 416,
+    "property_name": "2",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 425,
+    "property_name": "아크로리버파크",
+    "location": "반포동 2-12"
+  },
+  {
+    "row": 444,
+    "property_name": "아스턴55 듀플렉스 가든타입",
+    "location": "잠원동55번지 일대"
+  },
+  {
+    "row": 445,
+    "property_name": "아스턴55 듀플렉스 가든타입",
+    "location": "잠원동55번지 일대"
+  },
+  {
+    "row": 446,
+    "property_name": "아스턴55 슈퍼펜트 420타입",
+    "location": "잠원동55번지 일대"
+  },
+  {
+    "row": 460,
+    "property_name": "성수두산위브",
+    "location": "성수동2가 838"
+  },
+  {
+    "row": 507,
+    "property_name": "청담 린든그로브",
+    "location": "청담동67-1"
+  },
+  {
+    "row": 514,
+    "property_name": "코번하우스 B1 프라임 B호",
+    "location": "한남동 15-12"
+  },
+  {
+    "row": 515,
+    "property_name": "코번하우스 B1 프라임 B호",
+    "location": "한남동 15-12"
+  },
+  {
+    "row": 523,
+    "property_name": "평창동구",
+    "location": "평창동148-1"
+  },
+  {
+    "row": 524,
+    "property_name": "쌍용더플래티넘종로",
+    "location": "구기동267"
+  },
+  {
+    "row": 544,
+    "property_name": "루카831",
+    "location": "역삼동 831-11"
+  },
+  {
+    "row": 549,
+    "property_name": "강동 아이파크 더리버",
+    "location": "고덕동353-23"
+  },
+  {
+    "row": 557,
+    "property_name": "한남더힐",
+    "location": "한남동 810"
+  },
+  {
+    "row": 560,
+    "property_name": "한남동 신원빌라",
+    "location": "한남동1-103"
+  },
+  {
+    "row": 562,
+    "property_name": "한남동 헤렌하우스",
+    "location": "한남동11-132"
+  },
+  {
+    "row": 567,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 568,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 573,
+    "property_name": "102동",
+    "location": "용산센트럴파크"
+  },
+  {
+    "row": 588,
+    "property_name": "루카831",
+    "location": "역삼동 831-11"
+  },
+  {
+    "row": 599,
+    "property_name": "여주 프롬나우(공간대여)",
+    "location": "삼교동477"
+  },
+  {
+    "row": 602,
+    "property_name": "116-16",
+    "location": "연희동 116-16"
+  },
+  {
+    "row": 603,
+    "property_name": "116-16",
+    "location": "연희동 116-16"
+  },
+  {
+    "row": 609,
+    "property_name": "도곡현대하이페리온",
+    "location": "도곡동968"
+  },
+  {
+    "row": 611,
+    "property_name": "제주도 오레브리조트",
+    "location": "서귀포시 호근동 2160"
+  },
+  {
+    "row": 612,
+    "property_name": "제주도 오레브리조트",
+    "location": "서귀포시 호근동 2160"
+  },
+  {
+    "row": 616,
+    "property_name": "102",
+    "location": "도곡현대하이페리온"
+  },
+  {
+    "row": 620,
+    "property_name": "유엔빌리지",
+    "location": "한남동 776-10"
+  },
+  {
+    "row": 621,
+    "property_name": "유엔빌리지",
+    "location": "한남동 776-10"
+  },
+  {
+    "row": 622,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 623,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 624,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 625,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 626,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 628,
+    "property_name": "반포 엘리제빌",
+    "location": "반포동99-1"
+  },
+  {
+    "row": 629,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 630,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 631,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 632,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 633,
+    "property_name": "2",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 636,
+    "property_name": "102",
+    "location": "롯데캐슬이스트폴"
+  },
+  {
+    "row": 643,
+    "property_name": "더리버스청담",
+    "location": "청담동130-8"
+  },
+  {
+    "row": 657,
+    "property_name": "용산 푸르지오써밋 주거동",
+    "location": "한강로2가420"
+  },
+  {
+    "row": 663,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 664,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 665,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 666,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 671,
+    "property_name": "평창동 노블레스빌",
+    "location": "평창동 155-1"
+  },
+  {
+    "row": 673,
+    "property_name": "평창동 93-8",
+    "location": "평창동 93-8"
+  },
+  {
+    "row": 681,
+    "property_name": "방배동 상가",
+    "location": "방배동3282"
+  },
+  {
+    "row": 682,
+    "property_name": "방배동 상가",
+    "location": "방배동3282"
+  },
+  {
+    "row": 695,
+    "property_name": "워커힐상지리버빌",
+    "location": "아천동 301-3"
+  },
+  {
+    "row": 696,
+    "property_name": "워커힐상지리버빌",
+    "location": "아천동 301-3"
+  },
+  {
+    "row": 698,
+    "property_name": "744-18",
+    "location": "역삼동744-18"
+  },
+  {
+    "row": 699,
+    "property_name": "744-18",
+    "location": "역삼동744-18"
+  },
+  {
+    "row": 702,
+    "property_name": "103",
+    "location": "워커힐상지리버빌"
+  },
+  {
+    "row": 704,
+    "property_name": "105",
+    "location": "워커힐상지리버빌"
+  },
+  {
+    "row": 705,
+    "property_name": "105",
+    "location": "워커힐상지리버빌"
+  },
+  {
+    "row": 715,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 716,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 750,
+    "property_name": "아스턴55",
+    "location": "잠원동55번지 일대"
+  },
+  {
+    "row": 756,
+    "property_name": "아크로서울포레스트",
+    "location": "성수동1가 685-700"
+  },
+  {
+    "row": 767,
+    "property_name": "타워팰리스 1차",
+    "location": "도곡동 467"
+  },
+  {
+    "row": 768,
+    "property_name": "타워팰리스 1차",
+    "location": "도곡동 467"
+  },
+  {
+    "row": 770,
+    "property_name": "명동 M타워 빌딩",
+    "location": "을지로2가 199-50"
+  },
+  {
+    "row": 772,
+    "property_name": "명동 M타워 빌딩",
+    "location": "을지로2가 199-50"
+  },
+  {
+    "row": 775,
+    "property_name": "포도 더 블랙 A타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 777,
+    "property_name": "포도 더 블랙 A타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 779,
+    "property_name": "포도 더 블랙 B타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 781,
+    "property_name": "포도 더 블랙 A타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 782,
+    "property_name": "포도 더 블랙 C타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 783,
+    "property_name": "포도 더 블랙 C타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 787,
+    "property_name": "헤렌하우스",
+    "location": "삼성동 82-1"
+  },
+  {
+    "row": 790,
+    "property_name": "테크노빌",
+    "location": "논현동 266-21"
+  },
+  {
+    "row": 792,
+    "property_name": "르가든 더메인 한남",
+    "location": "한남동 386"
+  },
+  {
+    "row": 795,
+    "property_name": "A",
+    "location": "헤렌하우스"
+  },
+  {
+    "row": 809,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 811,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 812,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 813,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 816,
+    "property_name": "아트텍 빌리지",
+    "location": "논현동 269-9"
+  },
+  {
+    "row": 817,
+    "property_name": "C",
+    "location": "한남 힐사이드"
+  },
+  {
+    "row": 819,
+    "property_name": "B",
+    "location": "한남 힐사이드"
+  },
+  {
+    "row": 820,
+    "property_name": "C",
+    "location": "한남 힐사이드"
+  },
+  {
+    "row": 821,
+    "property_name": "B",
+    "location": "한남 힐사이드"
+  },
+  {
+    "row": 822,
+    "property_name": "상지리츠빌5차",
+    "location": "청담동127-12"
+  },
+  {
+    "row": 827,
+    "property_name": "아크로 삼성",
+    "location": "삼성동 79"
+  },
+  {
+    "row": 828,
+    "property_name": "102",
+    "location": "자양동 롯데캐슬이스트폴"
+  },
+  {
+    "row": 835,
+    "property_name": "힐미드 빌라",
+    "location": "한남동 11-316"
+  },
+  {
+    "row": 838,
+    "property_name": "1",
+    "location": "연세리버테라스"
+  },
+  {
+    "row": 839,
+    "property_name": "루카831",
+    "location": "역삼동 831-11"
+  },
+  {
+    "row": 854,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 857,
+    "property_name": "b",
+    "location": "타워팰리스 1차"
+  },
+  {
+    "row": 860,
+    "property_name": "107",
+    "location": "나인원한남"
+  },
+  {
+    "row": 861,
+    "property_name": "107",
+    "location": "나인원한남"
+  },
+  {
+    "row": 862,
+    "property_name": "107",
+    "location": "나인원한남"
+  },
+  {
+    "row": 863,
+    "property_name": "107",
+    "location": "나인원한남"
+  },
+  {
+    "row": 864,
+    "property_name": "107",
+    "location": "나인원한남"
+  },
+  {
+    "row": 870,
+    "property_name": "107",
+    "location": "나인원한남"
+  },
+  {
+    "row": 871,
+    "property_name": "107",
+    "location": "나인원한남"
+  },
+  {
+    "row": 872,
+    "property_name": "107",
+    "location": "나인원한남"
+  },
+  {
+    "row": 873,
+    "property_name": "107",
+    "location": "나인원한남"
+  },
+  {
+    "row": 874,
+    "property_name": "107",
+    "location": "나인원한남"
+  },
+  {
+    "row": 875,
+    "property_name": "107",
+    "location": "나인원한남"
+  },
+  {
+    "row": 878,
+    "property_name": "아이파크더리버",
+    "location": "고덕동 353-23"
+  },
+  {
+    "row": 885,
+    "property_name": "삼성동 동일파크스위트",
+    "location": "삼성동 100-14"
+  },
+  {
+    "row": 887,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 888,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 891,
+    "property_name": "시그니엘 E타입",
+    "location": "신천동 29"
+  },
+  {
+    "row": 892,
+    "property_name": "시그니엘 E타입",
+    "location": "신천동 29"
+  },
+  {
+    "row": 898,
+    "property_name": "시그니엘 I타입",
+    "location": "신천동 29"
+  },
+  {
+    "row": 899,
+    "property_name": "한남동 스위트캐슬3차",
+    "location": "한남동 776-8"
+  },
+  {
+    "row": 903,
+    "property_name": "강남역 루카831 오피스텔",
+    "location": "역삼동 831-11"
+  },
+  {
+    "row": 914,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동 31"
+  },
+  {
+    "row": 915,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동 31"
+  },
+  {
+    "row": 917,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동 31"
+  },
+  {
+    "row": 918,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동 31"
+  },
+  {
+    "row": 919,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동 31"
+  },
+  {
+    "row": 920,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동 31"
+  },
+  {
+    "row": 921,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동 31"
+  },
+  {
+    "row": 922,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동 31"
+  },
+  {
+    "row": 923,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동 31"
+  },
+  {
+    "row": 924,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동 31"
+  },
+  {
+    "row": 925,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동 31"
+  },
+  {
+    "row": 927,
+    "property_name": "루카831",
+    "location": "역삼동831-11"
+  },
+  {
+    "row": 928,
+    "property_name": "브라이튼 한남",
+    "location": "한남동830"
+  },
+  {
+    "row": 929,
+    "property_name": "한남더힐",
+    "location": "한남동 810"
+  },
+  {
+    "row": 930,
+    "property_name": "2",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 931,
+    "property_name": "2",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 932,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 933,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 934,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 935,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 936,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 937,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 938,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 939,
+    "property_name": "1",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 940,
+    "property_name": "2",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 941,
+    "property_name": "2",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 942,
+    "property_name": "2",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 943,
+    "property_name": "2",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 944,
+    "property_name": "포도 더 블랙 A타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 945,
+    "property_name": "포도 더 블랙 A타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 946,
+    "property_name": "포도 더 블랙 A타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 947,
+    "property_name": "포도 더 블랙 A타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 948,
+    "property_name": "포도 더 블랙 A타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 949,
+    "property_name": "포도 더 블랙 A타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 950,
+    "property_name": "포도 더 블랙 A타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 951,
+    "property_name": "포도 더 블랙 A-1타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 952,
+    "property_name": "포도 더 블랙 B타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 953,
+    "property_name": "포도 더 블랙 C타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 955,
+    "property_name": "포도 더 블랙 A타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 957,
+    "property_name": "포도 더 블랙 B타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 959,
+    "property_name": "포도 더 블랙 C타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 960,
+    "property_name": "포도 더 블랙 C타입",
+    "location": "논현동 62-2"
+  },
+  {
+    "row": 983,
+    "property_name": "9-4",
+    "location": "성북동 9-4"
+  },
+  {
+    "row": 984,
+    "property_name": "9-4",
+    "location": "성북동 9-4"
+  },
+  {
+    "row": 986,
+    "property_name": "루카831",
+    "location": "역삼동 831-11"
+  },
+  {
+    "row": 987,
+    "property_name": "루카831",
+    "location": "역삼동 831-11"
+  },
+  {
+    "row": 989,
+    "property_name": "A",
+    "location": "아크로서울포레스트"
+  },
+  {
+    "row": 993,
+    "property_name": "한강대우트럼프월드3차 펜트하우스",
+    "location": "한강로3가 65-230"
+  },
+  {
+    "row": 995,
+    "property_name": "442-5",
+    "location": "평창동 442-5"
+  },
+  {
+    "row": 997,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동 31"
+  },
+  {
+    "row": 998,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동 31"
+  },
+  {
+    "row": 1001,
+    "property_name": "2",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 1002,
+    "property_name": "2",
+    "location": "브라이튼 여의도"
+  },
+  {
+    "row": 1004,
+    "property_name": "분당 스카이52",
+    "location": "이매동 52-1, 이매동 52-49"
+  },
+  {
+    "row": 1005,
+    "property_name": "분당 스카이52",
+    "location": "이매동 52-1, 이매동 52-49"
+  },
+  {
+    "row": 1006,
+    "property_name": "분당 스카이52",
+    "location": "이매동 52-1, 이매동 52-49"
+  },
+  {
+    "row": 1007,
+    "property_name": "분당 스카이52",
+    "location": "이매동 52-1, 이매동 52-49"
+  },
+  {
+    "row": 1009,
+    "property_name": "455-12",
+    "location": "평창동 445-12"
+  },
+  {
+    "row": 1010,
+    "property_name": "455-12",
+    "location": "평창동 445-12"
+  },
+  {
+    "row": 1017,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 1018,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 1020,
+    "property_name": "330-542",
+    "location": "성북동 330-542"
+  },
+  {
+    "row": 1021,
+    "property_name": "330-542",
+    "location": "성북동 330-542"
+  },
+  {
+    "row": 1028,
+    "property_name": "1-111",
+    "location": "성북동 1-111"
+  },
+  {
+    "row": 1031,
+    "property_name": "현대하이페리온2",
+    "location": "목동 961"
+  },
+  {
+    "row": 1037,
+    "property_name": "래미안 원펜타스 펜트하우스",
+    "location": "반포동 12"
+  },
+  {
+    "row": 1038,
+    "property_name": "래미안 원펜타스 펜트하우스",
+    "location": "반포동 12"
+  },
+  {
+    "row": 1039,
+    "property_name": "래미안 원펜타스 펜트하우스",
+    "location": "반포동 12"
+  },
+  {
+    "row": 1043,
+    "property_name": "피엔폴루스 펜트하우스",
+    "location": "청담동 4-1"
+  },
+  {
+    "row": 1047,
+    "property_name": "노고산동 빌딩",
+    "location": "노고산동 54-19"
+  },
+  {
+    "row": 1052,
+    "property_name": "220-218",
+    "location": "구의동 220-218"
+  },
+  {
+    "row": 1056,
+    "property_name": "워커힐 상지리버빌",
+    "location": "아천동 301"
+  },
+  {
+    "row": 1057,
+    "property_name": "워커힐 상지리버빌",
+    "location": "아천동 301"
+  },
+  {
+    "row": 1058,
+    "property_name": "워커힐 상지리버빌",
+    "location": "아천동 301"
+  },
+  {
+    "row": 1061,
+    "property_name": "트라움하우스3차",
+    "location": "서초동1496-24"
+  },
+  {
+    "row": 1066,
+    "property_name": "60-14 (2세대)",
+    "location": "삼성동 60-14번지"
+  },
+  {
+    "row": 1069,
+    "property_name": "서초 더샵 오데움 아파트",
+    "location": "서초동 1483-13"
+  },
+  {
+    "row": 1070,
+    "property_name": "서초 더샵 오데움 아파트",
+    "location": "서초동 1483-13"
+  },
+  {
+    "row": 1074,
+    "property_name": "23-40",
+    "location": "성북동 23-40"
+  },
+  {
+    "row": 1075,
+    "property_name": "23-40",
+    "location": "성북동 23-40"
+  },
+  {
+    "row": 1079,
+    "property_name": "브라이튼한남",
+    "location": "한남동 90-4 외 16필지"
+  },
+  {
+    "row": 1080,
+    "property_name": "브라이튼한남",
+    "location": "한남동 90-4 외 16필지"
+  },
+  {
+    "row": 1092,
+    "property_name": "아크로서울포레스트",
+    "location": "성수동1가 685-700"
+  },
+  {
+    "row": 1101,
+    "property_name": "브라이튼 논현",
+    "location": "논현동 40"
+  },
+  {
+    "row": 1103,
+    "property_name": "신촌 플로렌스힐",
+    "location": "신촌동 52-3"
+  },
+  {
+    "row": 1105,
+    "property_name": "대우 멤버스카운티 5차",
+    "location": "방배동 801-5"
+  },
+  {
+    "row": 1106,
+    "property_name": "대우 멤버스카운티 5차",
+    "location": "방배동 801-5"
+  },
+  {
+    "row": 1109,
+    "property_name": "104",
+    "location": "브라이튼 논현"
+  },
+  {
+    "row": 1113,
+    "property_name": "523-65",
+    "location": "평창동523-65"
+  },
+  {
+    "row": 1115,
+    "property_name": "장원라빌레뜨",
+    "location": "방배동 805-1"
+  },
+  {
+    "row": 1117,
+    "property_name": "삼성포스코더샵",
+    "location": "삼성동 146"
+  },
+  {
+    "row": 1121,
+    "property_name": "스톤힐스",
+    "location": "방배동 734"
+  },
+  {
+    "row": 1122,
+    "property_name": "1",
+    "location": "서초프레스턴-2"
+  },
+  {
+    "row": 1124,
+    "property_name": "연희동 오크빌지하1층",
+    "location": "연희동 96-2"
+  },
+  {
+    "row": 1126,
+    "property_name": "연희동 96-3",
+    "location": "연희동"
+  },
+  {
+    "row": 1127,
+    "property_name": "한남더힐",
+    "location": "한남동 810"
+  },
+  {
+    "row": 1128,
+    "property_name": "한남더힐",
+    "location": "한남동 810"
+  },
+  {
+    "row": 1130,
+    "property_name": "한남더힐\n 이원선이사님 소개비 있음",
+    "location": "한남동 810"
+  },
+  {
+    "row": 1131,
+    "property_name": "한남더힐\n 이원선이사님 소개비 있음",
+    "location": "한남동 810"
+  },
+  {
+    "row": 1132,
+    "property_name": "아크로리버파크",
+    "location": "반포동 2-12"
+  },
+  {
+    "row": 1140,
+    "property_name": "리원하우스 101호,201호,301호,401호",
+    "location": "연희동 138-34"
+  },
+  {
+    "row": 1141,
+    "property_name": "리원하우스 101호,201호,301호,401호",
+    "location": "연희동 138-34"
+  },
+  {
+    "row": 1144,
+    "property_name": "자양동 롯데캐슬리버파크시그니처",
+    "location": "자양동 236"
+  },
+  {
+    "row": 1145,
+    "property_name": "자양동 롯데캐슬리버파크시그니처",
+    "location": "자양동 236"
+  },
+  {
+    "row": 1147,
+    "property_name": "543-13",
+    "location": "평창동 543-13"
+  },
+  {
+    "row": 1148,
+    "property_name": "543-13",
+    "location": "평창동 543-13"
+  },
+  {
+    "row": 1161,
+    "property_name": "한남더힐",
+    "location": "한남동 810"
+  },
+  {
+    "row": 1163,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 1164,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 1170,
+    "property_name": "연희동 노블힐스",
+    "location": "연희동 172-78"
+  },
+  {
+    "row": 1173,
+    "property_name": "연희동 노블힐스",
+    "location": "연희동 172-78"
+  },
+  {
+    "row": 1177,
+    "property_name": "540-2",
+    "location": "평창동 540-2"
+  },
+  {
+    "row": 1184,
+    "property_name": "루카831",
+    "location": "역삼동 831-11"
+  },
+  {
+    "row": 1190,
+    "property_name": "논현동 상지리츠빌",
+    "location": "논현동 244-20"
+  },
+  {
+    "row": 1191,
+    "property_name": "논현동 상지리츠빌",
+    "location": "논현동 244-20"
+  },
+  {
+    "row": 1197,
+    "property_name": "17-36",
+    "location": "구기동 17-36"
+  },
+  {
+    "row": 1199,
+    "property_name": "레베빌아파트",
+    "location": "방배동 798-1"
+  },
+  {
+    "row": 1200,
+    "property_name": "힐탑트레져",
+    "location": "한남동 1-44"
+  },
+  {
+    "row": 1203,
+    "property_name": "330-512",
+    "location": "성북동 330-512"
+  },
+  {
+    "row": 1204,
+    "property_name": "330-512",
+    "location": "성북동 330-512"
+  },
+  {
+    "row": 1217,
+    "property_name": "한남 트윈빌",
+    "location": "한남동 26-10"
+  },
+  {
+    "row": 1219,
+    "property_name": "루카831",
+    "location": "역삼동 831-11"
+  },
+  {
+    "row": 1220,
+    "property_name": "루카831",
+    "location": "역삼동 831-11"
+  },
+  {
+    "row": 1233,
+    "property_name": "삼성동 지웰",
+    "location": "삼성동 114-11"
+  },
+  {
+    "row": 1237,
+    "property_name": "방배동 포레빌",
+    "location": "방배동845-5"
+  },
+  {
+    "row": 1239,
+    "property_name": "브라이튼한남",
+    "location": "한남동 90-4 외 16필지"
+  },
+  {
+    "row": 1240,
+    "property_name": "브라이튼한남",
+    "location": "한남동 90-4 외 16필지"
+  },
+  {
+    "row": 1242,
+    "property_name": "더라움펜트하우스",
+    "location": "자양동 2-3"
+  },
+  {
+    "row": 1243,
+    "property_name": "더라움펜트하우스",
+    "location": "자양동 2-3"
+  },
+  {
+    "row": 1250,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1256,
+    "property_name": "서초동 루컴즈힐서리풀아파트",
+    "location": "서초동 1496-6"
+  },
+  {
+    "row": 1257,
+    "property_name": "서초동 루컴즈힐서리풀아파트",
+    "location": "서초동 1496-6"
+  },
+  {
+    "row": 1259,
+    "property_name": "서초동 동산빌라",
+    "location": "서초동 1493-1"
+  },
+  {
+    "row": 1260,
+    "property_name": "서초동 동산빌라",
+    "location": "서초동 1493-1"
+  },
+  {
+    "row": 1277,
+    "property_name": "반포동 포렐빌딩 복층 펜트",
+    "location": "반포동 111-9"
+  },
+  {
+    "row": 1279,
+    "property_name": "309-4",
+    "location": "성북동 309-4"
+  },
+  {
+    "row": 1285,
+    "property_name": "헤렌하우스",
+    "location": "한남동 11-132"
+  },
+  {
+    "row": 1298,
+    "property_name": "서초아트래디앙",
+    "location": "서초동1582-16"
+  },
+  {
+    "row": 1300,
+    "property_name": "서초아트래디앙",
+    "location": "서초동1582-16"
+  },
+  {
+    "row": 1301,
+    "property_name": "서초아트래디앙",
+    "location": "서초동1582-16"
+  },
+  {
+    "row": 1302,
+    "property_name": "서초아트래디앙",
+    "location": "서초동1582-16"
+  },
+  {
+    "row": 1312,
+    "property_name": "시그니엘레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 1319,
+    "property_name": "512-15",
+    "location": "평창동 512-15"
+  },
+  {
+    "row": 1324,
+    "property_name": "아이파크삼성",
+    "location": "삼성동87"
+  },
+  {
+    "row": 1332,
+    "property_name": "아이파크삼성",
+    "location": "삼성동87"
+  },
+  {
+    "row": 1335,
+    "property_name": "잠실갤러리아팰리스 펜트하우스",
+    "location": "잠실동 40"
+  },
+  {
+    "row": 1337,
+    "property_name": "330-497 (330-529)",
+    "location": "성북동 330-497 (성북동 330-529)"
+  },
+  {
+    "row": 1340,
+    "property_name": "서래마을 폴라씨엘로",
+    "location": "방배동840-4"
+  },
+  {
+    "row": 1353,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 1354,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 1355,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1356,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1357,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1358,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1359,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1360,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1361,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1362,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1363,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1364,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1365,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1366,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1367,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1369,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1371,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1372,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1373,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1374,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1375,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1376,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1377,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1378,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1379,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1380,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1381,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1382,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1383,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1384,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1385,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1386,
+    "property_name": "아츠논현",
+    "location": "논현동249-9"
+  },
+  {
+    "row": 1392,
+    "property_name": "501",
+    "location": "아펠바움2차"
+  },
+  {
+    "row": 1394,
+    "property_name": "방배메라크",
+    "location": "방배동 12-31"
+  },
+  {
+    "row": 1395,
+    "property_name": "방배메라크",
+    "location": "방배동 12-31"
+  },
+  {
+    "row": 1396,
+    "property_name": "방배메라크",
+    "location": "방배동 12-31"
+  },
+  {
+    "row": 1405,
+    "property_name": "B",
+    "location": "청담효성101 1차"
+  },
+  {
+    "row": 1406,
+    "property_name": "시그니엘레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 1408,
+    "property_name": "평창동 콘채르토하우스",
+    "location": "평창동 145-13"
+  },
+  {
+    "row": 1420,
+    "property_name": "브라이튼 논현",
+    "location": "논현동 40"
+  },
+  {
+    "row": 1424,
+    "property_name": "방배동 메라크",
+    "location": "방배동 12-31"
+  },
+  {
+    "row": 1425,
+    "property_name": "방배동 메라크",
+    "location": "방배동 12-31"
+  },
+  {
+    "row": 1426,
+    "property_name": "104",
+    "location": "브라이튼 논현"
+  },
+  {
+    "row": 1431,
+    "property_name": "팔라티노",
+    "location": "방배동 810-14"
+  },
+  {
+    "row": 1437,
+    "property_name": "구기동 쌍용더플래티넘",
+    "location": "구기동 267"
+  },
+  {
+    "row": 1438,
+    "property_name": "구기동 쌍용더플래티넘",
+    "location": "구기동 267"
+  },
+  {
+    "row": 1456,
+    "property_name": "연희동 노블힐스",
+    "location": "연희동 172-78"
+  },
+  {
+    "row": 1457,
+    "property_name": "공신아파트",
+    "location": "삼선동4가 44"
+  },
+  {
+    "row": 1458,
+    "property_name": "논현동 아펠바움2차",
+    "location": "논현동 260-13"
+  },
+  {
+    "row": 1459,
+    "property_name": "논현동 아펠바움2차",
+    "location": "논현동 260-13"
+  },
+  {
+    "row": 1462,
+    "property_name": "아이파크삼성",
+    "location": "삼성동 87"
+  },
+  {
+    "row": 1463,
+    "property_name": "아이파크삼성",
+    "location": "삼성동 87"
+  },
+  {
+    "row": 1464,
+    "property_name": "1",
+    "location": "한남동 상월대"
+  },
+  {
+    "row": 1468,
+    "property_name": "몬트레아 한남",
+    "location": "한남동 76-6"
+  },
+  {
+    "row": 1469,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 1470,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 1472,
+    "property_name": "C",
+    "location": "한남 힐사이드"
+  },
+  {
+    "row": 1473,
+    "property_name": "E",
+    "location": "한남 힐사이드"
+  },
+  {
+    "row": 1478,
+    "property_name": "353파크에비뉴",
+    "location": "아천동 353-5"
+  },
+  {
+    "row": 1483,
+    "property_name": "1",
+    "location": "연세리버테라스"
+  },
+  {
+    "row": 1488,
+    "property_name": "이태원동 메이아파트",
+    "location": "이태원동 124-12"
+  },
+  {
+    "row": 1492,
+    "property_name": "평창동 노블레스빌",
+    "location": "평창동 155-1"
+  },
+  {
+    "row": 1495,
+    "property_name": "에르메티아서초 E타입",
+    "location": "서초동 1596-9"
+  },
+  {
+    "row": 1496,
+    "property_name": "에르메티아서초 E타입",
+    "location": "서초동 1596-9"
+  },
+  {
+    "row": 1497,
+    "property_name": "에르메티아서초 E타입",
+    "location": "서초동 1596-9"
+  },
+  {
+    "row": 1499,
+    "property_name": "시그니엘레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 1501,
+    "property_name": "연희동 라온채",
+    "location": "연희동 200-5"
+  },
+  {
+    "row": 1503,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 1504,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 1505,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 1506,
+    "property_name": "시그니엘 I타입",
+    "location": "신천동 29"
+  },
+  {
+    "row": 1509,
+    "property_name": "서울숲더샵",
+    "location": "행당동298-10"
+  },
+  {
+    "row": 1512,
+    "property_name": "330-495",
+    "location": "성북동 330-495"
+  },
+  {
+    "row": 1520,
+    "property_name": "갤러리하우스 테라스세대",
+    "location": "방배동 1-7"
+  },
+  {
+    "row": 1524,
+    "property_name": "반포동 서래아르드빌",
+    "location": "반포동 88-4"
+  },
+  {
+    "row": 1525,
+    "property_name": "반포동 서래아르드빌",
+    "location": "반포동 88-4"
+  },
+  {
+    "row": 1526,
+    "property_name": "반포동 포렐빌딩 복층 펜트",
+    "location": "반포동 111-9"
+  },
+  {
+    "row": 1527,
+    "property_name": "반포동 포렐빌딩 복층 펜트",
+    "location": "반포동 111-9"
+  },
+  {
+    "row": 1531,
+    "property_name": "빌라맨션",
+    "location": "이촌동 302-86"
+  },
+  {
+    "row": 1534,
+    "property_name": "SOD1차",
+    "location": "한남동 653-44"
+  },
+  {
+    "row": 1544,
+    "property_name": "아츠논현",
+    "location": "논현동 249-9"
+  },
+  {
+    "row": 1545,
+    "property_name": "아츠논현",
+    "location": "논현동 249-9"
+  },
+  {
+    "row": 1546,
+    "property_name": "아츠논현",
+    "location": "논현동 249-9"
+  },
+  {
+    "row": 1577,
+    "property_name": "아페르한강",
+    "location": "서빙고동4-18"
+  },
+  {
+    "row": 1579,
+    "property_name": "아페르한강",
+    "location": "서빙고동4-18"
+  },
+  {
+    "row": 1580,
+    "property_name": "아페르한강",
+    "location": "서빙고동4-18"
+  },
+  {
+    "row": 1582,
+    "property_name": "아페르파크",
+    "location": "서빙고동 4-11"
+  },
+  {
+    "row": 1583,
+    "property_name": "아페르파크",
+    "location": "서빙고동 4-11"
+  },
+  {
+    "row": 1589,
+    "property_name": "쉴틈빌라 펜트",
+    "location": "반포동 612-56"
+  },
+  {
+    "row": 1604,
+    "property_name": "아울스스퀘어",
+    "location": "한남동4-18"
+  },
+  {
+    "row": 1605,
+    "property_name": "아울스스퀘어",
+    "location": "한남동4-18"
+  },
+  {
+    "row": 1608,
+    "property_name": "1643-46",
+    "location": "서초동 1643-46"
+  },
+  {
+    "row": 1609,
+    "property_name": "109-14",
+    "location": "연희동 109-14"
+  },
+  {
+    "row": 1618,
+    "property_name": "아페르한강",
+    "location": "서빙고동 4-18"
+  },
+  {
+    "row": 1624,
+    "property_name": "다우림하우스",
+    "location": "삼성동82-6"
+  },
+  {
+    "row": 1632,
+    "property_name": "아치울 아르카디아",
+    "location": "아천동 87-1"
+  },
+  {
+    "row": 1633,
+    "property_name": "아치울 아르카디아",
+    "location": "아천동 87-1"
+  },
+  {
+    "row": 1634,
+    "property_name": "아치울 아르카디아",
+    "location": "아천동 87-1"
+  },
+  {
+    "row": 1637,
+    "property_name": "카이저팰리스",
+    "location": "상암동1641"
+  },
+  {
+    "row": 1638,
+    "property_name": "아치울 아르카디아 정원세대",
+    "location": "아천동 87-1"
+  },
+  {
+    "row": 1639,
+    "property_name": "아치울 아르카디아",
+    "location": "아천동 87-1"
+  },
+  {
+    "row": 1640,
+    "property_name": "아치울 아르카디아",
+    "location": "아천동 87-1"
+  },
+  {
+    "row": 1641,
+    "property_name": "아치울 아르카디아",
+    "location": "아천동 87-1"
+  },
+  {
+    "row": 1642,
+    "property_name": "아치울 아르카디아",
+    "location": "아천동 87-1"
+  },
+  {
+    "row": 1643,
+    "property_name": "아치울 아르카디아 펜트",
+    "location": "아천동 87-1"
+  },
+  {
+    "row": 1648,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 1649,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 1650,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 1651,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 1658,
+    "property_name": "1643-46",
+    "location": "서초동 1643-46"
+  },
+  {
+    "row": 1661,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 1664,
+    "property_name": "동빙고동 아울스타운",
+    "location": "동빙고동 1-36"
+  },
+  {
+    "row": 1668,
+    "property_name": "형우베스트빌",
+    "location": "한남동 27-2"
+  },
+  {
+    "row": 1673,
+    "property_name": "연희동 라온채",
+    "location": "연희동 200-5"
+  },
+  {
+    "row": 1685,
+    "property_name": "482-2",
+    "location": "평창동 482-2"
+  },
+  {
+    "row": 1686,
+    "property_name": "482-2",
+    "location": "평창동 482-2"
+  },
+  {
+    "row": 1687,
+    "property_name": "482-2",
+    "location": "평창동 482-2"
+  },
+  {
+    "row": 1692,
+    "property_name": "466-24",
+    "location": "평창동 466-24"
+  },
+  {
+    "row": 1697,
+    "property_name": "아페르한강",
+    "location": "서빙고동4-18"
+  },
+  {
+    "row": 1698,
+    "property_name": "아페르한강",
+    "location": "서빙고동4-18"
+  },
+  {
+    "row": 1699,
+    "property_name": "아페르한강",
+    "location": "서빙고동4-18"
+  },
+  {
+    "row": 1700,
+    "property_name": "아페르한강",
+    "location": "서빙고동4-18"
+  },
+  {
+    "row": 1701,
+    "property_name": "아페르한강",
+    "location": "서빙고동4-18"
+  },
+  {
+    "row": 1702,
+    "property_name": "아페르한강",
+    "location": "서빙고동4-18"
+  },
+  {
+    "row": 1703,
+    "property_name": "아페르파크",
+    "location": "서빙고동 4-11"
+  },
+  {
+    "row": 1704,
+    "property_name": "아페르파크",
+    "location": "서빙고동 4-11"
+  },
+  {
+    "row": 1705,
+    "property_name": "아페르파크",
+    "location": "서빙고동 4-11"
+  },
+  {
+    "row": 1706,
+    "property_name": "아페르파크",
+    "location": "서빙고동 4-11"
+  },
+  {
+    "row": 1707,
+    "property_name": "아페르파크 펜트",
+    "location": "서빙고동 4-11"
+  },
+  {
+    "row": 1708,
+    "property_name": "아페르한강",
+    "location": "서빙고동 4-18"
+  },
+  {
+    "row": 1725,
+    "property_name": "한남더힐",
+    "location": "한남동 810"
+  },
+  {
+    "row": 1728,
+    "property_name": "상지카일룸M",
+    "location": "논현동242-31"
+  },
+  {
+    "row": 1729,
+    "property_name": "청담 상지리츠빌6차",
+    "location": "청담동 106-1"
+  },
+  {
+    "row": 1731,
+    "property_name": "489-8",
+    "location": "평창동 489-8"
+  },
+  {
+    "row": 1732,
+    "property_name": "489-8",
+    "location": "평창동 489-8"
+  },
+  {
+    "row": 1735,
+    "property_name": "아울스스퀘어",
+    "location": "한남동4-18"
+  },
+  {
+    "row": 1736,
+    "property_name": "아울스스퀘어",
+    "location": "한남동4-18"
+  },
+  {
+    "row": 1744,
+    "property_name": "15-151",
+    "location": "성북동 15-151"
+  },
+  {
+    "row": 1747,
+    "property_name": "454-3",
+    "location": "평창동 454-3"
+  },
+  {
+    "row": 1748,
+    "property_name": "연희동 라온채",
+    "location": "연희동 200-5"
+  },
+  {
+    "row": 1751,
+    "property_name": "B",
+    "location": "아크로서울포레스트"
+  },
+  {
+    "row": 1754,
+    "property_name": "아페르한강",
+    "location": "서빙고동4-18"
+  },
+  {
+    "row": 1755,
+    "property_name": "아페르한강",
+    "location": "서빙고동4-18"
+  },
+  {
+    "row": 1756,
+    "property_name": "아페르한강",
+    "location": "서빙고동4-18"
+  },
+  {
+    "row": 1757,
+    "property_name": "아페르한강",
+    "location": "서빙고동4-18"
+  },
+  {
+    "row": 1758,
+    "property_name": "아페르한강",
+    "location": "서빙고동4-18"
+  },
+  {
+    "row": 1759,
+    "property_name": "아페르파크",
+    "location": "서빙고동 4-11"
+  },
+  {
+    "row": 1760,
+    "property_name": "아페르파크",
+    "location": "서빙고동 4-11"
+  },
+  {
+    "row": 1761,
+    "property_name": "아페르파크",
+    "location": "서빙고동 4-11"
+  },
+  {
+    "row": 1762,
+    "property_name": "아페르파크",
+    "location": "서빙고동 4-11"
+  },
+  {
+    "row": 1763,
+    "property_name": "아페르파크 펜트",
+    "location": "서빙고동 4-11"
+  },
+  {
+    "row": 1776,
+    "property_name": "지오삼성",
+    "location": "삼성동123-22"
+  },
+  {
+    "row": 1781,
+    "property_name": "평창동 하임빌라",
+    "location": "평창동 523-9"
+  },
+  {
+    "row": 1782,
+    "property_name": "평창동 신원빌라",
+    "location": "평창동 175-3"
+  },
+  {
+    "row": 1783,
+    "property_name": "평창동 신원빌라",
+    "location": "평창동 175-3"
+  },
+  {
+    "row": 1787,
+    "property_name": "브라이튼논현",
+    "location": "논현동 40"
+  },
+  {
+    "row": 1794,
+    "property_name": "105",
+    "location": "브라이튼논현"
+  },
+  {
+    "row": 1796,
+    "property_name": "엘리시아",
+    "location": "평창동66-1"
+  },
+  {
+    "row": 1800,
+    "property_name": "116-16",
+    "location": "평창동 116-16"
+  },
+  {
+    "row": 1811,
+    "property_name": "몬트레아 한남",
+    "location": "한남동 76-6"
+  },
+  {
+    "row": 1825,
+    "property_name": "방배 삼창골든빌라",
+    "location": "반포동 586-3"
+  },
+  {
+    "row": 1826,
+    "property_name": "청담빌라(c-3호)",
+    "location": "청담동 95"
+  },
+  {
+    "row": 1828,
+    "property_name": "방배 태화빌라",
+    "location": "방배동 733"
+  },
+  {
+    "row": 1829,
+    "property_name": "방배 태화빌라",
+    "location": "방배동 733"
+  },
+  {
+    "row": 1830,
+    "property_name": "청담 상지리츠빌6차",
+    "location": "청담동 106-1"
+  },
+  {
+    "row": 1831,
+    "property_name": "몬트레아 한남",
+    "location": "한남동 76-6"
+  },
+  {
+    "row": 1832,
+    "property_name": "몬트레아 한남",
+    "location": "한남동 76-6"
+  },
+  {
+    "row": 1833,
+    "property_name": "몬트레아 한남",
+    "location": "한남동 76-6"
+  },
+  {
+    "row": 1841,
+    "property_name": "540-18",
+    "location": "평창동 540-18"
+  },
+  {
+    "row": 1842,
+    "property_name": "540-18",
+    "location": "평창동 540-18"
+  },
+  {
+    "row": 1845,
+    "property_name": "르엘어퍼",
+    "location": "내곡동 374-67"
+  },
+  {
+    "row": 1846,
+    "property_name": "르엘어퍼",
+    "location": "내곡동 374-67"
+  },
+  {
+    "row": 1847,
+    "property_name": "르엘어퍼",
+    "location": "내곡동 374-67"
+  },
+  {
+    "row": 1848,
+    "property_name": "르엘어퍼",
+    "location": "내곡동 374-67"
+  },
+  {
+    "row": 1849,
+    "property_name": "르엘어퍼",
+    "location": "내곡동 374-67"
+  },
+  {
+    "row": 1852,
+    "property_name": "543-13",
+    "location": "평창동 543-13"
+  },
+  {
+    "row": 1853,
+    "property_name": "543-13",
+    "location": "평창동 543-13"
+  },
+  {
+    "row": 1854,
+    "property_name": "543-13",
+    "location": "평창동 543-13"
+  },
+  {
+    "row": 1865,
+    "property_name": "청담 브르넨 펜트",
+    "location": "청담동 114-9"
+  },
+  {
+    "row": 1866,
+    "property_name": "청담 브르넨 펜트",
+    "location": "청담동 114-9"
+  },
+  {
+    "row": 1870,
+    "property_name": "방배 서래아코",
+    "location": "방배동 1-1"
+  },
+  {
+    "row": 1874,
+    "property_name": "496-7",
+    "location": "평창동496-7"
+  },
+  {
+    "row": 1877,
+    "property_name": "태재한옥",
+    "location": "신현동507-1"
+  },
+  {
+    "row": 1880,
+    "property_name": "청담 상지리츠빌6차",
+    "location": "청담동 106-1"
+  },
+  {
+    "row": 1883,
+    "property_name": "345-33",
+    "location": "평창동 345-33"
+  },
+  {
+    "row": 1884,
+    "property_name": "동산빌라",
+    "location": "방배동 845-9"
+  },
+  {
+    "row": 1890,
+    "property_name": "폴라씨엘로",
+    "location": "논현동35-17"
+  },
+  {
+    "row": 1894,
+    "property_name": "한남동 효성빌리지",
+    "location": "한남동 799"
+  },
+  {
+    "row": 1902,
+    "property_name": "23-18",
+    "location": "성북동 23-18"
+  },
+  {
+    "row": 1906,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 1913,
+    "property_name": "리첸시아용산",
+    "location": "원효로1가40-31"
+  },
+  {
+    "row": 1914,
+    "property_name": "더미켈란",
+    "location": "서초동1494-4"
+  },
+  {
+    "row": 1915,
+    "property_name": "시그니엘레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 1916,
+    "property_name": "시그니엘레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 1920,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1921,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1922,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1923,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1924,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1925,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1926,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1927,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1928,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 1932,
+    "property_name": "형우베스트빌라",
+    "location": "한남동 1-315"
+  },
+  {
+    "row": 1933,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1934,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1935,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1936,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1937,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1938,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1939,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1940,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1941,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1942,
+    "property_name": "브라이튼 여의도",
+    "location": "여의도동31"
+  },
+  {
+    "row": 1945,
+    "property_name": "시그니엘레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 1947,
+    "property_name": "한남 트윈빌",
+    "location": "한남동 26-10"
+  },
+  {
+    "row": 1952,
+    "property_name": "동산빌라",
+    "location": "방배동 845-9"
+  },
+  {
+    "row": 1954,
+    "property_name": "논현로얄팰리스",
+    "location": "논현동249-6"
+  },
+  {
+    "row": 1955,
+    "property_name": "논현로얄팰리스",
+    "location": "논현동249-6"
+  },
+  {
+    "row": 1958,
+    "property_name": "원에디션강남",
+    "location": "역삼동653-4"
+  },
+  {
+    "row": 1959,
+    "property_name": "원에디션강남",
+    "location": "역삼동653-4"
+  },
+  {
+    "row": 1960,
+    "property_name": "원에디션강남",
+    "location": "역삼동653-4"
+  },
+  {
+    "row": 1962,
+    "property_name": "청담동양파라곤",
+    "location": "청담동 69-18"
+  },
+  {
+    "row": 1965,
+    "property_name": "이태원257빌라",
+    "location": "이태원동 44-74"
+  },
+  {
+    "row": 1973,
+    "property_name": "476-4",
+    "location": "평창동 476-4"
+  },
+  {
+    "row": 1974,
+    "property_name": "476-4",
+    "location": "평창동 476-4"
+  },
+  {
+    "row": 1977,
+    "property_name": "105",
+    "location": "한강밤섬자이"
+  },
+  {
+    "row": 1991,
+    "property_name": "방배 삼창골든빌라",
+    "location": "반포동 586-3"
+  },
+  {
+    "row": 1992,
+    "property_name": "방배 상지리츠빌4차",
+    "location": "방배동 843-13"
+  },
+  {
+    "row": 1994,
+    "property_name": "방배 방배렉슬2",
+    "location": "방배동 805-9"
+  },
+  {
+    "row": 1995,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 2000,
+    "property_name": "평창동 509-12",
+    "location": "평창동"
+  },
+  {
+    "row": 2001,
+    "property_name": "평창동 509-12",
+    "location": "평창동"
+  },
+  {
+    "row": 2002,
+    "property_name": "평창동 509-12",
+    "location": "평창동"
+  },
+  {
+    "row": 2005,
+    "property_name": "건물",
+    "location": "서초동 1359-13"
+  },
+  {
+    "row": 2008,
+    "property_name": "형우베스트빌",
+    "location": "한남동 27-2"
+  },
+  {
+    "row": 2009,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 2019,
+    "property_name": "11-288",
+    "location": "한남동 11-288"
+  },
+  {
+    "row": 2020,
+    "property_name": "454-3",
+    "location": "평창동 454-3"
+  },
+  {
+    "row": 2021,
+    "property_name": "454-3",
+    "location": "평창동 454-3"
+  },
+  {
+    "row": 2022,
+    "property_name": "더라움펜트하우스",
+    "location": "자양동 2-3"
+  },
+  {
+    "row": 2023,
+    "property_name": "더라움펜트하우스",
+    "location": "자양동 2-3"
+  },
+  {
+    "row": 2025,
+    "property_name": "540-4",
+    "location": "평창동 540-4"
+  },
+  {
+    "row": 2031,
+    "property_name": "루하우스",
+    "location": "한남동 1-51"
+  },
+  {
+    "row": 2034,
+    "property_name": "건물 3층",
+    "location": "신사동 589-10"
+  },
+  {
+    "row": 2035,
+    "property_name": "건물 5층",
+    "location": "신사동 589-10"
+  },
+  {
+    "row": 2038,
+    "property_name": "10-206",
+    "location": "홍은동 10-206"
+  },
+  {
+    "row": 2040,
+    "property_name": "삼성동 빌라",
+    "location": "삼성동 33-7"
+  },
+  {
+    "row": 2041,
+    "property_name": "삼성동 동일파크스위트",
+    "location": "삼성동 100-14"
+  },
+  {
+    "row": 2043,
+    "property_name": "삼성동 동일파크스위트",
+    "location": "삼성동 100-14"
+  },
+  {
+    "row": 2045,
+    "property_name": "101",
+    "location": "갤러리아포레"
+  },
+  {
+    "row": 2046,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 2049,
+    "property_name": "306-23",
+    "location": "부암동 306-23"
+  },
+  {
+    "row": 2051,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 2052,
+    "property_name": "아크로서울포레스트 펜트",
+    "location": "성수동1가 685-700"
+  },
+  {
+    "row": 2055,
+    "property_name": "삼성벽산블루밍아파트",
+    "location": "삼성동 64-4"
+  },
+  {
+    "row": 2057,
+    "property_name": "어반메시남산(주상복합)",
+    "location": "이태원동 253-7"
+  },
+  {
+    "row": 2060,
+    "property_name": "브라이튼n40",
+    "location": "논현동40"
+  },
+  {
+    "row": 2061,
+    "property_name": "브라이튼n40",
+    "location": "논현동40"
+  },
+  {
+    "row": 2062,
+    "property_name": "브라이튼n40",
+    "location": "논현동40"
+  },
+  {
+    "row": 2063,
+    "property_name": "브라이튼n40",
+    "location": "논현동40"
+  },
+  {
+    "row": 2065,
+    "property_name": "Masterpiece(가칭)",
+    "location": "방배동 1-130"
+  },
+  {
+    "row": 2066,
+    "property_name": "Masterpiece(가칭)",
+    "location": "방배동 1-130"
+  },
+  {
+    "row": 2067,
+    "property_name": "Masterpiece(가칭)",
+    "location": "방배동 1-130"
+  },
+  {
+    "row": 2075,
+    "property_name": "1",
+    "location": "한남동 상월대"
+  },
+  {
+    "row": 2081,
+    "property_name": "104",
+    "location": "나인원한남 듀플렉스"
+  },
+  {
+    "row": 2085,
+    "property_name": "아울스스퀘어",
+    "location": "한남동4-18"
+  },
+  {
+    "row": 2086,
+    "property_name": "아울스스퀘어",
+    "location": "한남동4-18"
+  },
+  {
+    "row": 2088,
+    "property_name": "아크로서울포레스트",
+    "location": "성수동1가685-700"
+  },
+  {
+    "row": 2089,
+    "property_name": "상지리츠빌3차",
+    "location": "청담동121-8"
+  },
+  {
+    "row": 2091,
+    "property_name": "브라이튼n40",
+    "location": "논현동40"
+  },
+  {
+    "row": 2092,
+    "property_name": "브라이튼n40",
+    "location": "논현동40"
+  },
+  {
+    "row": 2093,
+    "property_name": "브라이튼n40",
+    "location": "논현동40"
+  },
+  {
+    "row": 2097,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 2098,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 2099,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 2100,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 2101,
+    "property_name": "롯데캐슬갤럭시2차",
+    "location": "잠원동50-1"
+  },
+  {
+    "row": 2102,
+    "property_name": "롯데캐슬갤럭시2차",
+    "location": "잠원동50-1"
+  },
+  {
+    "row": 2108,
+    "property_name": "평창동 530-7",
+    "location": "530-7"
+  },
+  {
+    "row": 2115,
+    "property_name": "더라움펜트하우스",
+    "location": "자양동 2-3"
+  },
+  {
+    "row": 2116,
+    "property_name": "더라움펜트하우스",
+    "location": "자양동 2-3"
+  },
+  {
+    "row": 2137,
+    "property_name": "성북동 어승재 B단지",
+    "location": "성북동 303-8"
+  },
+  {
+    "row": 2139,
+    "property_name": "논현동양파라곤",
+    "location": "논현동 245"
+  },
+  {
+    "row": 2144,
+    "property_name": "신구레베빌14차",
+    "location": "방배동845-6"
+  },
+  {
+    "row": 2148,
+    "property_name": "서울숲더샵",
+    "location": "행당동377"
+  },
+  {
+    "row": 2149,
+    "property_name": "남산롯데캐슬아이리스",
+    "location": "회현동1가208"
+  },
+  {
+    "row": 2150,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 2152,
+    "property_name": "남산롯데캐슬아이리스",
+    "location": "회현동1가208"
+  },
+  {
+    "row": 2156,
+    "property_name": "아크로서울포레스트",
+    "location": "성수동1가685-700"
+  },
+  {
+    "row": 2162,
+    "property_name": "워커힐한강 상지카일룸",
+    "location": "아천동301번지외5필지"
+  },
+  {
+    "row": 2164,
+    "property_name": "상지리츠빌5차",
+    "location": "청담동127-12"
+  },
+  {
+    "row": 2170,
+    "property_name": "서래마을 반듯헌",
+    "location": "방배동805-13"
+  },
+  {
+    "row": 2171,
+    "property_name": "서래마을 반듯헌",
+    "location": "방배동805-13"
+  },
+  {
+    "row": 2172,
+    "property_name": "서래마을 반듯헌",
+    "location": "방배동805-13"
+  },
+  {
+    "row": 2177,
+    "property_name": "펜트힐캐스케이드",
+    "location": "논현동106"
+  },
+  {
+    "row": 2178,
+    "property_name": "1",
+    "location": "삼성라테라스"
+  },
+  {
+    "row": 2186,
+    "property_name": "청담아이파크",
+    "location": "청담동130"
+  },
+  {
+    "row": 2193,
+    "property_name": "리첸시아용산",
+    "location": "원효로1가40-31"
+  },
+  {
+    "row": 2194,
+    "property_name": "포제스한강",
+    "location": "광장동188-2"
+  },
+  {
+    "row": 2197,
+    "property_name": "삼성 라테라스",
+    "location": "삼성동 110-2"
+  },
+  {
+    "row": 2199,
+    "property_name": "삼성동 상지리츠빌 카일룸 4차 펜트",
+    "location": "삼성동 65-4"
+  },
+  {
+    "row": 2200,
+    "property_name": "아크로서울포레스트",
+    "location": "성수동1가685-700"
+  },
+  {
+    "row": 2203,
+    "property_name": "힐탑빌",
+    "location": "한남동 1-241"
+  },
+  {
+    "row": 2205,
+    "property_name": "논현동 신현빌라",
+    "location": "논현동103-1"
+  },
+  {
+    "row": 2207,
+    "property_name": "타워팰리스3차",
+    "location": "도곡동 467-29"
+  },
+  {
+    "row": 2208,
+    "property_name": "570-3",
+    "location": "평창동570-3"
+  },
+  {
+    "row": 2209,
+    "property_name": "464-7",
+    "location": "평창동464-7"
+  },
+  {
+    "row": 2211,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 2213,
+    "property_name": "현대서초빌라트",
+    "location": "서초동1497-18"
+  },
+  {
+    "row": 2226,
+    "property_name": "래미안용산더센트럴(주상복합)",
+    "location": "한강로2가 422"
+  },
+  {
+    "row": 2230,
+    "property_name": "258-24",
+    "location": "이태원동258-24"
+  },
+  {
+    "row": 2233,
+    "property_name": "501",
+    "location": "논현아펠바움2차"
+  },
+  {
+    "row": 2234,
+    "property_name": "에르메티아서초 E타입",
+    "location": "서초동 1596-9"
+  },
+  {
+    "row": 2240,
+    "property_name": "한남더힐",
+    "location": "한남동 810"
+  },
+  {
+    "row": 2241,
+    "property_name": "한남더힐",
+    "location": "한남동 810"
+  },
+  {
+    "row": 2243,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 2251,
+    "property_name": "A",
+    "location": "더 가든 테라스 116 분양"
+  },
+  {
+    "row": 2253,
+    "property_name": "B",
+    "location": "더 가든 테라스 116 분양"
+  },
+  {
+    "row": 2257,
+    "property_name": "E",
+    "location": "한남 힐사이드"
+  },
+  {
+    "row": 2258,
+    "property_name": "E",
+    "location": "한남 힐사이드"
+  },
+  {
+    "row": 2262,
+    "property_name": "1",
+    "location": "연세리버테라스"
+  },
+  {
+    "row": 2263,
+    "property_name": "청담아이파크",
+    "location": "청담동 130"
+  },
+  {
+    "row": 2266,
+    "property_name": "102",
+    "location": "래미안리더스원"
+  },
+  {
+    "row": 2286,
+    "property_name": "삼성현대위버포레",
+    "location": "삼성동 144-1"
+  },
+  {
+    "row": 2294,
+    "property_name": "동빙고 플래티앙1차",
+    "location": "동빙고동 1-67"
+  },
+  {
+    "row": 2296,
+    "property_name": "한남동 힐스테이트",
+    "location": "한남동 807"
+  },
+  {
+    "row": 2301,
+    "property_name": "30-18",
+    "location": "후암동 30-18"
+  },
+  {
+    "row": 2308,
+    "property_name": "용산파크자이",
+    "location": "한강로1가 50-1"
+  },
+  {
+    "row": 2310,
+    "property_name": "서초상지리츠빌 10차",
+    "location": "서초동 1517-6"
+  },
+  {
+    "row": 2311,
+    "property_name": "서초상지리츠빌 10차",
+    "location": "서초동 1517-6"
+  },
+  {
+    "row": 2315,
+    "property_name": "삼성동 상지리츠빌 카일룸 4차 펜트",
+    "location": "삼성동 65-4"
+  },
+  {
+    "row": 2317,
+    "property_name": "63",
+    "location": "현대3차"
+  },
+  {
+    "row": 2318,
+    "property_name": "더라움펜트하우스",
+    "location": "자양동 2-3"
+  },
+  {
+    "row": 2319,
+    "property_name": "더라움펜트하우스",
+    "location": "자양동 2-3"
+  },
+  {
+    "row": 2320,
+    "property_name": "청담파라곤2단지",
+    "location": "청담동 102-13"
+  },
+  {
+    "row": 2321,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 2325,
+    "property_name": "한남 라테라스_ 테라스 타입",
+    "location": "한남동 773-1"
+  },
+  {
+    "row": 2328,
+    "property_name": "아페르한강",
+    "location": "서빙고동4-18"
+  },
+  {
+    "row": 2337,
+    "property_name": "삼성동 동일파크스위트",
+    "location": "삼성동 100-14"
+  },
+  {
+    "row": 2339,
+    "property_name": "PH129 (더펜트하우스청담)",
+    "location": "청담동 129"
+  },
+  {
+    "row": 2340,
+    "property_name": "PH129 (더펜트하우스청담)",
+    "location": "청담동 129"
+  },
+  {
+    "row": 2342,
+    "property_name": "삼성 라테라스",
+    "location": "삼성동 110-2"
+  },
+  {
+    "row": 2348,
+    "property_name": "청담동양파라곤",
+    "location": "청담동 69-18"
+  },
+  {
+    "row": 2349,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 2350,
+    "property_name": "나인원한남",
+    "location": "한남동 829"
+  },
+  {
+    "row": 2351,
+    "property_name": "101",
+    "location": "알파임하우스2차"
+  },
+  {
+    "row": 2353,
+    "property_name": "서초상지리츠빌 10차",
+    "location": "서초동 1517-6"
+  },
+  {
+    "row": 2355,
+    "property_name": "역삼상지리츠빌 2차",
+    "location": "역삼동 761-3"
+  },
+  {
+    "row": 2360,
+    "property_name": "A",
+    "location": "아크로서울포레스트"
+  },
+  {
+    "row": 2362,
+    "property_name": "더샵스타시티",
+    "location": "자양동 227-7"
+  },
+  {
+    "row": 2363,
+    "property_name": "105",
+    "location": "한강밤섬자이"
+  },
+  {
+    "row": 2367,
+    "property_name": "용산신동아아파트",
+    "location": "서빙고동 241-21"
+  },
+  {
+    "row": 2368,
+    "property_name": "용산신동아아파트",
+    "location": "서빙고동 241-21"
+  },
+  {
+    "row": 2371,
+    "property_name": "영등포 SK리더스빌 펜트",
+    "location": "문래동3가 55-16"
+  },
+  {
+    "row": 2374,
+    "property_name": "102",
+    "location": "나인원한남"
+  },
+  {
+    "row": 2375,
+    "property_name": "102",
+    "location": "나인원한남"
+  },
+  {
+    "row": 2376,
+    "property_name": "103",
+    "location": "나인원한남"
+  },
+  {
+    "row": 2384,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 2385,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 2389,
+    "property_name": "성지라빌레뜨",
+    "location": "방배동 845-1"
+  },
+  {
+    "row": 2392,
+    "property_name": "한강대우트럼프월드1차",
+    "location": "여의도동 55-1"
+  },
+  {
+    "row": 2393,
+    "property_name": "한강대우트럼프월드1차",
+    "location": "여의도동 55-1"
+  },
+  {
+    "row": 2394,
+    "property_name": "한강대우트럼프월드1차",
+    "location": "여의도동 55-1"
+  },
+  {
+    "row": 2399,
+    "property_name": "이태원 르씨엘 펜트",
+    "location": "이태원동 102-2"
+  },
+  {
+    "row": 2400,
+    "property_name": "이태원 르씨엘 펜트",
+    "location": "이태원동 102-2"
+  },
+  {
+    "row": 2401,
+    "property_name": "삼성 한남빌라",
+    "location": "한남동 1-23"
+  },
+  {
+    "row": 2402,
+    "property_name": "삼성 한남빌라",
+    "location": "한남동 1-23"
+  },
+  {
+    "row": 2403,
+    "property_name": "삼성 한남빌라",
+    "location": "한남동 1-23"
+  },
+  {
+    "row": 2404,
+    "property_name": "삼성 한남빌라",
+    "location": "한남동 1-23"
+  },
+  {
+    "row": 2406,
+    "property_name": "위레벤 646 B타입",
+    "location": "삼성동 78-1"
+  },
+  {
+    "row": 2407,
+    "property_name": "위레벤 646 B타입",
+    "location": "삼성동 78-1"
+  },
+  {
+    "row": 2408,
+    "property_name": "위레벤 646 B타입",
+    "location": "삼성동 78-1"
+  },
+  {
+    "row": 2409,
+    "property_name": "위레벤 646 B타입",
+    "location": "삼성동 78-1"
+  },
+  {
+    "row": 2410,
+    "property_name": "위레벤 646 B타입",
+    "location": "삼성동 78-1"
+  },
+  {
+    "row": 2412,
+    "property_name": "위레벤 646 E타입",
+    "location": "삼성동 78-1"
+  },
+  {
+    "row": 2413,
+    "property_name": "위레벤 646 E타입",
+    "location": "삼성동 78-1"
+  },
+  {
+    "row": 2414,
+    "property_name": "위레벤 646 E타입",
+    "location": "삼성동 78-1"
+  },
+  {
+    "row": 2415,
+    "property_name": "위레벤 646 E타입",
+    "location": "삼성동 78-1"
+  },
+  {
+    "row": 2416,
+    "property_name": "위레벤 646 E타입",
+    "location": "삼성동 78-1"
+  },
+  {
+    "row": 2427,
+    "property_name": "1",
+    "location": "서초프레스턴-2"
+  },
+  {
+    "row": 2430,
+    "property_name": "더미켈란 펜트세대",
+    "location": "서초동1494-4"
+  },
+  {
+    "row": 2431,
+    "property_name": "1",
+    "location": "더미켈란 펜트세대"
+  },
+  {
+    "row": 2433,
+    "property_name": "101",
+    "location": "현대까르띠에710"
+  },
+  {
+    "row": 2434,
+    "property_name": "9-4",
+    "location": "성북동 9-4"
+  },
+  {
+    "row": 2435,
+    "property_name": "9-4",
+    "location": "성북동 9-4"
+  },
+  {
+    "row": 2441,
+    "property_name": "492-9",
+    "location": "평창동 492-9"
+  },
+  {
+    "row": 2442,
+    "property_name": "492-9",
+    "location": "평창동 492-9"
+  },
+  {
+    "row": 2443,
+    "property_name": "영등포 다빈치 펜트",
+    "location": "영등포구 양평로 8"
+  },
+  {
+    "row": 2444,
+    "property_name": "영등포 다빈치 펜트",
+    "location": "영등포구 양평로 8"
+  },
+  {
+    "row": 2445,
+    "property_name": "A",
+    "location": "아크로서울포레스트"
+  },
+  {
+    "row": 2446,
+    "property_name": "A",
+    "location": "아크로서울포레스트"
+  },
+  {
+    "row": 2448,
+    "property_name": "1",
+    "location": "아나하(도시형)"
+  },
+  {
+    "row": 2449,
+    "property_name": "청담대우멤버스카운티6차\n 펜트 복층세대",
+    "location": "청담동 110-4"
+  },
+  {
+    "row": 2450,
+    "property_name": "청담대우멤버스카운티6차\n 펜트 복층세대",
+    "location": "청담동 110-4"
+  },
+  {
+    "row": 2455,
+    "property_name": "롯데캐슬아이비",
+    "location": "여의도동 43-4"
+  },
+  {
+    "row": 2457,
+    "property_name": "롯데캐슬아이비",
+    "location": "여의도동 43-4"
+  },
+  {
+    "row": 2458,
+    "property_name": "성지라빌레뜨",
+    "location": "방배동 845-1"
+  },
+  {
+    "row": 2459,
+    "property_name": "성지라빌레뜨",
+    "location": "방배동 845-1"
+  },
+  {
+    "row": 2460,
+    "property_name": "청담동양파라곤",
+    "location": "청담동69-18"
+  },
+  {
+    "row": 2462,
+    "property_name": "B",
+    "location": "남산 센트럴 자이"
+  },
+  {
+    "row": 2469,
+    "property_name": "트리마제",
+    "location": "성수동1가718"
+  },
+  {
+    "row": 2471,
+    "property_name": "서울숲더샵",
+    "location": "행당동 377"
+  },
+  {
+    "row": 2472,
+    "property_name": "102",
+    "location": "트리마제"
+  },
+  {
+    "row": 2473,
+    "property_name": "102",
+    "location": "트리마제"
+  },
+  {
+    "row": 2474,
+    "property_name": "102",
+    "location": "트리마제"
+  },
+  {
+    "row": 2475,
+    "property_name": "102",
+    "location": "트리마제"
+  },
+  {
+    "row": 2478,
+    "property_name": "이태원신축건물",
+    "location": "이태원동 63-39"
+  },
+  {
+    "row": 2500,
+    "property_name": "밤섬 리버베르빌",
+    "location": "상수동 395"
+  },
+  {
+    "row": 2501,
+    "property_name": "코오롱R&F빌라",
+    "location": "대치동 970-4"
+  },
+  {
+    "row": 2509,
+    "property_name": "삼성아펠바움",
+    "location": "삼성동 99-3"
+  },
+  {
+    "row": 2510,
+    "property_name": "101",
+    "location": "브라이튼 논현"
+  },
+  {
+    "row": 2514,
+    "property_name": "청담 씨티아파트",
+    "location": "청담동 104-19"
+  },
+  {
+    "row": 2515,
+    "property_name": "청담 씨티아파트",
+    "location": "청담동 104-19"
+  },
+  {
+    "row": 2519,
+    "property_name": "A",
+    "location": "아크로서울포레스트"
+  },
+  {
+    "row": 2520,
+    "property_name": "B",
+    "location": "아크로서울포레스트"
+  },
+  {
+    "row": 2528,
+    "property_name": "이태원 로즈힐빌라",
+    "location": "이태원동 155-6"
+  },
+  {
+    "row": 2533,
+    "property_name": "쉴틈빌라 펜트",
+    "location": "반포동 612-56"
+  },
+  {
+    "row": 2535,
+    "property_name": "쉴틈빌라",
+    "location": "반포동 612-56"
+  },
+  {
+    "row": 2536,
+    "property_name": "쉴틈빌라",
+    "location": "반포동 612-56"
+  },
+  {
+    "row": 2537,
+    "property_name": "쉴틈빌라",
+    "location": "반포동 612-56"
+  },
+  {
+    "row": 2542,
+    "property_name": "더라움펜트하우스",
+    "location": "자양동 2-3"
+  },
+  {
+    "row": 2543,
+    "property_name": "더라움펜트하우스",
+    "location": "자양동 2-3"
+  },
+  {
+    "row": 2544,
+    "property_name": "더라움펜트하우스",
+    "location": "자양동 2-3"
+  },
+  {
+    "row": 2546,
+    "property_name": "스톤힐스",
+    "location": "방배동 734"
+  },
+  {
+    "row": 2548,
+    "property_name": "스톤힐스",
+    "location": "방배동 734"
+  },
+  {
+    "row": 2549,
+    "property_name": "스톤힐스",
+    "location": "방배동 734"
+  },
+  {
+    "row": 2552,
+    "property_name": "한남하이페리온",
+    "location": "한남동 805"
+  },
+  {
+    "row": 2557,
+    "property_name": "덕소두산위브아파트",
+    "location": "와부읍 도곡리 986-1"
+  },
+  {
+    "row": 2560,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 2561,
+    "property_name": "용산파크자이",
+    "location": "한강로1가 50-1"
+  },
+  {
+    "row": 2562,
+    "property_name": "용산파크자이",
+    "location": "한강로1가 50-1"
+  },
+  {
+    "row": 2563,
+    "property_name": "E",
+    "location": "한남 힐사이드"
+  },
+  {
+    "row": 2566,
+    "property_name": "퀸즈리버빌",
+    "location": "이촌동302-140"
+  },
+  {
+    "row": 2567,
+    "property_name": "삼성 라테라스",
+    "location": "삼성동 110-2"
+  },
+  {
+    "row": 2569,
+    "property_name": "삼성동 아이파크",
+    "location": "삼성동 87"
+  },
+  {
+    "row": 2570,
+    "property_name": "삼성동 아이파크",
+    "location": "삼성동 87"
+  },
+  {
+    "row": 2572,
+    "property_name": "청담동양파라곤",
+    "location": "청담동 69-18"
+  },
+  {
+    "row": 2574,
+    "property_name": "타워팰리스1차",
+    "location": "도곡동 467"
+  },
+  {
+    "row": 2575,
+    "property_name": "퀸즈리버빌",
+    "location": "이촌동302-140"
+  },
+  {
+    "row": 2576,
+    "property_name": "퀸즈리버빌",
+    "location": "이촌동302-140"
+  },
+  {
+    "row": 2583,
+    "property_name": "서래마을더루첸티",
+    "location": "반포동 102-4"
+  },
+  {
+    "row": 2589,
+    "property_name": "반포동 청구빌라",
+    "location": "반포동 610-34"
+  },
+  {
+    "row": 2590,
+    "property_name": "성지라빌레뜨",
+    "location": "방배동 845-1"
+  },
+  {
+    "row": 2591,
+    "property_name": "성지라빌레뜨",
+    "location": "방배동 845-1"
+  },
+  {
+    "row": 2593,
+    "property_name": "105",
+    "location": "나인원한남"
+  },
+  {
+    "row": 2595,
+    "property_name": "청담마크힐스 2단지",
+    "location": "청담동 130-6"
+  },
+  {
+    "row": 2597,
+    "property_name": "청담 어퍼하우스",
+    "location": "청담동 64-1"
+  },
+  {
+    "row": 2604,
+    "property_name": "서래마을더루첸티",
+    "location": "반포동 102-4"
+  },
+  {
+    "row": 2607,
+    "property_name": "방배CJ나인빌리지 2차",
+    "location": "방배로 18길 57-3"
+  },
+  {
+    "row": 2608,
+    "property_name": "방배CJ나인빌리지 2차",
+    "location": "방배로 18길 57-3"
+  },
+  {
+    "row": 2618,
+    "property_name": "퀸즈리버빌",
+    "location": "이촌동302-140"
+  },
+  {
+    "row": 2619,
+    "property_name": "퀸즈리버빌",
+    "location": "이촌동302-140"
+  },
+  {
+    "row": 2620,
+    "property_name": "퀸즈리버빌",
+    "location": "이촌동302-140"
+  },
+  {
+    "row": 2622,
+    "property_name": "방배갤러리하우스3A",
+    "location": "방배동 1-7"
+  },
+  {
+    "row": 2624,
+    "property_name": "방배 성지 라빌레뜨",
+    "location": "방배동 845-1"
+  },
+  {
+    "row": 2625,
+    "property_name": "방배 성지 라빌레뜨",
+    "location": "방배동 845-1"
+  },
+  {
+    "row": 2629,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 2630,
+    "property_name": "아크로서울포레스트",
+    "location": "성수동1가685-700"
+  },
+  {
+    "row": 2631,
+    "property_name": "C",
+    "location": "한남 힐사이드"
+  },
+  {
+    "row": 2634,
+    "property_name": "희담재",
+    "location": "방배동808-3번지"
+  },
+  {
+    "row": 2646,
+    "property_name": "갤러리아포레",
+    "location": "서울숲2길32-14"
+  },
+  {
+    "row": 2647,
+    "property_name": "갤러리아포레",
+    "location": "서울숲2길32-14"
+  },
+  {
+    "row": 2660,
+    "property_name": "형우베스트빌라",
+    "location": "한남동 1-315"
+  },
+  {
+    "row": 2663,
+    "property_name": "트리마제",
+    "location": "성수동1가718"
+  },
+  {
+    "row": 2664,
+    "property_name": "트리마제",
+    "location": "성수동1가718"
+  },
+  {
+    "row": 2678,
+    "property_name": "330-523",
+    "location": "성북동330-523"
+  },
+  {
+    "row": 2683,
+    "property_name": "운중동 산운1단지 월든힐스",
+    "location": "운중동 875"
+  },
+  {
+    "row": 2687,
+    "property_name": "106",
+    "location": "운중동 산운1단지 월든힐스"
+  },
+  {
+    "row": 2692,
+    "property_name": "브라이튼N40",
+    "location": "논현동 40"
+  },
+  {
+    "row": 2700,
+    "property_name": "101",
+    "location": "용산구 리첸시아"
+  },
+  {
+    "row": 2702,
+    "property_name": "청광아트빌",
+    "location": "방배동482-4번지"
+  },
+  {
+    "row": 2703,
+    "property_name": "용산구 리첸시아",
+    "location": "원효로1가133-3"
+  },
+  {
+    "row": 2705,
+    "property_name": "101",
+    "location": "용산구 리첸시아"
+  },
+  {
+    "row": 2707,
+    "property_name": "신동광빌라",
+    "location": "반포동101-8"
+  },
+  {
+    "row": 2710,
+    "property_name": "101",
+    "location": "더샵 오데움"
+  },
+  {
+    "row": 2711,
+    "property_name": "101",
+    "location": "더샵 오데움"
+  },
+  {
+    "row": 2712,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 2713,
+    "property_name": "한남 힐사이드",
+    "location": "한남동726-111"
+  },
+  {
+    "row": 2715,
+    "property_name": "A",
+    "location": "한남 힐사이드"
+  },
+  {
+    "row": 2723,
+    "property_name": "446-22",
+    "location": "평창동446-22"
+  },
+  {
+    "row": 2727,
+    "property_name": "리버스청담 시티뷰",
+    "location": "청담동 130-8"
+  },
+  {
+    "row": 2734,
+    "property_name": "논현하이츠",
+    "location": "논현동38-11번지"
+  },
+  {
+    "row": 2751,
+    "property_name": "판테온빌라",
+    "location": "방배동803-3"
+  },
+  {
+    "row": 2775,
+    "property_name": "청광아트빌14차",
+    "location": "방배동482-4"
+  },
+  {
+    "row": 2776,
+    "property_name": "청광아트빌14차",
+    "location": "방배동482-4"
+  },
+  {
+    "row": 2787,
+    "property_name": "B",
+    "location": "한남 트윈빌"
+  },
+  {
+    "row": 2792,
+    "property_name": "퀸스빌",
+    "location": "이촌동302-140"
+  },
+  {
+    "row": 2796,
+    "property_name": "트리마제",
+    "location": "성수동1가718"
+  },
+  {
+    "row": 2831,
+    "property_name": "D",
+    "location": "플로렌스힐"
+  },
+  {
+    "row": 2832,
+    "property_name": "시그니엘 레지던스",
+    "location": "신천동29"
+  },
+  {
+    "row": 2841,
+    "property_name": "우림빌라",
+    "location": "한남동11-295"
+  },
+  {
+    "row": 2844,
+    "property_name": "A",
+    "location": "우림빌라"
+  },
+  {
+    "row": 2855,
+    "property_name": "1618-51",
+    "location": "서초동1618-51"
+  }
+]
