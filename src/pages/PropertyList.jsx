@@ -53,18 +53,29 @@ const PropertyList = () => {
 
   // 타입 매핑 함수 (룩업 데이터 사용)
   const getDisplayPropertyType = (property) => {
-    const type = lookupData.propertyTypes?.find(t => t.id === property.property_type_id);
-    return type?.name || '미지정';
+    const typeId = property.property_type_id || property.property_type;
+    const type = lookupData.propertyTypes?.find(t => t.id === typeId);
+    return type?.name || typeId || '미지정';
   };
 
   const getDisplayTransactionType = (property) => {
-    const type = lookupData.transactionTypes?.find(t => t.id === property.transaction_type_id);
-    return type?.name || '미지정';
+    const typeId = property.transaction_type_id || property.transaction_type;
+    const type = lookupData.transactionTypes?.find(t => t.id === typeId);
+    return type?.name || typeId || '미지정';
   };
 
   const getDisplayStatus = (property) => {
-    const status = lookupData.propertyStatuses?.find(s => s.id === property.property_status_id);
-    return status?.name || '미지정';
+    const statusId = property.property_status_id || property.property_status;
+    const status = lookupData.propertyStatuses?.find(s => s.id === statusId);
+    // 데이터베이스의 영어 상태를 한글로 매핑
+    const statusMap = {
+      'available': '거래가능',
+      'completed': '거래완료',
+      'hold': '거래보류',
+      'cancelled': '거래철회',
+      'inspection_available': '임장가능'
+    };
+    return status?.name || statusMap[statusId] || statusId || '미지정';
   };
 
   const getDisplayManager = (property) => {

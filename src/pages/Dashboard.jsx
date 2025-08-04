@@ -72,12 +72,15 @@ const Dashboard = () => {
   const stats = {
     totalProperties: properties.length,
     completedDeals: properties.filter(p => {
-      const status = lookupData.propertyStatuses?.find(s => s.id === p.property_status_id);
-      return status?.name === '거래완료';
+      // property_status가 문자열로 저장되어 있는 경우 처리
+      const statusId = p.property_status_id || p.property_status;
+      const status = lookupData.propertyStatuses?.find(s => s.id === statusId);
+      return status?.name === '거래완료' || statusId === 'completed';
     }).length,
     inProgress: properties.filter(p => {
-      const status = lookupData.propertyStatuses?.find(s => s.id === p.property_status_id);
-      return status?.name === '거래가능' || status?.name === '거래보류';
+      const statusId = p.property_status_id || p.property_status;
+      const status = lookupData.propertyStatuses?.find(s => s.id === statusId);
+      return status?.name === '거래가능' || status?.name === '거래보류' || statusId === 'available' || statusId === 'hold';
     }).length,
     thisMonth: properties.filter(p => {
       const created = new Date(p.created_at);
@@ -90,12 +93,14 @@ const Dashboard = () => {
   const processStats = {
     total: stats.totalProperties, // 총 매물
     available: properties.filter(p => {
-      const status = lookupData.propertyStatuses?.find(s => s.id === p.property_status_id);
-      return status?.name === '거래가능';
+      const statusId = p.property_status_id || p.property_status;
+      const status = lookupData.propertyStatuses?.find(s => s.id === statusId);
+      return status?.name === '거래가능' || statusId === 'available';
     }).length,
     reserved: properties.filter(p => {
-      const status = lookupData.propertyStatuses?.find(s => s.id === p.property_status_id);
-      return status?.name === '거래보류';
+      const statusId = p.property_status_id || p.property_status;
+      const status = lookupData.propertyStatuses?.find(s => s.id === statusId);
+      return status?.name === '거래보류' || statusId === 'hold';
     }).length,
     completed: stats.completedDeals // 거래완료
   };
