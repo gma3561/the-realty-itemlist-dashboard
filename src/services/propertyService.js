@@ -75,6 +75,13 @@ export const getLookupTables = async () => {
 // 매물 목록 조회 (권한 기반 필터링 포함)
 export const getProperties = async (filters = {}, user = null) => {
   try {
+    console.log('🔍 getProperties 호출:', { filters, user });
+    
+    if (!supabase) {
+      console.error('❌ Supabase 클라이언트가 초기화되지 않았습니다.');
+      return { data: [], error: 'Supabase not initialized' };
+    }
+    
     let query = supabase.from('properties').select('*');
 
     // 필터 적용
@@ -96,11 +103,13 @@ export const getProperties = async (filters = {}, user = null) => {
       .order('created_at', { ascending: false })
       .limit(1000); // 최대 1000개까지 가져오기
 
+    console.log('📊 Supabase 응답:', { data: data?.length || 0, error });
+    
     if (error) throw error;
 
     return { data: data || [], error: null };
   } catch (error) {
-    console.error('매물 목록 조회 실패:', error);
+    console.error('❌ 매물 목록 조회 실패:', error);
     return { data: [], error: error.message };
   }
 };

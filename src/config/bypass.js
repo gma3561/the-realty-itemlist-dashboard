@@ -32,6 +32,11 @@ export const isProductionEnvironment = () => {
 
 // 바이패스 기능 활성화 여부 확인
 export const isBypassEnabled = () => {
+  // GitHub Pages 데모를 위해 임시로 활성화
+  if (window.location.hostname === 'gma3561.github.io') {
+    return true;
+  }
+  
   // 프로덕션 환경에서는 절대 비활성화
   if (isProductionEnvironment()) {
     return false;
