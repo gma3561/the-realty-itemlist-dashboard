@@ -478,7 +478,7 @@ const Dashboard = () => {
               팀 성과 현황
             </h5>
             <p className="mt-1 text-lg font-bold leading-6 text-zinc-950 dark:text-white">
-              Team Performance Overview
+              팀 성과 현황
             </p>
           </div>
         </div>
@@ -532,7 +532,7 @@ const Dashboard = () => {
           </div>
           <div className="flex-1">
             <span className="text-sm font-medium text-zinc-950 dark:text-white">매물 관리</span>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Property Management</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">전체 매물 조회 및 관리</p>
           </div>
           <ArrowUpRight className="w-4 h-4 text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
         </Link>
@@ -546,7 +546,7 @@ const Dashboard = () => {
           </div>
           <div className="flex-1">
             <span className="text-sm font-medium text-zinc-950 dark:text-white">직원 성과</span>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Staff Performance</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">개인별 실적 분석</p>
           </div>
           <ArrowUpRight className="w-4 h-4 text-zinc-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors" />
         </Link>
@@ -560,7 +560,7 @@ const Dashboard = () => {
           </div>
           <div className="flex-1">
             <span className="text-sm font-medium text-zinc-950 dark:text-white">알림 테스트</span>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Notification Test</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">알림 기능 테스트</p>
           </div>
         </button>
 
@@ -573,7 +573,7 @@ const Dashboard = () => {
           </div>
           <div className="flex-1">
             <span className="text-sm font-medium text-zinc-950 dark:text-white">직원 관리</span>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Staff Management</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">사용자 권한 설정</p>
           </div>
           <ArrowUpRight className="w-4 h-4 text-zinc-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
         </Link>

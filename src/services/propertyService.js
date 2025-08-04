@@ -94,7 +94,7 @@ export const getProperties = async (filters = {}, user = null) => {
     // Supabase 기본 1000개 제한을 우회하여 전체 데이터 가져오기
     const { data, error } = await query
       .order('created_at', { ascending: false })
-      .range(0, 49); // 페이지당 50개로 제한 (TODO: 페이지네이션 구현)
+      .limit(1000); // 최대 1000개까지 가져오기
 
     if (error) throw error;
 
