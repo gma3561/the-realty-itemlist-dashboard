@@ -25,12 +25,21 @@ const PropertyList = () => {
   
   // 매물 데이터 가져오기
   const { data: properties = [], isLoading, error, refetch } = useQuery(
-    ['properties', filters, JSON.parse(localStorage.getItem('temp-bypass-user') || '{}').id],
+    ['properties', filters, user?.email],
     async () => {
+      console.log('🔍 매물 목록 조회 시작:', { userId: user?.id, userEmail: user?.email });
       // 임시 로그인 사용자 정보 가져오기
       const tempUser = JSON.parse(localStorage.getItem('temp-bypass-user') || '{}');
-      const userInfo = tempUser.id ? tempUser : user;
+      const currentUser = tempUser.id ? tempUser : user;
+      
+      const userInfo = {
+        userId: currentUser?.id,
+        userEmail: currentUser?.email,
+        isAdmin: isHardcodedAdmin(currentUser?.email)
+      };
+      
       const { data, error } = await propertyService.getProperties(filters, userInfo);
+      console.log('📊 매물 목록 조회 결과:', { data: data?.length || 0, error });
       if (error) throw error;
       return data || [];
     },
