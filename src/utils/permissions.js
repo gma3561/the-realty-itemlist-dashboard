@@ -214,23 +214,9 @@ export const getAuthorizedMenuItems = (user) => {
         path: '/performance',
         permission: PERMISSIONS.VIEW_ALL_PERFORMANCE,
         icon: '📈'
-      },
-      {
-        name: '데이터 수집',
-        path: '/data-collection',
-        permission: PERMISSIONS.BULK_UPLOAD,
-        icon: '🔄'
       }
     );
   }
-  
-  // 설정은 모든 사용자가 접근 가능
-  menuItems.push({
-    name: '설정',
-    path: '/settings',
-    permission: null, // 모든 사용자 허용
-    icon: '⚙️'
-  });
   
   return menuItems.filter(item => 
     !item.permission || hasPermission(user, item.permission)

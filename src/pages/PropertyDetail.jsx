@@ -3,9 +3,10 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import propertyService from '../services/propertyService';
 import { useAuth } from '../context/AuthContext';
+import { isHardcodedAdmin } from '../data/hardcodedAdmins';
+import { getRealtorNameByEmail } from '../data/realtorNameMap';
 import Button from '../components/common/Button';
 import ManagerAssignment from '../components/matching/ManagerAssignment';
-import CoBrokerManagement from '../components/matching/CoBrokerManagement';
 import PropertyContactInfo from '../components/property/PropertyContactInfo';
 import PropertyComments from '../components/property/PropertyComments';
 import { Edit, Trash2, AlertTriangle, ArrowLeft } from 'lucide-react';
@@ -99,15 +100,58 @@ const PropertyDetail = () => {
   
   // 헬퍼 함수 추가
   const getPropertyType = () => {
-    return lookupData.propertyTypes?.find(t => t.id === property.property_type_id)?.name || '-';
+    // property_type_id가 문자열일 경우 직접 매핑
+    const typeMapping = {
+      'apt': '아파트',
+      'officetel': '오피스텔',
+      'villa': '빌라/연립',
+      'house': '단독주택',
+      'commercial': '상가'
+    };
+    
+    if (typeMapping[property.property_type_id]) {
+      return typeMapping[property.property_type_id];
+    }
+    
+    // UUID로 찾기
+    return lookupData.propertyTypes?.find(t => t.id === property.property_type_id)?.name || property.property_type_id || '-';
   };
 
   const getTransactionType = () => {
-    return lookupData.transactionTypes?.find(t => t.id === property.transaction_type_id)?.name || '-';
+    // transaction_type_id가 문자열일 경우 직접 매핑
+    const typeMapping = {
+      'presale': '분양',
+      'developer': '시행사매물',
+      'sale': '매매',
+      'lease': '전세',
+      'rent': '월세/렌트',
+      'short': '단기'
+    };
+    
+    if (typeMapping[property.transaction_type_id]) {
+      return typeMapping[property.transaction_type_id];
+    }
+    
+    // UUID로 찾기
+    return lookupData.transactionTypes?.find(t => t.id === property.transaction_type_id)?.name || property.transaction_type_id || '-';
   };
 
   const getPropertyStatus = () => {
-    return lookupData.propertyStatuses?.find(s => s.id === property.property_status_id)?.name || '-';
+    // property_status_id가 문자열일 경우 직접 매핑
+    const statusMapping = {
+      'available': '거래가능',
+      'completed': '거래완료',
+      'hold': '거래보류',
+      'cancelled': '거래철회',
+      'inspection_available': '임장가능'
+    };
+    
+    if (statusMapping[property.property_status_id]) {
+      return statusMapping[property.property_status_id];
+    }
+    
+    // UUID로 찾기
+    return lookupData.propertyStatuses?.find(s => s.id === property.property_status_id)?.name || property.property_status_id || '-';
   };
 
   const formatPrice = (price) => {
@@ -133,9 +177,9 @@ const PropertyDetail = () => {
       return formatPrice(property.price || 0);
     } else if (transactionType === '전세') {
       return formatPrice(property.lease_price || 0);
-    } else if (transactionType === '월세') {
+    } else if (transactionType === '월세/렌트' || transactionType === '월세') {
       const deposit = formatPrice(property.lease_price || 0);
-      const monthly = formatPrice(property.monthly_rent || 0);
+      const monthly = formatPrice(property.monthly_rent || property.price || 0);
       return `${deposit} / ${monthly}`;
     }
     return formatPrice(property.price || 0) || '-';
@@ -151,22 +195,23 @@ const PropertyDetail = () => {
   return (
     <div>
       {/* 상단 버튼 그룹 */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4 sm:mb-6">
         <div>
           <Button
             variant="secondary"
             size="sm"
             onClick={() => navigate('/properties')}
+            className="text-xs sm:text-sm"
           >
-            <ArrowLeft className="w-4 h-4 mr-1" /> 목록으로
+            <ArrowLeft className="w-3.5 sm:w-4 h-3.5 sm:h-4 mr-0.5 sm:mr-1" /> 목록으로
           </Button>
         </div>
         
         {canEdit && (
-          <div className="flex space-x-2">
+          <div className="flex space-x-1.5 sm:space-x-2">
             <Link to={`/properties/${id}/edit`}>
-              <Button variant="secondary" size="sm">
-                <Edit className="w-4 h-4 mr-1" /> 수정
+              <Button variant="secondary" size="sm" className="text-xs sm:text-sm">
+                <Edit className="w-3.5 sm:w-4 h-3.5 sm:h-4 mr-0.5 sm:mr-1" /> 수정
               </Button>
             </Link>
             <Button
@@ -174,22 +219,23 @@ const PropertyDetail = () => {
               size="sm"
               onClick={handleDelete}
               disabled={isDeleting}
+              className="text-xs sm:text-sm"
             >
-              <Trash2 className="w-4 h-4 mr-1" /> 삭제
+              <Trash2 className="w-3.5 sm:w-4 h-3.5 sm:h-4 mr-0.5 sm:mr-1" /> 삭제
             </Button>
           </div>
         )}
       </div>
       
       {/* 매물 헤더 */}
-      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+      <div className="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{property.property_name}</h1>
-            <p className="text-gray-600 mt-1">{property.location} {property.building} {property.unit}</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{property.property_name}</h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-0.5 sm:mt-1">{property.location} {property.building} {property.unit}</p>
           </div>
-          <div className="mt-4 md:mt-0">
-            <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
+          <div className="mt-3 md:mt-0">
+            <span className={`px-2 sm:px-3 py-0.5 sm:py-1 inline-flex text-xs sm:text-sm leading-5 font-semibold rounded-full 
               ${getPropertyStatus() === '거래가능' 
                 ? 'bg-green-100 text-green-800' 
                 : getPropertyStatus() === '거래완료' 
@@ -202,37 +248,42 @@ const PropertyDetail = () => {
           </div>
         </div>
         
-        <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="mt-4 sm:mt-6 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           <div>
-            <p className="text-sm font-medium text-gray-500">매물종류</p>
-            <p className="mt-1 text-lg font-semibold text-gray-900">{getPropertyType()}</p>
+            <p className="text-xs sm:text-sm font-medium text-gray-500">매물종류</p>
+            <p className="mt-0.5 sm:mt-1 text-sm sm:text-lg font-semibold text-gray-900">{getPropertyType()}</p>
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">거래유형</p>
-            <p className="mt-1 text-lg font-semibold text-gray-900">{getTransactionType()}</p>
+            <p className="text-xs sm:text-sm font-medium text-gray-500">거래유형</p>
+            <p className="mt-0.5 sm:mt-1 text-sm sm:text-lg font-semibold text-gray-900">{getTransactionType()}</p>
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">금액</p>
-            <p className="mt-1 text-lg font-semibold text-gray-900">{getDisplayPrice()}</p>
+            <p className="text-xs sm:text-sm font-medium text-gray-500">금액</p>
+            <p className="mt-0.5 sm:mt-1 text-sm sm:text-lg font-semibold text-gray-900">{getDisplayPrice()}</p>
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">담당자</p>
-            <p className="mt-1 text-lg font-semibold text-gray-900">{property.manager_id?.split('@')[0]?.replace('hardcoded-', '').toUpperCase() || '-'}</p>
+            <p className="text-xs sm:text-sm font-medium text-gray-500">담당자</p>
+            <p className="mt-0.5 sm:mt-1 text-sm sm:text-lg font-semibold text-gray-900">
+              {property.manager?.name || 
+               (property.manager_id?.includes('@') 
+                 ? getRealtorNameByEmail(property.manager_id.replace('hardcoded-', ''))
+                 : property.manager_id) || '-'}
+            </p>
           </div>
         </div>
       </div>
       
       {/* 매물 상세 정보 */}
-      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">매물 상세 정보</h2>
+      <div className="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">매물 상세 정보</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <div>
-            <h3 className="text-lg font-medium text-gray-800 mb-3">기본 정보</h3>
+            <h3 className="text-base sm:text-lg font-medium text-gray-800 mb-2 sm:mb-3">기본 정보</h3>
             <div className="space-y-2">
-              <div className="grid grid-cols-2 border-b border-gray-200 py-2">
-                <p className="text-sm font-medium text-gray-500">소재지</p>
-                <p className="text-sm text-gray-900">{property.location || '-'}</p>
+              <div className="grid grid-cols-2 border-b border-gray-200 py-1.5 sm:py-2">
+                <p className="text-xs sm:text-sm font-medium text-gray-500">소재지</p>
+                <p className="text-xs sm:text-sm text-gray-900">{property.location || '-'}</p>
               </div>
               <div className="grid grid-cols-2 border-b border-gray-200 py-2">
                 <p className="text-sm font-medium text-gray-500">건물명</p>
@@ -258,11 +309,11 @@ const PropertyDetail = () => {
           </div>
           
           <div>
-            <h3 className="text-lg font-medium text-gray-800 mb-3">거래 정보</h3>
+            <h3 className="text-base sm:text-lg font-medium text-gray-800 mb-2 sm:mb-3">거래 정보</h3>
             <div className="space-y-2">
-              <div className="grid grid-cols-2 border-b border-gray-200 py-2">
-                <p className="text-sm font-medium text-gray-500">진행상태</p>
-                <p className="text-sm text-gray-900">{getPropertyStatus()}</p>
+              <div className="grid grid-cols-2 border-b border-gray-200 py-1.5 sm:py-2">
+                <p className="text-xs sm:text-sm font-medium text-gray-500">진행상태</p>
+                <p className="text-xs sm:text-sm text-gray-900">{getPropertyStatus()}</p>
               </div>
               <div className="grid grid-cols-2 border-b border-gray-200 py-2">
                 <p className="text-sm font-medium text-gray-500">거래유형</p>
@@ -365,18 +416,15 @@ const PropertyDetail = () => {
       {/* 연락처 정보 섹션 */}
       <PropertyContactInfo property={property} />
       
-      {/* 매칭 관리 섹션 */}
-      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">매칭 관리</h2>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 담당자 관리 */}
-          <ManagerAssignment propertyId={id} currentManagerId={property?.manager_id} />
+      {/* 매칭 관리 섹션 - 관리자만 표시 */}
+      {user && isHardcodedAdmin(user.email) && (
+        <div className="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">매칭 관리</h2>
           
-          {/* 공동중개사 관리 */}
-          <CoBrokerManagement propertyId={id} />
+          {/* 담당자 관리 - 관리자만 */}
+          <ManagerAssignment propertyId={id} currentManagerId={property?.manager_id} />
         </div>
-      </div>
+      )}
       
       {/* 타인 매물 코멘트 섹션 */}
       <PropertyComments propertyId={id} />

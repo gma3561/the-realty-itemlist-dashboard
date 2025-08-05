@@ -3,7 +3,6 @@ import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { MessageCircle, Send, Edit2, Trash2, X, Check } from 'lucide-react';
 import AuthContext from '../../context/AuthContext';
-import ToastContext from '../../context/ToastContext';
 import { 
   getPropertyComments, 
   createComment, 
@@ -14,7 +13,6 @@ import {
 
 const PropertyComments = ({ propertyId }) => {
   const { user } = useContext(AuthContext);
-  const { showToast } = useContext(ToastContext);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
@@ -52,7 +50,7 @@ const PropertyComments = ({ propertyId }) => {
     if (result.success) {
       setComments(result.data);
     } else {
-      showToast('코멘트를 불러오는데 실패했습니다.', 'error');
+      console.error('코멘트를 불러오는데 실패했습니다:', result.error);
     }
     setLoading(false);
   };
@@ -66,9 +64,9 @@ const PropertyComments = ({ propertyId }) => {
     
     if (result.success) {
       setNewComment('');
-      showToast('코멘트가 등록되었습니다.', 'success');
+      // 성공 시 UI 업데이트만 (realtime subscription으로 자동 반영됨)
     } else {
-      showToast('코멘트 등록에 실패했습니다.', 'error');
+      alert('코멘트 등록에 실패했습니다.');
     }
     setSubmitting(false);
   };
@@ -81,9 +79,9 @@ const PropertyComments = ({ propertyId }) => {
     if (result.success) {
       setEditingId(null);
       setEditText('');
-      showToast('코멘트가 수정되었습니다.', 'success');
+      // 성공 시 UI 업데이트만 (realtime subscription으로 자동 반영됨)
     } else {
-      showToast('코멘트 수정에 실패했습니다.', 'error');
+      alert('코멘트 수정에 실패했습니다.');
     }
   };
 
@@ -93,9 +91,9 @@ const PropertyComments = ({ propertyId }) => {
     const result = await deleteComment(commentId);
     
     if (result.success) {
-      showToast('코멘트가 삭제되었습니다.', 'success');
+      // 성공 시 UI 업데이트만 (realtime subscription으로 자동 반영됨)
     } else {
-      showToast('코멘트 삭제에 실패했습니다.', 'error');
+      alert('코멘트 삭제에 실패했습니다.');
     }
   };
 

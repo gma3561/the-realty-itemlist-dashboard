@@ -32,9 +32,13 @@ export const isProductionEnvironment = () => {
 
 // 바이패스 기능 활성화 여부 확인
 export const isBypassEnabled = () => {
-  // GitHub Pages 데모를 위해 임시로 활성화
-  if (window.location.hostname === 'gma3561.github.io') {
-    return true;
+  // GitHub Pages에서도 바이패스 비활성화 (실제 구글 로그인 사용)
+  // 데모 모드가 필요한 경우 URL 파라미터로 활성화 가능
+  const urlParams = new URLSearchParams(window.location.search);
+  const demoMode = urlParams.get('demo') === 'true';
+  
+  if (window.location.hostname === 'gma3561.github.io' && !demoMode) {
+    return false; // 구글 로그인 사용
   }
   
   // 프로덕션 환경에서는 절대 비활성화
@@ -51,8 +55,8 @@ export const isBypassEnabled = () => {
 export const QA_TEST_USERS = {
   admin: {
     id: 'qa-admin-user-001',
-    email: 'qa-admin@test.local',
-    name: 'QA 관리자',
+    email: 'Lucas@the-realty.co.kr',
+    name: '하상현',
     role: 'admin',
     isAdmin: true,
     avatar_url: null,
@@ -65,8 +69,8 @@ export const QA_TEST_USERS = {
   
   user: {
     id: 'qa-user-001',
-    email: 'qa-user@test.local', 
-    name: 'QA 일반사용자',
+    email: 'sso@the-realty.co.kr', 
+    name: '박소현',
     role: 'user',
     isAdmin: false,
     avatar_url: null,

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from 'react-query';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../context/AuthContext';
 import { isHardcodedAdmin } from '../data/hardcodedAdmins';
@@ -22,13 +22,26 @@ const PropertyList = () => {
   const navigate = useNavigate();
   const { user, userProfile } = useAuth();
   const queryClient = useQueryClient();
+  const observerRef = useRef(null);
+  const loadMoreRef = useRef(null);
   
-  // 매물 데이터 가져오기
-  const { data: properties = [], isLoading, error, refetch } = useQuery(
-    ['properties', filters, user?.email],
-    async () => {
-      console.log('🔍 매물 목록 조회 시작:', { userId: user?.id, userEmail: user?.email });
-      // 임시 로그인 사용자 정보 가져오기
+  // 페이지 크기
+  const PAGE_SIZE = 30;
+  
+  // 매물 데이터 가져오기 (무한 스크롤)
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch
+  } = useInfiniteQuery(
+    ['properties-infinite', filters, user?.email],
+    async ({ pageParam = 0 }) => {
+      console.log('🔍 매물 페이지 조회:', { page: pageParam, pageSize: PAGE_SIZE });
+      
       const tempUser = JSON.parse(localStorage.getItem('temp-bypass-user') || '{}');
       const currentUser = tempUser.id ? tempUser : user;
       
@@ -38,15 +51,29 @@ const PropertyList = () => {
         isAdmin: isHardcodedAdmin(currentUser?.email)
       };
       
-      const { data, error } = await propertyService.getProperties(filters, userInfo);
-      console.log('📊 매물 목록 조회 결과:', { data: data?.length || 0, error });
-      if (error) throw error;
-      return data || [];
+      const result = await propertyService.getProperties(
+        filters, 
+        userInfo,
+        { page: pageParam, pageSize: PAGE_SIZE }
+      );
+      
+      if (result.error) throw new Error(result.error);
+      
+      return {
+        properties: result.data,
+        totalCount: result.totalCount,
+        nextPage: result.data.length === PAGE_SIZE ? pageParam + 1 : undefined
+      };
     },
     {
+      getNextPageParam: (lastPage) => lastPage.nextPage,
       refetchOnWindowFocus: false,
     }
   );
+
+  // 전체 매물 리스트와 총 개수
+  const allProperties = data?.pages.flatMap(page => page.properties) || [];
+  const totalCount = data?.pages[0]?.totalCount || 0;
 
   // 룩업 데이터 가져오기
   const { data: lookupData = {} } = useQuery(
@@ -59,6 +86,29 @@ const PropertyList = () => {
       staleTime: 5 * 60 * 1000, // 5분
     }
   );
+
+  // 무한 스크롤 설정
+  useEffect(() => {
+    if (!loadMoreRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(loadMoreRef.current);
+    observerRef.current = observer;
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // 타입 매핑 함수 (룩업 데이터 사용)
   const getDisplayPropertyType = (property) => {
@@ -88,31 +138,30 @@ const PropertyList = () => {
   };
 
   const getDisplayManager = (property) => {
-    // manager_name이 있으면 우선 사용
-    if (property.manager_name) {
-      return property.manager_name;
+    // Supabase users 테이블에서 조인된 manager 정보 우선 사용
+    if (property.manager?.name) {
+      return property.manager.name;
     }
     
-    // manager_id가 이메일 형식이면 이름으로 변환
+    // manager_id가 이메일 형식이면 이름으로 변환 (fallback)
     if (property.manager_id?.includes('@')) {
       const email = property.manager_id.replace('hardcoded-', '');
       return getRealtorNameByEmail(email);
     }
     
-    // users 테이블 조인 데이터가 있으면 사용
-    return property.users?.name || property.users?.email || '미지정';
+    return '미지정';
   };
 
   // 매물 삭제 mutation
   const deleteMutation = useMutation(
     async (propertyId) => {
-      const { error } = await propertyService.deleteProperty(propertyId);
+      const { error } = await propertyService.deleteProperty(propertyId, user);
       if (error) throw new Error(error);
       return propertyId;
     },
     {
       onSuccess: (deletedId) => {
-        queryClient.invalidateQueries(['properties']);
+        queryClient.invalidateQueries(['properties-infinite']);
         setDeleteConfirm({ show: false, property: null });
         alert('매물이 성공적으로 삭제되었습니다.');
       },
@@ -137,7 +186,7 @@ const PropertyList = () => {
   };
 
   // 필터된 매물 목록
-  const filteredProperties = properties.filter(property => {
+  const filteredProperties = allProperties.filter(property => {
     const matchesSearch = !filters.search || 
       property.property_name.toLowerCase().includes(filters.search.toLowerCase()) ||
       property.location.toLowerCase().includes(filters.search.toLowerCase());
@@ -188,45 +237,62 @@ const PropertyList = () => {
     return `${sqm}㎡ (${pyeong}평)`;
   };
 
+  const canDeleteProperty = (property) => {
+    if (!user) return false;
+    const userEmail = user.email;
+    
+    // 관리자는 모든 매물 삭제 가능
+    if (isHardcodedAdmin(userEmail)) {
+      return true;
+    }
+    
+    // 본인이 등록한 매물만 삭제 가능
+    const managerEmail = property.manager_id?.replace('hardcoded-', '');
+    return userEmail === managerEmail;
+  };
+
   return (
     <div className="space-y-6">
       {/* 헤더 */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">매물 목록</h1>
-          <p className="text-gray-600">등록된 매물을 관리하고 조회할 수 있습니다.</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">매물 목록</h1>
+          <p className="text-sm sm:text-base text-gray-600">
+            전체 {totalCount.toLocaleString()}개 {filteredProperties.length !== totalCount && `(필터: ${filteredProperties.length}개)`}
+          </p>
         </div>
-        <div className="flex items-center space-x-3">
-          {/* 뷰 모드 토글 */}
-          <div className="hidden sm:flex border border-gray-300 rounded-md">
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* 뷰 모드 토글 - 모바일에서도 표시 */}
+          <div className="flex border border-gray-300 rounded-md">
             <button
               onClick={() => setViewMode('table')}
-              className={`px-3 py-2 text-sm font-medium rounded-l-md ${
+              className={`px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-l-md ${
                 viewMode === 'table'
                   ? 'bg-blue-600 text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <List className="w-4 h-4" />
+              <List className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
             </button>
             <button
               onClick={() => setViewMode('card')}
-              className={`px-3 py-2 text-sm font-medium rounded-r-md ${
+              className={`px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-r-md ${
                 viewMode === 'card'
                   ? 'bg-blue-600 text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <Grid className="w-4 h-4" />
+              <Grid className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
             </button>
           </div>
           
           <Link
             to="/properties/new"
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white text-xs sm:text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <PlusCircle className="w-5 h-5 mr-2" />
-            새 매물 등록
+            <PlusCircle className="w-4 sm:w-5 h-4 sm:h-5 mr-1.5 sm:mr-2" />
+            <span className="hidden sm:inline">새 매물 등록</span>
+            <span className="sm:hidden">등록</span>
           </Link>
         </div>
       </div>
@@ -256,9 +322,9 @@ const PropertyList = () => {
       {!isLoading && !error && (
         <>
           {/* 필터 섹션 */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">필터 및 검색</h2>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="bg-white shadow rounded-lg p-4 sm:p-6">
+            <h2 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">필터 및 검색</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   검색
@@ -323,12 +389,12 @@ const PropertyList = () => {
                 </select>
               </div>
               
-              <div className="flex items-end">
+              <div className="flex items-end sm:col-span-1">
                 <button
                   onClick={() => setFilters({ search: '', status: '', type: '', transactionType: '' })}
-                  className="w-full px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  className="w-full px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
                 >
-                  <RefreshCw className="w-4 h-4 mr-2 inline" />
+                  <RefreshCw className="w-3.5 sm:w-4 h-3.5 sm:h-4 mr-1.5 sm:mr-2 inline" />
                   초기화
                 </button>
               </div>
@@ -345,9 +411,9 @@ const PropertyList = () => {
           ) : (
             <>
               <div className="bg-white shadow rounded-lg">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-lg font-medium text-gray-900">
-                    매물 목록 ({filteredProperties.length}건)
+                <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                  <h2 className="text-base sm:text-lg font-medium text-gray-900">
+                    매물 목록 ({filteredProperties.length.toLocaleString()}건)
                   </h2>
                 </div>
               </div>
@@ -375,10 +441,10 @@ const PropertyList = () => {
                             가격
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            상태
+                            담당자
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            담당자
+                            상태
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             등록일
@@ -390,11 +456,11 @@ const PropertyList = () => {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {filteredProperties.map((property) => (
-                          <tr key={property.id} className="hover:bg-gray-50">
+                          <tr key={property.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/properties/${property.id}`)}>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center text-sm text-gray-500">
                                 <Hash className="w-4 h-4 mr-1" />
-                                <span className="font-mono text-xs">{property.id}</span>
+                                <span className="font-mono text-xs">{property.id.slice(0, 8)}</span>
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -424,6 +490,12 @@ const PropertyList = () => {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center text-sm text-gray-900">
+                                <User className="w-4 h-4 mr-1 text-gray-400" />
+                                {getDisplayManager(property)}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                                 getDisplayStatus(property) === '매물확보' || getDisplayStatus(property) === '광고진행'
                                   ? 'bg-green-100 text-green-800'
@@ -433,12 +505,6 @@ const PropertyList = () => {
                               }`}>
                                 {getDisplayStatus(property)}
                               </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center text-sm text-gray-900">
-                                <User className="w-4 h-4 mr-1 text-gray-400" />
-                                {getDisplayManager(property)}
-                              </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center text-sm text-gray-500">
@@ -454,15 +520,13 @@ const PropertyList = () => {
                                 >
                                   상세
                                 </Link>
-                                {/* 본인 매물이거나 관리자인 경우에만 수정/삭제 버튼 표시 */}
-                                {(isHardcodedAdmin(user?.email) || property.manager_id === user?.id || property.manager_id === user?.email) && (
-                                  <>
-                                    <Link
-                                      to={`/properties/${property.id}/edit`}
-                                      className="text-green-600 hover:text-green-800 font-medium"
-                                    >
-                                      수정
-                                    </Link>
+                                <Link
+                                  to={`/properties/${property.id}/edit`}
+                                  className="text-green-600 hover:text-green-800 font-medium"
+                                >
+                                  수정
+                                </Link>
+                                {canDeleteProperty(property) && (
                                   <button
                                     onClick={() => handleDeleteClick(property)}
                                     className="text-red-600 hover:text-red-800 font-medium"
@@ -470,7 +534,6 @@ const PropertyList = () => {
                                   >
                                     삭제
                                   </button>
-                                  </>
                                 )}
                               </div>
                             </td>
@@ -482,22 +545,67 @@ const PropertyList = () => {
                 </div>
               )}
               
-              {/* 카드 뷰 (모바일 및 카드 모드) */}
-              {(viewMode === 'card' || window.innerWidth < 768) && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* 카드 뷰 */}
+              {viewMode === 'card' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
                   {filteredProperties.map((property) => (
                     <PropertyCard
                       key={property.id}
                       property={property}
                       onView={(prop) => navigate(`/properties/${prop.id}`)}
-                      onEdit={(isHardcodedAdmin(user?.email) || property.manager_id === user?.id || property.manager_id === user?.email) ? 
-                        (prop) => navigate(`/properties/${prop.id}/edit`) : null}
-                      onDelete={(isHardcodedAdmin(user?.email) || property.manager_id === user?.id || property.manager_id === user?.email) ? 
-                        (prop) => handleDeleteClick(prop) : null}
+                      onEdit={(prop) => navigate(`/properties/${prop.id}/edit`)}
+                      onDelete={canDeleteProperty(property) ? (prop) => handleDeleteClick(prop) : null}
                     />
                   ))}
                 </div>
               )}
+              
+              {/* 모바일 리스트 뷰 (테이블 모드일 때 모바일에서만) */}
+              {viewMode === 'table' && (
+                <div className="md:hidden space-y-3">
+                  {filteredProperties.map((property) => (
+                    <div key={property.id} className="bg-white border border-gray-200 rounded-lg p-4" onClick={() => navigate(`/properties/${property.id}`)}>
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-sm font-semibold text-gray-900">{property.property_name}</h3>
+                        <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${
+                          getDisplayStatus(property) === '거래가능' 
+                            ? 'bg-green-100 text-green-800'
+                            : getDisplayStatus(property) === '거래완료'
+                            ? 'bg-gray-100 text-gray-800'
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {getDisplayStatus(property)}
+                        </span>
+                      </div>
+                      <div className="space-y-1 text-xs text-gray-600">
+                        <div className="flex items-center">
+                          <MapPin className="w-3 h-3 mr-1" />
+                          {property.location}
+                        </div>
+                        <div>{getDisplayPropertyType(property)} · {getDisplayTransactionType(property)}</div>
+                        <div className="font-medium text-gray-900">{getDisplayPrice(property)}</div>
+                        <div className="flex items-center">
+                          <User className="w-3 h-3 mr-1" />
+                          {getDisplayManager(property)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 무한 스크롤 로더 */}
+              <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
+                {isFetchingNextPage && (
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="ml-2 text-gray-600">더 불러오는 중...</p>
+                  </div>
+                )}
+                {!hasNextPage && allProperties.length > 0 && (
+                  <p className="text-gray-500">모든 매물을 불러왔습니다</p>
+                )}
+              </div>
             </>
           )}
         </>

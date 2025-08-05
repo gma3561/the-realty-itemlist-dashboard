@@ -17,6 +17,7 @@ import PropertyForm from './pages/PropertyForm';
 import UserManagement from './pages/UserManagement';
 import StaffPerformance from './pages/StaffPerformance';
 import PerformanceOverview from './pages/PerformanceOverview';
+import UserPerformance from './pages/UserPerformance';
 import CSVImport from './pages/CSVImport';
 import Settings from './pages/Settings';
 import UpdateHistory from './pages/UpdateHistory';
@@ -58,7 +59,7 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <Router basename="/the-realty-itemlist-dashboard">
+          <Router basename={process.env.NODE_ENV === 'production' ? "/the-realty-itemlist-dashboard" : ""}>
             <OAuthHandler>
               <Routes>
             <Route path="/login" element={<Login />} />
@@ -74,8 +75,10 @@ function App() {
               <Route path="/properties/:id/edit" element={<PropertyForm />} />
               <Route path="/users" element={<UserManagement />} />
               <Route path="/performance" element={<PerformanceOverview />} />
+              <Route path="/performance/:id" element={<UserPerformance />} />
               <Route path="/users/:userId/performance" element={<StaffPerformance />} />
               <Route path="/csv-import" element={<CSVImport />} />
+              <Route path="/properties/upload" element={<CSVImport />} />
               <Route path="/data-collection" element={<DataCollection />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/updates" element={<UpdateHistory />} />

@@ -8,7 +8,6 @@ import Input from '../components/common/Input';
 import { Plus, Edit, Trash, AlertTriangle, CheckCircle, X, User, UserPlus, Check, Mail, Phone, Shield, Activity, BarChart3, Users, TrendingUp, Key } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { isHardcodedAdmin } from '../data/hardcodedAdmins';
-import { getUserStats } from '../data/dummyUsers';
 
 const UserManagement = () => {
   const { user } = useAuth();
@@ -221,10 +220,18 @@ const UserManagement = () => {
     }
   };
 
-  // 더미데이터에서 사용자별 매물 수 계산
+  // 실제 데이터에서 사용자별 매물 수 계산
+  const { data: properties = [] } = useQuery(
+    ['properties-count'],
+    async () => {
+      const { data, error } = await propertyService.getProperties({}, { isAdmin: true });
+      if (error) throw error;
+      return data || [];
+    }
+  );
+
   const getUserPropertyCount = (userId) => {
-    const stats = getUserStats(userId);
-    return stats?.totalProperties || 0;
+    return properties.filter(p => p.manager_id === userId || p.manager_id === userId).length;
   };
 
   if (!isAdmin) {
@@ -459,7 +466,7 @@ const UserManagement = () => {
                   <td className="px-4 py-3 whitespace-nowrap text-sm">
                     <div className="flex space-x-2">
                       <Link
-                        to={`/users/${user.id}/performance`}
+                        to={`/performance/${user.id}`}
                         className="text-purple-600 hover:text-purple-800"
                         title="성과 보기"
                       >
@@ -516,7 +523,7 @@ const StaffPerformanceTab = () => {
   });
 
   const { data: properties = [] } = useQuery('all-properties', async () => {
-    const { data, error } = await propertyService.getProperties();
+    const { data, error } = await propertyService.getProperties({}, { isAdmin: true });
     if (error) throw error;
     return data || [];
   });
@@ -580,8 +587,9 @@ const StaffPerformanceTab = () => {
                   <p className="text-sm text-gray-600">{user.email}</p>
                 </div>
                 <Link
-                  to={`/users/${user.id}/performance`}
+                  to={`/performance/${user.id}`}
                   className="text-blue-600 hover:text-blue-800"
+                  title="상세 성과 보기"
                 >
                   <BarChart3 className="w-5 h-5" />
                 </Link>

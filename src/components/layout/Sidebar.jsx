@@ -57,9 +57,9 @@ const Sidebar = () => {
       {/* Mobile menu button */}
       <button
         onClick={toggleMobile}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-white shadow-md text-gray-700 border border-gray-200"
+        className="lg:hidden fixed top-16 left-4 z-50 p-2 rounded-md bg-white shadow-md text-gray-700 border border-gray-200"
       >
-        {isMobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
       {/* Mobile overlay */}
@@ -122,15 +122,6 @@ const Sidebar = () => {
 
         {/* Bottom section */}
         <div className="absolute bottom-0 w-full p-4 border-t border-gray-200">
-          <Link
-            to="/settings"
-            className="sidebar-nav-item mb-2"
-            onClick={() => setIsMobileOpen(false)}
-          >
-            <Settings className="sidebar-nav-icon" />
-            <span>설정</span>
-          </Link>
-          
           <button
             onClick={signOut}
             className="sidebar-nav-item w-full text-left hover:bg-red-50 hover:text-red-600"

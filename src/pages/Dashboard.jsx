@@ -14,28 +14,40 @@ import {
   Users,
   ArrowUpRight,
   ArrowDownRight,
-  Bell,
-  MessageCircle,
-  Calendar,
-  Target,
-  Home,
-  Phone,
+  Activity,
+  AlertCircle,
+  Upload,
   Eye,
-  AlertCircle
+  Pause,
+  Calendar,
+  FileText,
+  XCircle,
+  RefreshCw,
+  Bell
 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip as RechartsTooltip, LineChart, Line } from 'recharts';
+import { supabase } from '../services/supabase';
 import { getRealtorNameByEmail } from '../data/realtorNameMap';
+import { format, startOfWeek, endOfWeek, subDays } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: 'success', message: 'VIP 고객 홍길동님 계약 완료', time: '방금 전', read: false },
-    { id: 2, type: 'info', message: '신규 매물 1건 크루월드 등록됨', time: '5분 전', read: false },
-    { id: 3, type: 'warning', message: '오늘 상담 예정 3건 확인 필요', time: '1시간 전', read: true }
-  ]);
+  const [autoRefresh, setAutoRefresh] = useState(true);
   
-  // 매물 데이터 가져오기
-  const { data: properties = [], isLoading, error: propertiesError } = useQuery(
+  // 자동 새로고침 (30초마다)
+  useEffect(() => {
+    if (!autoRefresh) return;
+    
+    const interval = setInterval(() => {
+      refetchAll();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [autoRefresh]);
+  
+  // 매물 데이터 가져오기 (모든 데이터)
+  const { data: properties = [], isLoading, error: propertiesError, refetch: refetchProperties } = useQuery(
     ['dashboard-properties', user?.email],
     async () => {
       console.log('🔍 매물 데이터 조회 시작:', { userId: user?.id, userEmail: user?.email });
@@ -44,19 +56,28 @@ const Dashboard = () => {
         userEmail: user?.email,
         isAdmin: isHardcodedAdmin(user?.email)
       };
-      const { data, error } = await propertyService.getProperties({}, userInfo);
-      console.log('📊 매물 데이터 조회 결과:', { data: data?.length || 0, error });
+      // 모든 매물 가져오기 (pagination 없이 호출하여 제한 우회)
+      const { data, error } = await propertyService.getProperties({}, userInfo, null);
+      console.log('📊 매물 데이터 조회 결과:', { 
+        data: data?.length || 0, 
+        error,
+        sampleData: data?.slice(0, 5).map(p => ({
+          id: p.id,
+          name: p.property_name,
+          status: p.property_status
+        }))
+      });
       if (error) throw new Error(error);
       return data || [];
     },
     {
-      retry: false, // 실패 시 재시도 안함
+      retry: false,
       refetchOnWindowFocus: false
     }
   );
 
   // 룩업 데이터 가져오기
-  const { data: lookupData = {} } = useQuery(
+  const { data: lookupData = {}, refetch: refetchLookup } = useQuery(
     'lookupTables',
     async () => {
       const data = await propertyService.getLookupTables();
@@ -67,136 +88,259 @@ const Dashboard = () => {
     }
   );
 
-  // 기본 통계 계산
-  console.log('📈 통계 계산:', { propertiesLength: properties.length, properties: properties.slice(0, 3) });
-  const stats = {
-    totalProperties: properties.length,
-    completedDeals: properties.filter(p => {
-      // property_status가 문자열로 저장되어 있는 경우 처리
-      const statusId = p.property_status_id || p.property_status;
-      const status = lookupData.propertyStatuses?.find(s => s.id === statusId);
-      return status?.name === '거래완료' || statusId === 'completed';
-    }).length,
-    inProgress: properties.filter(p => {
-      const statusId = p.property_status_id || p.property_status;
-      const status = lookupData.propertyStatuses?.find(s => s.id === statusId);
-      return status?.name === '거래가능' || status?.name === '거래보류' || statusId === 'available' || statusId === 'hold';
-    }).length,
-    thisMonth: properties.filter(p => {
-      const created = new Date(p.created_at);
-      const now = new Date();
-      return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
-    }).length
+  // 최근 활동 내역 가져오기 (더미 데이터 제외)
+  const { data: recentActivities = [], refetch: refetchActivities } = useQuery(
+    ['recentActivities'],
+    async () => {
+      if (!supabase) return [];
+      
+      const { data, error } = await supabase
+        .from('recent_activities')
+        .select('*')
+        .neq('changed_by', 'system') // system 사용자 제외
+        .not('changed_by', 'ilike', '%test%') // test 관련 제외
+        .not('changed_by', 'ilike', '%dummy%') // dummy 관련 제외
+        .order('changed_at', { ascending: false })
+        .limit(20);
+      
+      if (error) {
+        console.error('최근 활동 조회 실패:', error);
+        return [];
+      }
+      
+      return data || [];
+    },
+    {
+      refetchInterval: 30000, // 30초마다 자동 갱신
+      enabled: !!supabase
+    }
+  );
+  
+  // 이번 주 상태 변경 통계
+  const { data: weeklyChanges = {} } = useQuery(
+    ['weeklyChanges'],
+    async () => {
+      if (!supabase) return {};
+      
+      const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }); // 월요일 시작
+      
+      const { data, error } = await supabase
+        .from('property_status_history')
+        .select('new_status')
+        .gte('changed_at', weekStart.toISOString())
+        .lt('changed_at', new Date().toISOString())
+        .neq('changed_by', 'system') // system 사용자 제외
+        .not('changed_by', 'ilike', '%test%') // test 관련 제외
+        .not('changed_by', 'ilike', '%dummy%'); // dummy 관련 제외
+      
+      if (error) {
+        console.error('주간 변경 통계 조회 실패:', error);
+        return {};
+      }
+      
+      // 상태별로 집계
+      const changes = {};
+      data?.forEach(item => {
+        changes[item.new_status] = (changes[item.new_status] || 0) + 1;
+      });
+      
+      return changes;
+    },
+    {
+      refetchInterval: 60000, // 1분마다 갱신
+      enabled: !!supabase
+    }
+  );
+  
+  // 모든 데이터 새로고침 함수
+  const refetchAll = () => {
+    refetchProperties();
+    refetchLookup();
+    refetchActivities();
   };
-
-  // 실제 데이터 상태에 맞는 통계 계산
-  const processStats = {
-    total: stats.totalProperties, // 총 매물
-    available: properties.filter(p => {
-      const statusId = p.property_status_id || p.property_status;
-      const status = lookupData.propertyStatuses?.find(s => s.id === statusId);
-      return status?.name === '거래가능' || statusId === 'available';
-    }).length,
-    reserved: properties.filter(p => {
-      const statusId = p.property_status_id || p.property_status;
-      const status = lookupData.propertyStatuses?.find(s => s.id === statusId);
-      return status?.name === '거래보류' || statusId === 'hold';
-    }).length,
-    completed: stats.completedDeals // 거래완료
+  
+  // 주간 데이터 필터링 (월요일~일요일)
+  const getWeekRange = () => {
+    const now = new Date();
+    const monday = startOfWeek(now, { weekStartsOn: 1 });
+    const sunday = endOfWeek(now, { weekStartsOn: 1 });
+    
+    return { monday, sunday };
   };
-
-  // 성장률 계산
-  const lastMonth = new Date();
-  lastMonth.setMonth(lastMonth.getMonth() - 1);
-  const lastMonthCount = properties.filter(p => {
+  
+  const { monday, sunday } = getWeekRange();
+  const weeklyProperties = properties.filter(p => {
     const created = new Date(p.created_at);
-    return created.getMonth() === lastMonth.getMonth() && created.getFullYear() === lastMonth.getFullYear();
-  }).length;
-  const growthRate = lastMonthCount > 0 ? ((stats.thisMonth - lastMonthCount) / lastMonthCount * 100).toFixed(1) : 0;
+    return created >= monday && created <= sunday;
+  });
 
-  // 실제 데이터 기반 채널별 문의 (매물 수 기반으로 계산)
-  const channelData = [
-    { name: '직접문의', count: Math.floor(stats.totalProperties * 0.4), color: '#3B82F6' },
-    { name: '온라인', count: Math.floor(stats.totalProperties * 0.3), color: '#10B981' },
-    { name: '소개', count: Math.floor(stats.totalProperties * 0.2), color: '#F59E0B' },
-    { name: '기타', count: Math.floor(stats.totalProperties * 0.1), color: '#8B5CF6' }
-  ];
-
-  // 실제 매물 데이터 기반 가격대별 분포
-  const priceRangeData = useMemo(() => {
-    const ranges = { '10억 이하': 0, '10-20억': 0, '20-30억': 0, '30억 이상': 0 };
-    
-    properties.forEach(property => {
-      const price = property.price || 0;
-      const eok = price / 100000000;
-      
-      if (eok <= 10) ranges['10억 이하']++;
-      else if (eok <= 20) ranges['10-20억']++;
-      else if (eok <= 30) ranges['20-30억']++;
-      else ranges['30억 이상']++;
-    });
-    
-    return [
-      { range: '10억 이하', count: ranges['10억 이하'], color: '#3B82F6' },
-      { range: '10-20억', count: ranges['10-20억'], color: '#10B981' },
-      { range: '20-30억', count: ranges['20-30억'], color: '#F59E0B' },
-      { range: '30억 이상', count: ranges['30억 이상'], color: '#8B5CF6' }
-    ];
-  }, [properties]);
-
-  // 실제 사용자 데이터에서 팀 성과 계산
-  const teamPerformance = useMemo(() => {
-    // 실제 사용자별 매물 수 계산
-    const userStats = {};
-    
-    properties.forEach(property => {
-      const managerId = property.manager_id || property.users?.email || 'unknown';
-      if (!userStats[managerId]) {
-        userStats[managerId] = { total: 0, completed: 0 };
-      }
-      userStats[managerId].total++;
-      
-      const status = lookupData.propertyStatuses?.find(s => s.id === property.property_status_id);
-      if (status?.name === '거래완료') {
-        userStats[managerId].completed++;
-      }
-    });
-
-    return Object.entries(userStats).map(([managerId, stats]) => {
-      const rate = stats.total > 0 ? ((stats.completed / stats.total) * 100).toFixed(1) : '0.0';
-      const name = managerId.includes('@') ? managerId.split('@')[0] : managerId;
-      
-      return {
-        name: name,
-        total: stats.total,
-        consultation: Math.floor(stats.total * 0.8),
-        contract: stats.completed,
-        rate: `${rate}%`,
-        status: parseFloat(rate) > 15 ? 'high' : parseFloat(rate) > 5 ? 'medium' : 'low'
-      };
-    }).slice(0, 5); // 상위 5명만
-  }, [properties, lookupData]);
-
-  // 알림 읽음 처리
-  const markAsRead = (id) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
-  };
-
-  // 새 알림 추가 (매물 등록 시뮬레이션)
-  const addNotification = (type, message) => {
-    const newNotif = {
-      id: Date.now(),
-      type,
-      message,
-      time: '방금 전',
-      read: false
+  // 현재 상태별 매물 수 계산
+  const currentStatusCounts = useMemo(() => {
+    const counts = {
+      available: 0,          // 거래가능
+      contract: 0,           // 계약중
+      inspection_available: 0, // 임장가능
+      hold: 0,               // 보류
+      completed: 0,          // 거래완료
+      cancelled: 0           // 거래철회
     };
-    setNotifications(prev => [newNotif, ...prev.slice(0, 4)]);
+    
+    properties.forEach(p => {
+      if (counts.hasOwnProperty(p.property_status)) {
+        counts[p.property_status]++;
+      }
+    });
+    
+    console.log('📊 상태별 매물 수:', counts);
+    console.log('🔍 전체 매물 수:', properties.length);
+    
+    return counts;
+  }, [properties]);
+  
+  // 이번 주 신규 등록 매물
+  const weeklyNewProperties = properties.filter(p => {
+    const created = new Date(p.created_at);
+    return created >= monday && created <= sunday;
+  }).length;
+  
+  // 상태 변경 이력을 기반으로 한 주간 통계
+  const weeklyStats = {
+    newRegistrations: weeklyNewProperties,
+    contractStarted: weeklyChanges['contract'] || 0,
+    completed: weeklyChanges['completed'] || 0,
+    cancelled: weeklyChanges['cancelled'] || 0,
+    onHold: weeklyChanges['hold'] || 0
   };
+
+  // 상태 라벨 가져오기 함수
+  const getStatusLabel = (statusId) => {
+    const status = lookupData.propertyStatuses?.find(s => s.id === statusId);
+    return status?.name || statusId;
+  };
+  
+  // 활동 피드 포맷팅
+  const formatActivity = (activity) => {
+    const time = format(new Date(activity.changed_at), 'HH:mm', { locale: ko });
+    const oldStatus = getStatusLabel(activity.old_status);
+    const newStatus = getStatusLabel(activity.new_status);
+    
+    return {
+      time,
+      user: activity.changed_by_name || activity.changed_by,
+      property: activity.property_name,
+      change: oldStatus ? `${oldStatus} → ${newStatus}` : `${newStatus}로 등록`,
+      isNew: !activity.old_status
+    };
+  };
+
+  // 사용자 데이터 가져오기
+  const { data: users = [], refetch: refetchUsers } = useQuery(
+    'users',
+    async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('status', 'active')
+        .order('name');
+      if (error) throw error;
+      return data || [];
+    },
+    {
+      staleTime: 5 * 60 * 1000,
+    }
+  );
+
+  // 주간 담당자별 활동 통계
+  const { data: weeklyUserStats = [] } = useQuery(
+    ['weeklyUserStats'],
+    async () => {
+      if (!supabase) return [];
+      
+      const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+      
+      // 이번 주 변경 이력을 담당자별로 집계 (더미 데이터 제외)
+      const { data: changes, error: changesError } = await supabase
+        .from('property_status_history')
+        .select('changed_by, new_status')
+        .gte('changed_at', weekStart.toISOString())
+        .neq('changed_by', 'system')
+        .not('changed_by', 'ilike', '%test%')
+        .not('changed_by', 'ilike', '%dummy%');
+      
+      // 이번 주 신규 등록을 담당자별로 집계
+      const { data: newProps, error: propsError } = await supabase
+        .from('properties')
+        .select('manager_id')
+        .gte('created_at', weekStart.toISOString());
+      
+      if (changesError || propsError) {
+        console.error('주간 사용자 통계 조회 실패');
+        return [];
+      }
+      
+      // 담당자별로 집계
+      const userStats = {};
+      
+      // 신규 등록 카운트
+      newProps?.forEach(prop => {
+        const userId = prop.manager_id;
+        if (!userStats[userId]) {
+          userStats[userId] = { newRegistrations: 0, statusChanges: 0, completed: 0 };
+        }
+        userStats[userId].newRegistrations++;
+      });
+      
+      // 상태 변경 카운트
+      changes?.forEach(change => {
+        const userId = change.changed_by;
+        if (!userStats[userId]) {
+          userStats[userId] = { newRegistrations: 0, statusChanges: 0, completed: 0 };
+        }
+        userStats[userId].statusChanges++;
+        if (change.new_status === 'completed') {
+          userStats[userId].completed++;
+        }
+      });
+      
+      // 사용자 정보와 매칭
+      const results = Object.entries(userStats).map(([userId, stats]) => {
+        const user = users.find(u => u.id === userId || u.email === userId);
+        const name = user?.name || (userId.includes('@') ? getRealtorNameByEmail(userId) : userId);
+        
+        return {
+          id: userId,
+          name,
+          ...stats,
+          total: stats.newRegistrations + stats.statusChanges
+        };
+      });
+      
+      return results.sort((a, b) => b.total - a.total).slice(0, 5);
+    },
+    {
+      enabled: !!supabase && users.length > 0,
+      refetchInterval: 60000
+    }
+  );
+
+  // 주간 차트 데이터 준비
+  const weeklyChartData = useMemo(() => {
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + i);
+      days.push({
+        day: format(date, 'E', { locale: ko }),
+        date: format(date, 'MM-dd'),
+        신규: 0,
+        계약: 0,
+        완료: 0
+      });
+    }
+    
+    // 여기에 실제 데이터를 채우는 로직 추가 가능
+    return days;
+  }, [monday]);
 
   if (isLoading) {
     return (
@@ -227,361 +371,265 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-900">
-      {/* 상단 헤더 - 모바일 최적화 */}
-      <div className="mb-4 sm:mb-6 flex gap-3 sm:gap-5 flex-col xl:flex-row w-full px-3 sm:px-6 pt-4 sm:pt-6">
-        <div className="flex flex-1 items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
-              <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-slate-600 dark:text-slate-300" />
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* 상단 헤더 */}
+      <div className="bg-white border-b sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 className="text-lg sm:text-xl font-bold leading-6 text-slate-900 dark:text-white">
-                더부동산 관리
-              </h1>
-              <p className="mt-0.5 text-xs sm:text-sm font-medium leading-4 text-slate-500 dark:text-slate-400">
-                {user?.name || user?.email?.split('@')[0]}님 안녕하세요
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">대시보드</h1>
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">
+                {format(monday, 'M/d', { locale: ko })} - {format(sunday, 'M/d', { locale: ko })}
               </p>
             </div>
-          </div>
-          
-          <Link
-            to="/properties/new"
-            className="flex h-9 sm:h-10 items-center justify-center rounded-lg bg-slate-900 px-3 sm:px-4 text-xs sm:text-sm font-medium text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
-          >
-            <PlusCircle className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">매물 </span>등록
-          </Link>
-        </div>
-      </div>
-
-      {/* KPI 카드들 - 모바일 최적화 */}
-      <div className="grid grid-cols-2 gap-3 px-3 sm:gap-4 sm:px-6 md:grid-cols-2 lg:grid-cols-4">
-        {/* 총 매물 카드 */}
-        <div className="border-slate-200 bg-white p-3 sm:p-4 dark:border-slate-700 dark:bg-slate-800 rounded-lg border shadow-sm">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-500/20">
-              <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h5 className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 truncate">
-                총 매물
-              </h5>
-              <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
-                {processStats.total}건
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* 거래가능 카드 */}
-        <div className="border-slate-200 bg-white p-3 sm:p-4 dark:border-slate-700 dark:bg-slate-800 rounded-lg border shadow-sm">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-500/20">
-              <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h5 className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 truncate">
-                거래가능
-              </h5>
-              <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
-                {processStats.available}건
-              </p>
-              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                {processStats.total > 0 ? Math.round((processStats.available / processStats.total) * 100) : 0}%
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* 거래보류 카드 */}
-        <div className="border-slate-200 bg-white p-3 sm:p-4 dark:border-slate-700 dark:bg-slate-800 rounded-lg border shadow-sm">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-500/20">
-              <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-amber-600 dark:text-amber-400" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h5 className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 truncate">
-                거래보류
-              </h5>
-              <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
-                {processStats.reserved}건
-              </p>
-              <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
-                {processStats.total > 0 ? Math.round((processStats.reserved / processStats.total) * 100) : 0}%
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* 거래완료 카드 */}
-        <div className="border-slate-200 bg-white p-3 sm:p-4 dark:border-slate-700 dark:bg-slate-800 rounded-lg border shadow-sm">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-violet-50 dark:bg-violet-500/20">
-              <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-violet-600 dark:text-violet-400" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h5 className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 truncate">
-                거래완료
-              </h5>
-              <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
-                {processStats.completed}건
-              </p>
-              <span className="text-xs font-medium text-violet-600 dark:text-violet-400">
-                {processStats.total > 0 ? Math.round((processStats.completed / processStats.total) * 100) : 0}%
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 메인 차트 - 모바일 최적화 */}
-      <div className="mb-4 sm:mb-6 flex gap-4 sm:gap-5 flex-col xl:flex-row w-full px-3 sm:px-6">
-        {/* 채널별 문의량 차트 */}
-        <div className="border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-700 dark:bg-slate-800 rounded-lg border shadow-sm w-full">
-          <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-500/20">
-              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <h5 className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400">
-                채널별 매물 문의량
-              </h5>
-              <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
-                {channelData.reduce((sum, item) => sum + item.count, 0)}건
-              </p>
-            </div>
-          </div>
-
-          {/* 차트 영역 */}
-          <div className="h-[200px] sm:h-[250px] lg:h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={channelData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis 
-                  dataKey="name" 
-                  fontSize={10}
-                  tick={{ fill: '#64748b' }}
-                  axisLine={{ stroke: '#e2e8f0' }}
-                />
-                <YAxis 
-                  fontSize={10}
-                  tick={{ fill: '#64748b' }}
-                  axisLine={{ stroke: '#e2e8f0' }}
-                />
-                <Bar 
-                  dataKey="count" 
-                  fill="#3b82f6" 
-                  radius={[4, 4, 0, 0]}
-                  className="hover:opacity-80 transition-opacity"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* 가격 분포와 알림 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 px-3 sm:px-6 mb-4 sm:mb-5">
-        {/* 가격대별 매물 분포 */}
-        <div className="border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-700 dark:bg-slate-800 rounded-lg border shadow-sm lg:col-span-2">
-          <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-500/20">
-              <Target className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <div>
-              <h5 className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400">
-                가격대별 매물 분포
-              </h5>
-              <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                가격 분포 분석
-              </p>
-            </div>
-          </div>
-          
-          <div className="h-48 sm:h-56 lg:h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={priceRangeData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={30}
-                  outerRadius={60}
-                  dataKey="count"
-                  label={({ range, count }) => `${range}: ${count}건`}
-                  fontSize={10}
-                >
-                  {priceRangeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* 실시간 알림 */}
-        <div className="border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-700 dark:bg-slate-800 rounded-lg border shadow-sm">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-500/20">
-                <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-amber-600 dark:text-amber-400" />
-              </div>
-              <div>
-                <h5 className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400">
-                  알림
-                </h5>
-                <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                  실시간 알림
+              <button
+                onClick={() => setAutoRefresh(!autoRefresh)}
+                className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 bg-white border border-gray-300 text-xs sm:text-sm rounded hover:bg-gray-50 transition-colors"
+              >
+                <RefreshCw className={`w-3.5 sm:w-4 h-3.5 sm:h-4 mr-1 sm:mr-1.5 ${autoRefresh ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">{autoRefresh ? '자동 갱신 중' : '새로고침'}</span>
+                <span className="sm:hidden">{autoRefresh ? '자동' : '갱신'}</span>
+              </button>
+              <Link
+                to="/properties/new"
+                className="inline-flex items-center px-3 sm:px-3 py-1 sm:py-1.5 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 transition-colors"
+              >
+                <PlusCircle className="w-3.5 sm:w-4 h-3.5 sm:h-4 mr-1 sm:mr-1.5" />
+                매물 등록
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 현재 매물 현황 (상태별) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <h2 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">현재 매물 현황</h2>
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {/* 거래가능 */}
+          <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">거래가능</p>
+                <p className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-semibold text-green-600">
+                  {currentStatusCounts.available.toLocaleString()}
                 </p>
+                <p className="mt-0.5 sm:mt-1 text-xs text-gray-500 hidden sm:block">즉시 거래 가능</p>
+              </div>
+              <div className="hidden sm:flex p-2 sm:p-3 bg-green-100 rounded-full">
+                <Building2 className="h-5 sm:h-6 w-5 sm:w-6 text-green-600" />
               </div>
             </div>
-            <div className="w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full animate-pulse"></div>
           </div>
-          <div className="space-y-3">
-            {notifications.map((notif) => (
-              <div 
-                key={notif.id}
-                className={`p-4 rounded-xl border cursor-pointer transition-all hover:shadow-md ${
-                  notif.type === 'success' ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20' :
-                  notif.type === 'warning' ? 'border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20' :
-                  'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20'
-                } ${notif.read ? 'opacity-60' : ''}`}
-                onClick={() => markAsRead(notif.id)}
-              >
-                <div className="flex items-start gap-3">
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                    notif.type === 'success' ? 'bg-green-500/10 dark:bg-green-500/20' :
-                    notif.type === 'warning' ? 'bg-orange-500/10 dark:bg-orange-500/20' :
-                    'bg-blue-500/10 dark:bg-blue-500/20'
-                  }`}>
-                    {notif.type === 'success' && <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />}
-                    {notif.type === 'warning' && <AlertCircle className="w-4 h-4 text-orange-600 dark:text-orange-400" />}
-                    {notif.type === 'info' && <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-zinc-950 dark:text-white">{notif.message}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{notif.time}</p>
-                  </div>
-                  {!notif.read && <div className="w-2 h-2 bg-blue-600 rounded-full"></div>}
-                </div>
+
+          {/* 계약중 */}
+          <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">계약중</p>
+                <p className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-semibold text-blue-600">
+                  {currentStatusCounts.contract.toLocaleString()}
+                </p>
+                <p className="mt-0.5 sm:mt-1 text-xs text-gray-500 hidden sm:block">계약 진행중</p>
               </div>
-            ))}
+              <div className="hidden sm:flex p-2 sm:p-3 bg-blue-100 rounded-full">
+                <FileText className="h-5 sm:h-6 w-5 sm:w-6 text-blue-600" />
+              </div>
+            </div>
+          </div>
+
+          {/* 임장가능 */}
+          <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">임장가능</p>
+                <p className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-semibold text-purple-600">
+                  {currentStatusCounts.inspection_available.toLocaleString()}
+                </p>
+                <p className="mt-0.5 sm:mt-1 text-xs text-gray-500 hidden sm:block">현장 확인 가능</p>
+              </div>
+              <div className="hidden sm:flex p-2 sm:p-3 bg-purple-100 rounded-full">
+                <Eye className="h-5 sm:h-6 w-5 sm:w-6 text-purple-600" />
+              </div>
+            </div>
+          </div>
+
+          {/* 보류 */}
+          <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">보류</p>
+                <p className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-semibold text-yellow-600">
+                  {currentStatusCounts.hold.toLocaleString()}
+                </p>
+                <p className="mt-0.5 sm:mt-1 text-xs text-gray-500 hidden sm:block">일시 중단</p>
+              </div>
+              <div className="hidden sm:flex p-2 sm:p-3 bg-yellow-100 rounded-full">
+                <Pause className="h-5 sm:h-6 w-5 sm:w-6 text-yellow-600" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 팀 성과 현황 - Horizon UI 스타일 */}
-      <div className="border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 rounded-xl border shadow-sm mb-5 px-6">
-        <div className="flex items-center gap-3 py-6 border-b border-zinc-200 dark:border-zinc-800">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-zinc-200 text-4xl dark:border-zinc-800 dark:text-white bg-blue-500/10 dark:bg-blue-500/20">
-            <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+      {/* 이번 주 활동 현황 */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6">
+        <h2 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">이번 주 활동 현황</h2>
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {/* 신규 등록 */}
+          <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
+            <div className="flex items-center justify-between mb-1 sm:mb-2">
+              <PlusCircle className="h-4 sm:h-5 w-4 sm:w-5 text-gray-400" />
+              <span className="text-xs text-gray-500">신규</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-semibold text-gray-900">{weeklyStats.newRegistrations}</p>
+            <p className="text-xs text-gray-500 mt-0.5 sm:mt-1">신규 등록</p>
           </div>
-          <div>
-            <h5 className="text-sm font-medium leading-5 text-zinc-600 dark:text-zinc-400">
-              팀 성과 현황
-            </h5>
-            <p className="mt-1 text-lg font-bold leading-6 text-zinc-950 dark:text-white">
-              팀 성과 현황
-            </p>
+
+          {/* 계약 진행 */}
+          <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
+            <div className="flex items-center justify-between mb-1 sm:mb-2">
+              <ArrowUpRight className="h-4 sm:h-5 w-4 sm:w-5 text-blue-500" />
+              <span className="text-xs text-gray-500">계약</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-semibold text-gray-900">{weeklyStats.contractStarted}</p>
+            <p className="text-xs text-gray-500 mt-0.5 sm:mt-1">계약 진행</p>
+          </div>
+
+          {/* 거래 완료 */}
+          <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
+            <div className="flex items-center justify-between mb-1 sm:mb-2">
+              <CheckCircle className="h-4 sm:h-5 w-4 sm:w-5 text-green-500" />
+              <span className="text-xs text-gray-500">완료</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-semibold text-gray-900">{weeklyStats.completed}</p>
+            <p className="text-xs text-gray-500 mt-0.5 sm:mt-1">거래 완료</p>
+          </div>
+
+          {/* 거래 철회 */}
+          <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
+            <div className="flex items-center justify-between mb-1 sm:mb-2">
+              <XCircle className="h-4 sm:h-5 w-4 sm:w-5 text-red-500" />
+              <span className="text-xs text-gray-500">철회</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-semibold text-gray-900">{weeklyStats.cancelled}</p>
+            <p className="text-xs text-gray-500 mt-0.5 sm:mt-1">거래 철회</p>
+          </div>
+
+          {/* 보류 처리 */}
+          <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
+            <div className="flex items-center justify-between mb-1 sm:mb-2">
+              <Pause className="h-4 sm:h-5 w-4 sm:w-5 text-yellow-500" />
+              <span className="text-xs text-gray-500">보류</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-semibold text-gray-900">{weeklyStats.onHold}</p>
+            <p className="text-xs text-gray-500 mt-0.5 sm:mt-1">보류 처리</p>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                <th className="px-4 py-4 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">직원명</th>
-                <th className="px-4 py-4 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">총담수</th>
-                <th className="px-4 py-4 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">상담수</th>
-                <th className="px-4 py-4 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">계약수</th>
-                <th className="px-4 py-4 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">성약률</th>
-                <th className="px-4 py-4 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">상태</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-              {teamPerformance.map((member, index) => (
-                <tr key={index} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                  <td className="px-4 py-4 text-sm font-medium text-zinc-950 dark:text-white flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                      <Users className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
+      </div>
+
+      {/* 실시간 활동 피드 & 팀 성과 */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+          {/* 실시간 활동 피드 */}
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 className="text-base sm:text-lg font-medium text-gray-900">최근 활동</h3>
+                <Bell className="h-4 sm:h-5 w-4 sm:w-5 text-gray-400" />
+              </div>
+              <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-96 overflow-y-auto">
+                {recentActivities.length > 0 ? (
+                  recentActivities.map((activity, index) => {
+                    const formatted = formatActivity(activity);
+                    return (
+                      <div key={activity.id || index} className="flex items-start space-x-2 sm:space-x-3 p-2 sm:p-3 hover:bg-gray-50 rounded-lg">
+                        <div className="flex-shrink-0">
+                          <div className={`w-2 h-2 rounded-full mt-1.5 sm:mt-2 ${formatted.isNew ? 'bg-green-500' : 'bg-blue-500'}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs sm:text-sm text-gray-900">
+                            <span className="font-medium">{formatted.user}</span>님이{' '}
+                            <span className="font-medium">{formatted.property}</span>을(를){' '}
+                            <span className="font-medium">{formatted.change}</span>
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5 sm:mt-1">{formatted.time}</p>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-8">
+                    최근 활동이 없습니다
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* 주간 팀 성과 */}
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">주간 팀 활동</h3>
+              <div className="space-y-2 sm:space-y-3">
+                {weeklyUserStats.length > 0 ? (
+                  weeklyUserStats.map((member) => (
+                    <div key={member.id} className="flex items-center justify-between p-2 sm:p-3 hover:bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                          <span className="text-xs sm:text-sm font-medium text-gray-600">
+                            {member.name.charAt(0)}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-xs sm:text-sm font-medium text-gray-900">{member.name}</p>
+                          <p className="text-xs text-gray-500">
+                            <span className="sm:hidden">신{member.newRegistrations} 변{member.statusChanges} 완{member.completed}</span>
+                            <span className="hidden sm:inline">신규 {member.newRegistrations} · 변경 {member.statusChanges} · 완료 {member.completed}</span>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs sm:text-sm font-medium text-gray-900">총 {member.total}건</p>
+                        {member.completed > 0 && (
+                          <p className="text-xs text-green-600">{Math.round((member.completed / member.total) * 100)}%</p>
+                        )}
+                      </div>
                     </div>
-                    {member.name}
-                  </td>
-                  <td className="px-4 py-4 text-sm text-zinc-600 dark:text-zinc-300">{member.total}건</td>
-                  <td className="px-4 py-4 text-sm text-zinc-600 dark:text-zinc-300">{member.consultation}건</td>
-                  <td className="px-4 py-4 text-sm text-zinc-600 dark:text-zinc-300">{member.contract}건</td>
-                  <td className="px-4 py-4 text-sm font-medium text-zinc-950 dark:text-white">{member.rate}</td>
-                  <td className="px-4 py-4">
-                    <div className={`w-3 h-3 rounded-full ${
-                      member.status === 'high' ? 'bg-green-500' :
-                      member.status === 'medium' ? 'bg-yellow-500' :
-                      'bg-red-500'
-                    }`}></div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-8">
+                    이번 주 활동 기록이 없습니다
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* 빠른 액션 - Horizon UI 스타일 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-5 px-6">
-        <Link 
-          to="/properties" 
-          className="group border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900 rounded-xl border shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4"
-        >
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 dark:bg-blue-500/20">
-            <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+      {/* 주간 활동 차트 */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-8">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">주간 활동 추이</h3>
+          <div className="h-48 sm:h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={weeklyChartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                <XAxis dataKey="day" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <RechartsTooltip 
+                  contentStyle={{ fontSize: '12px', padding: '8px' }}
+                  labelStyle={{ fontSize: '12px' }}
+                />
+                <Line type="monotone" dataKey="신규" stroke="#10b981" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="계약" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="완료" stroke="#8b5cf6" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
-          <div className="flex-1">
-            <span className="text-sm font-medium text-zinc-950 dark:text-white">매물 관리</span>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">전체 매물 조회 및 관리</p>
-          </div>
-          <ArrowUpRight className="w-4 h-4 text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
-        </Link>
-        
-        <Link 
-          to="/performance" 
-          className="group border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900 rounded-xl border shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4"
-        >
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/10 dark:bg-green-500/20">
-            <BarChart3 className="w-5 h-5 text-green-600 dark:text-green-400" />
-          </div>
-          <div className="flex-1">
-            <span className="text-sm font-medium text-zinc-950 dark:text-white">직원 성과</span>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">개인별 실적 분석</p>
-          </div>
-          <ArrowUpRight className="w-4 h-4 text-zinc-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors" />
-        </Link>
-        
-        <button 
-          onClick={() => addNotification('info', '신규 매물 등록 완료')}
-          className="group border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900 rounded-xl border shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4"
-        >
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 dark:bg-orange-500/20">
-            <Bell className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-          </div>
-          <div className="flex-1">
-            <span className="text-sm font-medium text-zinc-950 dark:text-white">알림 테스트</span>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">알림 기능 테스트</p>
-          </div>
-        </button>
-
-        <Link 
-          to="/users" 
-          className="group border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900 rounded-xl border shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4"
-        >
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 dark:bg-purple-500/20">
-            <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-          </div>
-          <div className="flex-1">
-            <span className="text-sm font-medium text-zinc-950 dark:text-white">직원 관리</span>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">사용자 권한 설정</p>
-          </div>
-          <ArrowUpRight className="w-4 h-4 text-zinc-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
-        </Link>
+        </div>
       </div>
     </div>
   );

@@ -1,9 +1,9 @@
-const { defineConfig, loadEnv } = require('vite')
-const react = require('@vitejs/plugin-react')
-const { VitePWA } = require('vite-plugin-pwa')
+import { defineConfig, loadEnv } from 'vite'
+import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
-module.exports = defineConfig(({ command, mode }) => {
+export default defineConfig(({ command, mode }) => {
   // 환경변수 로드
   const env = loadEnv(mode, process.cwd(), '')
   
@@ -69,6 +69,13 @@ module.exports = defineConfig(({ command, mode }) => {
           assetFileNames: 'assets/[name]-[hash].[ext]'
         }
       }
+    },
+    // 개발 서버 설정
+    server: {
+      host: '0.0.0.0', // 모든 네트워크 인터페이스에서 접속 허용 (테일스케일 포함)
+      port: 5175, // 다른 AI와 충돌 방지를 위해 포트 변경
+      strictPort: true,
+      open: true
     },
     // 환경변수를 명시적으로 정의
     define: {

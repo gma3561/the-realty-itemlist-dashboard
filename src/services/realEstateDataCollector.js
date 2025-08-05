@@ -46,10 +46,8 @@ class RealEstateDataCollector {
       const apiKey = await keychainManager.getPublicDataApiKey();
       if (apiKey) {
         this.apiKey = apiKey;
-        // console.log('✅ 키체인에서 공공데이터포털 API 키를 자동으로 불러왔습니다.');
       }
     } catch (error) {
-      // console.log('ℹ️ 키체인에 저장된 API 키가 없습니다. 수동으로 설정해주세요.');
     }
   }
 
@@ -58,7 +56,6 @@ class RealEstateDataCollector {
    */
   setApiKey(apiKey) {
     this.apiKey = apiKey;
-    // console.log('✅ 공공데이터포털 API 키가 설정되었습니다.');
   }
 
   /**

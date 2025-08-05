@@ -22,27 +22,8 @@ const MyProperties = () => {
   const { user, userProfile } = useAuth();
   const queryClient = useQueryClient();
   
-  // 본인 매물만 가져오기 (관리자 권한 무시)
-  const { data: properties = [], isLoading, error, refetch } = useQuery(
-    ['my-properties', filters, user?.email],
-    async () => {
-      // 이 페이지에서는 항상 본인 매물만 조회하도록 user 객체를 수정
-      const userForQuery = {
-        ...user,
-        isAdmin: false, // 강제로 false로 설정하여 본인 매물만 조회
-        role: 'user'
-      };
-      const { data, error } = await propertyService.getProperties(filters, userForQuery);
-      if (error) throw error;
-      return data || [];
-    },
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  // 룩업 데이터 가져오기
-  const { data: lookupData = {} } = useQuery(
+  // 룩업 데이터 먼저 가져오기
+  const { data: lookupData = {}, isLoading: isLoadingLookup } = useQuery(
     'lookupTables',
     async () => {
       const data = await propertyService.getLookupTables();
@@ -50,6 +31,57 @@ const MyProperties = () => {
     },
     {
       staleTime: 5 * 60 * 1000, // 5분
+    }
+  );
+  
+  // 본인 매물만 가져오기 (관리자 권한 무시)
+  const { data: properties = [], isLoading: isLoadingProperties, error, refetch } = useQuery(
+    ['my-properties', filters, user?.id],
+    async () => {
+      if (!user?.id) {
+        console.log('사용자 ID가 없습니다');
+        return [];
+      }
+
+      // Supabase에서 직접 본인 매물만 조회
+      let query = supabase
+        .from('properties')
+        .select('*')
+        .eq('manager_id', user.id); // manager_id가 현재 사용자 ID와 일치하는 것만
+
+      // 필터 적용
+      if (filters.search) {
+        query = query.or(`property_name.ilike.%${filters.search}%,location.ilike.%${filters.search}%`);
+      }
+      if (filters.status) {
+        const status = lookupData.propertyStatuses?.find(s => s.name === filters.status);
+        if (status) query = query.eq('property_status_id', status.id);
+      }
+      if (filters.type) {
+        const type = lookupData.propertyTypes?.find(t => t.name === filters.type);
+        if (type) query = query.eq('property_type_id', type.id);
+      }
+      if (filters.transactionType) {
+        const transType = lookupData.transactionTypes?.find(t => t.name === filters.transactionType);
+        if (transType) query = query.eq('transaction_type_id', transType.id);
+      }
+
+      // 정렬
+      query = query.order('created_at', { ascending: false });
+
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('매물 조회 오류:', error);
+        throw error;
+      }
+
+      console.log(`내 매물 ${data?.length || 0}개 조회됨`);
+      return data || [];
+    },
+    {
+      refetchOnWindowFocus: false,
+      enabled: !!user?.id && !!lookupData.propertyStatuses, // lookupData가 로드된 후에만 실행
     }
   );
 
@@ -218,7 +250,7 @@ const MyProperties = () => {
       </div>
 
       {/* 로딩 및 에러 처리 */}
-      {isLoading && (
+      {(isLoadingLookup || isLoadingProperties) && (
         <div className="flex justify-center items-center h-64">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           <p className="ml-2 text-gray-600">매물 목록을 불러오는 중...</p>
@@ -239,7 +271,7 @@ const MyProperties = () => {
         </div>
       )}
 
-      {!isLoading && !error && (
+      {!isLoadingLookup && !isLoadingProperties && !error && (
         <>
           {/* 필터 섹션 */}
           <div className="bg-white shadow rounded-lg p-6">

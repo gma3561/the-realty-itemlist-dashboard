@@ -11,7 +11,7 @@ module.exports = {
     'plugin:react/jsx-runtime',
     'plugin:react-hooks/recommended'
   ],
-  ignorePatterns: ['dist', '.eslintrc.cjs'],
+  ignorePatterns: ['dist', '.eslintrc.js'],
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
@@ -24,14 +24,14 @@ module.exports = {
       version: '18.2'
     }
   },
-  plugins: ['react', 'react-refresh'],
+  plugins: [],
   rules: {
-    'react-refresh/only-export-components': [
-      'warn',
-      { allowConstantExport: true }
-    ],
     'react/prop-types': 'off',
-    'no-unused-vars': 'warn',
-    'no-console': 'warn'
-  }
+    'no-unused-vars': ['error', { 
+      argsIgnorePattern: '^_',
+      varsIgnorePattern: '^_'
+    }],
+    'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
+  },
 }

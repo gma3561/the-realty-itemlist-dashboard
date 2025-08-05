@@ -275,12 +275,18 @@
 /* Mobile optimized main layout */
 @media (max-width: 768px) {
   .main-header {
-    padding: 0 var(--space-md);
+    padding: 0 var(--space-sm);
     height: 56px;
   }
   
   .main-content {
-    padding: var(--space-md);
+    padding: var(--space-sm);
+    padding-bottom: var(--space-xl); /* 하단 여백 추가 */
+  }
+  
+  /* 모바일 전용 스크롤 개선 */
+  .main-content {
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -536,4 +542,56 @@
 
 .gradient-button:active {
   transform: translateY(0) scale(0.98);
+}
+
+/* 모바일 최적화 추가 스타일 */
+@media (max-width: 768px) {
+  /* 모바일 터치 영역 최적화 */
+  button, a, .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* 모바일 폰트 크기 조정 */
+  html {
+    font-size: 14px;
+  }
+  
+  /* 모바일 여백 조정 */
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  /* 모바일 스크롤 성능 개선 */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* 모바일 카드 간격 축소 */
+  .card + .card {
+    margin-top: 12px;
+  }
+  
+  /* 모바일 테이블 스크롤 */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* 모바일 입력 필드 최적화 */
+  input, select, textarea {
+    font-size: 16px; /* iOS 자동 줌 방지 */
+  }
+  
+  /* 사이드바 모바일 스타일 */
+  .sidebar {
+    width: 280px;
+    max-width: 85vw;
+  }
+  
+  /* 모바일 그리드 자동 조정 */
+  .grid-auto-mobile {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
 }

@@ -94,11 +94,11 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     checkUser();
     
-    // 안전장치: 10초 후에도 로딩 중이면 강제로 로딩 완료
+    // 안전장치: 3초 후에도 로딩 중이면 강제로 로딩 완료
     const loadingTimeout = setTimeout(() => {
       console.warn('AuthContext: Loading timeout reached, forcing loading to false');
       setLoading(false);
-    }, 10000);
+    }, 3000);
     
     // Supabase가 초기화되지 않은 경우 리스너 설정 안함
     if (!supabase) {
@@ -142,7 +142,7 @@ export const AuthProvider = ({ children }) => {
       // 환경에 따른 리디렉션 URL 설정
       const isDevelopment = window.location.hostname === 'localhost';
       const redirectUrl = isDevelopment
-        ? `${window.location.origin}/auth/callback`
+        ? `${window.location.origin}/the-realty-itemlist-dashboard/auth/callback`
         : 'https://gma3561.github.io/the-realty-itemlist-dashboard/auth/callback';
       
       const { error } = await supabase.auth.signInWithOAuth({

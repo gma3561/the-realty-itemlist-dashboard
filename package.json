@@ -3,7 +3,7 @@
   "homepage": "https://gma3561.github.io/the-realty-itemlist-dashboard/",
   "version": "1.0.0",
   "private": true,
-  "type": "commonjs",
+  "type": "module",
   "description": "부동산 중개사무소를 위한 팀 매물장 관리 시스템",
   "scripts": {
     "dev": "vite",
@@ -12,8 +12,14 @@
     "lint": "eslint src --ext .js,.jsx",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "delete-dummy": "node delete-dummy-data.js"
   },
   "dependencies": {
     "@supabase/auth-helpers-react": "^0.4.2",
@@ -21,7 +27,6 @@
     "date-fns": "^3.6.0",
     "dotenv": "^17.2.1",
     "formik": "^2.4.5",
-    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.338.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -32,6 +37,7 @@
     "yup": "^1.4.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.54.2",
     "@testing-library/jest-dom": "^6.4.6",
     "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.5.2",
@@ -40,7 +46,9 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.34.0",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "express": "^5.1.0",
     "gh-pages": "^6.3.0",
+    "playwright": "^1.54.2",
     "postcss": "^8.4.35",
     "vite": "^5.1.6",
     "vite-plugin-pwa": "^0.19.2",

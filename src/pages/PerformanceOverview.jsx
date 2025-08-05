@@ -43,11 +43,11 @@ const PerformanceOverview = () => {
     }
   );
 
-  // 모든 매물 조회
+  // 모든 매물 조회 (관리자 권한으로)
   const { data: properties = [], isLoading: propertiesLoading } = useQuery(
     'all-properties',
     async () => {
-      const { data, error } = await propertyService.getProperties();
+      const { data, error } = await propertyService.getProperties({}, { isAdmin: true });
       if (error) throw error;
       return data || [];
     }
@@ -67,12 +67,10 @@ const PerformanceOverview = () => {
 
   // 직원별 통계 계산
   const calculateUserStats = (userId, userEmail) => {
-    // 더미데이터에서는 hardcoded ID를 사용하므로 이를 고려
+    // manager_id로 매물 필터링
     const userProperties = properties.filter(p => {
       const managerId = p.manager_id;
-      return managerId === userId || 
-             managerId === `hardcoded-${userEmail}` ||
-             (userEmail && managerId?.includes(userEmail));
+      return managerId === userId || managerId === userEmail;
     });
     
     const stats = {
@@ -93,10 +91,19 @@ const PerformanceOverview = () => {
         stats.pendingDeals++;
       }
 
-      // 이번달 등록된 매물 계산
+      // 이번 주 등록된 매물 계산
       const createdDate = new Date(property.created_at);
       const now = new Date();
-      if (createdDate.getMonth() === now.getMonth() && createdDate.getFullYear() === now.getFullYear()) {
+      const dayOfWeek = now.getDay();
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+      monday.setHours(0, 0, 0, 0);
+      
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      sunday.setHours(23, 59, 59, 999);
+      
+      if (createdDate >= monday && createdDate <= sunday) {
         stats.monthlyDeals++;
       }
     });
@@ -222,7 +229,7 @@ const PerformanceOverview = () => {
             return (
               <Link
                 key={staffUser.id}
-                to={`/users/${staffUser.id}/performance`}
+                to={`/performance/${staffUser.id}`}
                 className="block border rounded-lg p-4 hover:shadow-md transition-shadow hover:border-blue-300"
               >
                 <div className="flex justify-between items-start mb-4">
@@ -257,7 +264,7 @@ const PerformanceOverview = () => {
                     <span className="font-semibold text-blue-600">{stats.activeDeals}건</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">이번달 등록</span>
+                    <span className="text-sm text-gray-600">이번주 등록</span>
                     <span className="font-semibold">{stats.monthlyDeals}건</span>
                   </div>
                 </div>

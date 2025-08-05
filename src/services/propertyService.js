@@ -40,7 +40,6 @@ export const initializeLookupTables = async () => {
       supabase.from('property_statuses').upsert(propertyStatuses, { onConflict: 'id' })
     ]);
 
-    // console.log('룩업 테이블 초기화 완료:', results);
     return { success: true, results };
   } catch (error) {
     console.error('룩업 테이블 초기화 실패:', error);
@@ -73,16 +72,97 @@ export const getLookupTables = async () => {
 };
 
 // 매물 목록 조회 (권한 기반 필터링 포함)
-export const getProperties = async (filters = {}, user = null) => {
+export const getProperties = async (filters = {}, user = null, pagination = null) => {
   try {
-    console.log('🔍 getProperties 호출:', { filters, user });
     
     if (!supabase) {
       console.error('❌ Supabase 클라이언트가 초기화되지 않았습니다.');
-      return { data: [], error: 'Supabase not initialized' };
+      return { data: [], error: 'Supabase not initialized', totalCount: 0 };
     }
     
-    let query = supabase.from('properties').select('*');
+    // pagination이 없고 countOnly가 true면 count만 가져오기
+    if (filters.countOnly) {
+      let countQuery = supabase.from('properties').select('*', { count: 'exact', head: true });
+      
+      // 필터 적용
+      if (filters.property_type_id) {
+        countQuery = countQuery.eq('property_type_id', filters.property_type_id);
+      }
+      if (filters.transaction_type_id) {
+        countQuery = countQuery.eq('transaction_type_id', filters.transaction_type_id);
+      }
+      if (filters.property_status) {
+        countQuery = countQuery.eq('property_status', filters.property_status);
+      }
+      if (filters.search) {
+        countQuery = countQuery.or(`property_name.ilike.%${filters.search}%,location.ilike.%${filters.search}%`);
+      }
+      
+      const { count, error } = await countQuery;
+      if (error) throw error;
+      
+      return { data: [], error: null, totalCount: count || 0 };
+    }
+    
+    // Dashboard용 - pagination이 null이면 모든 데이터를 페이지별로 가져오기
+    if (pagination === null) {
+      let allData = [];
+      let page = 0;
+      const pageSize = 1000;
+      let hasMore = true;
+      
+      while (hasMore) {
+        let query = supabase.from('properties')
+          .select('*')
+          .range(page * pageSize, (page + 1) * pageSize - 1)
+          .order('created_at', { ascending: false })
+          // 더미 데이터 제외
+          .not('property_name', 'ilike', '%테스트%')
+          .not('property_name', 'ilike', '%test%')
+          .not('property_name', 'ilike', '%dummy%')
+          .not('property_name', 'ilike', '%샘플%')
+          .not('property_name', 'ilike', '%sample%')
+          .neq('manager_id', 'system');
+        
+        // 필터 적용
+        if (filters.property_type_id) {
+          query = query.eq('property_type_id', filters.property_type_id);
+        }
+        if (filters.transaction_type_id) {
+          query = query.eq('transaction_type_id', filters.transaction_type_id);
+        }
+        if (filters.property_status) {
+          query = query.eq('property_status', filters.property_status);
+        }
+        if (filters.search) {
+          query = query.or(`property_name.ilike.%${filters.search}%,location.ilike.%${filters.search}%`);
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          allData = [...allData, ...data];
+          hasMore = data.length === pageSize;
+          page++;
+        } else {
+          hasMore = false;
+        }
+      }
+      
+      return { data: allData, error: null, totalCount: allData.length };
+    }
+    
+    // 일반 페이지네이션 처리
+    let query = supabase.from('properties').select('*', { count: 'exact' })
+    // 더미 데이터 제외
+    .not('property_name', 'ilike', '%테스트%')
+    .not('property_name', 'ilike', '%test%')
+    .not('property_name', 'ilike', '%dummy%')
+    .not('property_name', 'ilike', '%샘플%')
+    .not('property_name', 'ilike', '%sample%')
+    .neq('manager_id', 'system');
 
     // 필터 적용
     if (filters.property_type_id) {
@@ -91,26 +171,33 @@ export const getProperties = async (filters = {}, user = null) => {
     if (filters.transaction_type_id) {
       query = query.eq('transaction_type_id', filters.transaction_type_id);
     }
-    if (filters.property_status_id) {
-      query = query.eq('property_status_id', filters.property_status_id);
+    if (filters.property_status) {
+      query = query.eq('property_status', filters.property_status);
     }
     if (filters.search) {
       query = query.or(`property_name.ilike.%${filters.search}%,location.ilike.%${filters.search}%`);
     }
 
-    // Supabase 기본 1000개 제한을 우회하여 전체 데이터 가져오기
-    const { data, error } = await query
-      .order('created_at', { ascending: false })
-      .limit(1000); // 최대 1000개까지 가져오기
+    // 정렬
+    query = query.order('created_at', { ascending: false });
 
-    console.log('📊 Supabase 응답:', { data: data?.length || 0, error });
+    // 페이지네이션 적용
+    if (pagination) {
+      const { page = 0, pageSize = 30 } = pagination;
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+      query = query.range(from, to);
+    }
+
+    const { data, error, count } = await query;
+
     
     if (error) throw error;
 
-    return { data: data || [], error: null };
+    return { data: data || [], error: null, totalCount: count || 0 };
   } catch (error) {
     console.error('❌ 매물 목록 조회 실패:', error);
-    return { data: [], error: error.message };
+    return { data: [], error: error.message, totalCount: 0 };
   }
 };
 
@@ -124,6 +211,7 @@ export const getPropertyById = async (id) => {
       .single();
 
     if (error) throw error;
+    
     return { data, error: null };
   } catch (error) {
     console.error('매물 상세 조회 실패:', error);
@@ -258,7 +346,6 @@ export const bulkUploadProperties = async (properties, userId) => {
       }));
       
       try {
-        // console.log(`배치 ${Math.floor(i/BATCH_SIZE) + 1} 업로드 중... (${batch.length}개 매물)`);
         
         // 데이터 검증
         for (const property of batchWithManagerId) {
@@ -276,7 +363,6 @@ export const bulkUploadProperties = async (properties, userId) => {
         if (error) throw error;
         
         uploadedCount += batch.length;
-        // console.log(`배치 ${Math.floor(i/BATCH_SIZE) + 1} 완료: ${batch.length}개 업로드 (총 ${uploadedCount}개)`);
         
         // 배치 간 잠시 대기 (API 제한 방지)
         if (i + BATCH_SIZE < properties.length) {
