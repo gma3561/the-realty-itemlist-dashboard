@@ -32,6 +32,50 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard-dynamic-subset.css" />
     
     <title>더부동산 통합 관리 시스템</title>
+  
+    <!-- 채널톡 설치 -->
+    <script>
+      (function() {
+        var w = window;
+        if (w.ChannelIO) {
+          return w.console.error('ChannelIO script included twice.');
+        }
+        var ch = function() {
+          ch.c(arguments);
+        };
+        ch.q = [];
+        ch.c = function(args) {
+          ch.q.push(args);
+        };
+        w.ChannelIO = ch;
+        function l() {
+          if (w.ChannelIOInitialized) {
+            return;
+          }
+          w.ChannelIOInitialized = true;
+          var s = document.createElement('script');
+          s.type = 'text/javascript';
+          s.async = true;
+          s.src = 'https://cdn.channel.io/plugin/ch-plugin-web.js';
+          var x = document.getElementsByTagName('script')[0];
+          x.parentNode.insertBefore(s, x);
+        }
+        if (document.readyState === 'complete') {
+          l();
+        } else {
+          w.addEventListener('DOMContentLoaded', l, false);
+          w.addEventListener('load', l, false);
+        }
+      })();
+
+      ChannelIO('boot', {
+        "pluginKey": "6c361437-0a03-488c-9dc5-66c38f13e4c1",
+        "profile": {
+          "name": "더부동산 고객"
+        },
+        "language": "ko"
+      });
+    </script>
     <script type="module" crossorigin src="/the-realty-itemlist-dashboard/assets/index-CoXwLivt.js"></script>
     <link rel="modulepreload" crossorigin href="/the-realty-itemlist-dashboard/assets/react-vendor-DilD2z74.js">
     <link rel="modulepreload" crossorigin href="/the-realty-itemlist-dashboard/assets/ui-vendor-DNXoTqsH.js">
