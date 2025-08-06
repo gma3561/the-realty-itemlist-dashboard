@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
+import PropTypes from 'prop-types';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import imageUploadService from '../../services/imageUploadService';
 import { useAuth } from '../../contexts/AuthContext';
@@ -14,9 +15,9 @@ const PropertyImageGallery = ({ propertyId, onImagesChange, editable = true }) =
     if (propertyId) {
       loadImages();
     }
-  }, [propertyId]);
+  }, [propertyId, loadImages]);
 
-  const loadImages = async () => {
+  const loadImages = useCallback(async () => {
     try {
       setLoading(true);
       const imageData = await imageUploadService.getPropertyImages(propertyId);
@@ -26,12 +27,12 @@ const PropertyImageGallery = ({ propertyId, onImagesChange, editable = true }) =
         onImagesChange(imageData);
       }
     } catch (error) {
-      console.error('이미지 로딩 실패:', error);
+      // 이미지 로딩 실패 에러 처리
       alert('이미지를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [propertyId, onImagesChange]);
 
   const handleDragEnd = async (result) => {
     if (!result.destination || !editable) return;
@@ -52,14 +53,14 @@ const PropertyImageGallery = ({ propertyId, onImagesChange, editable = true }) =
         onImagesChange(newImages);
       }
     } catch (error) {
-      console.error('이미지 순서 변경 실패:', error);
+      // 이미지 순서 변경 실패 에러 처리
       alert('이미지 순서 변경에 실패했습니다.');
       // 실패 시 원래 상태로 롤백
       loadImages();
     }
   };
 
-  const deleteImage = async (imageId) => {
+  const deleteImage = useCallback(async (imageId) => {
     if (!confirm('이미지를 삭제하시겠습니까?')) return;
 
     try {
@@ -75,14 +76,14 @@ const PropertyImageGallery = ({ propertyId, onImagesChange, editable = true }) =
       
       alert('이미지가 삭제되었습니다.');
     } catch (error) {
-      console.error('이미지 삭제 실패:', error);
+      // 이미지 삭제 실패 에러 처리
       alert(`이미지 삭제에 실패했습니다: ${error.message}`);
     } finally {
       setActionLoading(null);
     }
-  };
+  }, [images, onImagesChange]);
 
-  const setPrimaryImage = async (imageId) => {
+  const setPrimaryImage = useCallback(async (imageId) => {
     try {
       setActionLoading(imageId);
       await imageUploadService.setPrimaryImage(imageId, propertyId);
@@ -99,20 +100,20 @@ const PropertyImageGallery = ({ propertyId, onImagesChange, editable = true }) =
       }
       
     } catch (error) {
-      console.error('대표 이미지 설정 실패:', error);
+      // 대표 이미지 설정 실패 에러 처리
       alert('대표 이미지 설정에 실패했습니다.');
     } finally {
       setActionLoading(null);
     }
-  };
+  }, [images, onImagesChange, propertyId]);
 
-  const openImageModal = (image) => {
+  const openImageModal = useCallback((image) => {
     setSelectedImage(image);
-  };
+  }, []);
 
-  const closeImageModal = () => {
+  const closeImageModal = useCallback(() => {
     setSelectedImage(null);
-  };
+  }, []);
 
   const getImageAlt = (image, index) => {
     return image.alt_text || `매물 이미지 ${index + 1}`;
@@ -121,7 +122,7 @@ const PropertyImageGallery = ({ propertyId, onImagesChange, editable = true }) =
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         <span className="ml-3 text-gray-600">이미지를 불러오는 중...</span>
       </div>
     );
@@ -217,17 +218,64 @@ const PropertyImageGallery = ({ propertyId, onImagesChange, editable = true }) =
   );
 };
 
+// 지연 로딩 이미지 컴포넌트
+const LazyImage = memo(({ src, alt, className, onClick }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const imgRef = useRef();
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={imgRef} className={className} onClick={onClick}>
+      {isInView && (
+        <img
+          src={src}
+          alt={alt}
+          onLoad={() => setIsLoaded(true)}
+          className={`w-full h-full object-cover cursor-pointer transition-opacity duration-300 ${
+            isLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          loading="lazy"
+        />
+      )}
+      {!isLoaded && isInView && (
+        <div className="w-full h-full bg-gray-100 animate-pulse flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
+        </div>
+      )}
+    </div>
+  );
+});
+
+LazyImage.displayName = 'LazyImage';
+
 // 개별 이미지 카드 컴포넌트
-const ImageCard = ({ image, index, onDelete, onSetPrimary, onOpenModal, isLoading, editable }) => {
+const ImageCard = memo(({ image, index, onDelete, onSetPrimary, onOpenModal, isLoading, editable }) => {
   return (
     <div className="aspect-square relative overflow-hidden rounded-lg border-2 border-gray-200 hover:border-gray-300 transition-colors">
       {/* 이미지 */}
-      <img
+      <LazyImage
         src={image.thumbnail_url}
         alt={image.alt_text || `매물 이미지 ${index + 1}`}
-        className="w-full h-full object-cover cursor-pointer"
+        className="w-full h-full"
         onClick={() => onOpenModal(image)}
-        loading="lazy"
       />
       
       {/* 순서 번호 */}
@@ -237,7 +285,7 @@ const ImageCard = ({ image, index, onDelete, onSetPrimary, onOpenModal, isLoadin
       
       {/* 대표 이미지 표시 */}
       {image.is_primary && (
-        <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded font-medium">
+        <div className="absolute top-2 right-2 bg-primary text-white text-xs px-2 py-1 rounded font-medium">
           대표
         </div>
       )}
@@ -287,10 +335,12 @@ const ImageCard = ({ image, index, onDelete, onSetPrimary, onOpenModal, isLoadin
       )}
     </div>
   );
-};
+});
+
+ImageCard.displayName = 'ImageCard';
 
 // 이미지 상세 모달 컴포넌트
-const ImageModal = ({ image, onClose }) => {
+const ImageModal = memo(({ image, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
       <div className="max-w-4xl max-h-full relative">
@@ -332,6 +382,47 @@ const ImageModal = ({ image, onClose }) => {
       ></div>
     </div>
   );
+});
+
+ImageModal.displayName = 'ImageModal';
+
+// PropTypes 정의
+PropertyImageGallery.propTypes = {
+  propertyId: PropTypes.string.isRequired,
+  onImagesChange: PropTypes.func,
+  editable: PropTypes.bool
 };
 
-export default PropertyImageGallery;
+LazyImage.propTypes = {
+  src: PropTypes.string.isRequired,
+  alt: PropTypes.string.isRequired,
+  className: PropTypes.string,
+  onClick: PropTypes.func
+};
+
+ImageCard.propTypes = {
+  image: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    thumbnail_url: PropTypes.string.isRequired,
+    alt_text: PropTypes.string,
+    is_primary: PropTypes.bool
+  }).isRequired,
+  index: PropTypes.number.isRequired,
+  onDelete: PropTypes.func,
+  onSetPrimary: PropTypes.func,
+  onOpenModal: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool,
+  editable: PropTypes.bool
+};
+
+ImageModal.propTypes = {
+  image: PropTypes.shape({
+    google_drive_url: PropTypes.string.isRequired,
+    alt_text: PropTypes.string,
+    original_filename: PropTypes.string,
+    file_size: PropTypes.number
+  }).isRequired,
+  onClose: PropTypes.func.isRequired
+};
+
+export default memo(PropertyImageGallery);

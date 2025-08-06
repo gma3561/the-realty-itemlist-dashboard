@@ -44,88 +44,108 @@ const PropertyFilter = ({ onFilter }) => {
   };
   
   return (
-    <form onSubmit={handleSubmit} className="p-4 bg-white rounded-lg shadow-md">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">매물종류</label>
-          <PropertyTypeSelect 
-            value={filters.propertyTypeId} 
-            onChange={(value) => handleChange('propertyTypeId', value)} 
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">진행상태</label>
-          <PropertyStatusSelect 
-            value={filters.propertyStatusId} 
-            onChange={(value) => handleChange('propertyStatusId', value)} 
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">거래유형</label>
-          <TransactionTypeSelect 
-            value={filters.transactionTypeId} 
-            onChange={(value) => handleChange('transactionTypeId', value)} 
-          />
-        </div>
+    <div className="bg-gray-50 p-6 rounded-lg">
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold mb-2">매물 검색</h3>
+        <p className="text-sm text-gray-600">매물 종류를 선택하시면 상세 검색이 가능합니다.</p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">지역</label>
-          <Input
-            type="text"
-            value={filters.location}
-            onChange={(e) => handleChange('location', e.target.value)}
-            placeholder="예: 강남구 삼성동"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">매물명</label>
-          <Input
-            type="text"
-            value={filters.propertyName}
-            onChange={(e) => handleChange('propertyName', e.target.value)}
-            placeholder="예: 래미안아파트"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">최소가격</label>
-            <Input
-              type="number"
-              value={filters.minPrice}
-              onChange={(e) => handleChange('minPrice', e.target.value)}
-              placeholder="최소가격"
+      <form onSubmit={handleSubmit}>
+        {/* 지역조회 */}
+        <div className="mb-6">
+          <h4 className="text-sm font-medium mb-3">지역조회</h4>
+          <div className="grid grid-cols-4 gap-3">
+            <PropertyTypeSelect 
+              value={filters.propertyTypeId} 
+              onChange={(value) => handleChange('propertyTypeId', value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm" 
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">최대가격</label>
             <Input
-              type="number"
-              value={filters.maxPrice}
-              onChange={(e) => handleChange('maxPrice', e.target.value)}
-              placeholder="최대가격"
+              type="text"
+              value={filters.location}
+              onChange={(e) => handleChange('location', e.target.value)}
+              placeholder="시/도"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm"
+            />
+            <Input
+              type="text"
+              value={filters.propertyName}
+              onChange={(e) => handleChange('propertyName', e.target.value)}
+              placeholder="구/군"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm"
+            />
+            <input
+              type="text" 
+              placeholder="읍/면/동" 
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm"
             />
           </div>
         </div>
-      </div>
-      
-      <div className="flex justify-end space-x-2">
-        <Button 
-          type="button" 
-          variant="secondary"
-          onClick={handleReset}
-        >
-          초기화
-        </Button>
-        <Button 
-          type="submit" 
-          variant="primary"
-        >
-          검색
-        </Button>
-      </div>
-    </form>
+        
+        {/* 조건조회 */}
+        <div className="mb-6">
+          <h4 className="text-sm font-medium mb-3">조건조회</h4>
+          <div className="grid grid-cols-6 gap-3">
+            <TransactionTypeSelect 
+              value={filters.transactionTypeId} 
+              onChange={(value) => handleChange('transactionTypeId', value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm"
+            />
+            <PropertyStatusSelect 
+              value={filters.propertyStatusId} 
+              onChange={(value) => handleChange('propertyStatusId', value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm"
+            />
+            <div className="col-span-2">
+              <label className="block text-xs text-gray-500 mb-1">매물가격 범위</label>
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="number"
+                  value={filters.minPrice}
+                  onChange={(e) => handleChange('minPrice', e.target.value)}
+                  placeholder="최소 만원"
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm w-full"
+                />
+                <span className="text-sm text-gray-400">~</span>
+                <Input
+                  type="number"
+                  value={filters.maxPrice}
+                  onChange={(e) => handleChange('maxPrice', e.target.value)}
+                  placeholder="최대 만원"
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm w-full"
+                />
+              </div>
+            </div>
+            <input
+              type="text" 
+              placeholder="매물번호" 
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm"
+            />
+            <input
+              type="text" 
+              placeholder="담당자" 
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm"
+            />
+          </div>
+        </div>
+        
+        <div className="flex justify-center space-x-3">
+          <button 
+            type="button" 
+            onClick={handleReset}
+            className="px-6 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-100 transition-colors"
+          >
+            초기화
+          </button>
+          <button 
+            type="submit" 
+            className="px-8 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            검색
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 

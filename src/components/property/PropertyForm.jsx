@@ -24,7 +24,7 @@ const PropertyForm = ({ isEditing = false }) => {
     {
       staleTime: 5 * 60 * 1000, // 5분간 캐시
       onError: (err) => {
-        console.error('룩업 테이블 조회 실패:', err);
+        setError(`룩업 테이블 조회에 실패했습니다: ${err.message}`);
       }
     }
   );
@@ -249,7 +249,7 @@ const PropertyForm = ({ isEditing = false }) => {
   if ((isEditing && isPropertyLoading) || isLookupLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         <p className="ml-2 text-gray-600">
           {isEditing ? '매물 정보를 불러오는 중...' : '시스템 데이터를 불러오는 중...'}
         </p>
@@ -296,7 +296,7 @@ const PropertyForm = ({ isEditing = false }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-800 mb-2">
-                  매물명 <span className="text-red-500">*</span>
+                  매물명 <span className="text-primary">*</span>
                 </label>
                 <input
                   type="text"
@@ -304,7 +304,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   value={formik.values.property_name}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                   placeholder="예: 래미안 아파트 106동"
                 />
                 {formik.touched.property_name && formik.errors.property_name && (
@@ -314,7 +314,7 @@ const PropertyForm = ({ isEditing = false }) => {
               
               <div>
                 <label className="block text-sm font-semibold text-gray-800 mb-2">
-                  소재지 <span className="text-red-500">*</span>
+                  소재지 <span className="text-primary">*</span>
                 </label>
                 <input
                   type="text"
@@ -322,7 +322,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   value={formik.values.location}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                   placeholder="예: 서울시 강남구 삼성동"
                 />
                 {formik.touched.location && formik.errors.location && (
@@ -332,14 +332,14 @@ const PropertyForm = ({ isEditing = false }) => {
               
               <div>
                 <label className="block text-sm font-semibold text-gray-800 mb-2">
-                  매물종류 <span className="text-red-500">*</span>
+                  매물종류 <span className="text-primary">*</span>
                 </label>
                 <select
                   name="property_type_id"
                   value={formik.values.property_type_id}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                 >
                   <option value="">매물종류 선택</option>
                   {propertyTypes.map(type => (
@@ -359,7 +359,7 @@ const PropertyForm = ({ isEditing = false }) => {
                     name="dong"
                     value={formik.values.dong}
                     onChange={formik.handleChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                     placeholder="예: 106동"
                   />
                 </div>
@@ -370,7 +370,7 @@ const PropertyForm = ({ isEditing = false }) => {
                     name="ho"
                     value={formik.values.ho}
                     onChange={formik.handleChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                     placeholder="예: 1503호"
                   />
                 </div>
@@ -385,14 +385,14 @@ const PropertyForm = ({ isEditing = false }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-800 mb-2">
-                  진행상태 <span className="text-red-500">*</span>
+                  진행상태 <span className="text-primary">*</span>
                 </label>
                 <select
                   name="property_status_id"
                   value={formik.values.property_status_id}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                 >
                   <option value="">진행상태 선택</option>
                   {propertyStatuses.map(status => (
@@ -406,14 +406,14 @@ const PropertyForm = ({ isEditing = false }) => {
               
               <div>
                 <label className="block text-sm font-semibold text-gray-800 mb-2">
-                  거래유형 <span className="text-red-500">*</span>
+                  거래유형 <span className="text-primary">*</span>
                 </label>
                 <select
                   name="transaction_type_id"
                   value={formik.values.transaction_type_id}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                 >
                   <option value="">거래유형 선택</option>
                   {transactionTypes.map(type => (
@@ -433,7 +433,7 @@ const PropertyForm = ({ isEditing = false }) => {
                 {getTransactionTypeName(formik.values.transaction_type_id) === '매매' && (
                   <div>
                     <label className="block text-sm font-semibold text-gray-800 mb-2">
-                      매매가 <span className="text-red-500">*</span>
+                      매매가 <span className="text-primary">*</span>
                     </label>
                     <div className="relative">
                       <input
@@ -442,7 +442,7 @@ const PropertyForm = ({ isEditing = false }) => {
                         value={formik.values.price}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                         placeholder="예: 2500000000"
                       />
                       <span className="absolute right-3 top-2 text-sm text-gray-500">원</span>
@@ -457,7 +457,7 @@ const PropertyForm = ({ isEditing = false }) => {
                 {getTransactionTypeName(formik.values.transaction_type_id) === '분양' && (
                   <div>
                     <label className="block text-sm font-semibold text-gray-800 mb-2">
-                      분양가 <span className="text-red-500">*</span>
+                      분양가 <span className="text-primary">*</span>
                     </label>
                     <div className="relative">
                       <input
@@ -466,7 +466,7 @@ const PropertyForm = ({ isEditing = false }) => {
                         value={formik.values.price}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                         placeholder="예: 3000000000"
                       />
                       <span className="absolute right-3 top-2 text-sm text-gray-500">원</span>
@@ -481,7 +481,7 @@ const PropertyForm = ({ isEditing = false }) => {
                 {getTransactionTypeName(formik.values.transaction_type_id) === '전세' && (
                   <div>
                     <label className="block text-sm font-semibold text-gray-800 mb-2">
-                      전세 보증금 <span className="text-red-500">*</span>
+                      전세 보증금 <span className="text-primary">*</span>
                     </label>
                     <div className="relative">
                       <input
@@ -490,7 +490,7 @@ const PropertyForm = ({ isEditing = false }) => {
                         value={formik.values.lease_price}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                         placeholder="예: 200000000"
                       />
                       <span className="absolute right-3 top-2 text-sm text-gray-500">원</span>
@@ -507,7 +507,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-800 mb-2">
-                        보증금 <span className="text-red-500">*</span>
+                        보증금 <span className="text-primary">*</span>
                       </label>
                       <div className="relative">
                         <input
@@ -516,7 +516,7 @@ const PropertyForm = ({ isEditing = false }) => {
                           value={formik.values.lease_price}
                           onChange={formik.handleChange}
                           onBlur={formik.handleBlur}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                           placeholder="예: 50000000"
                         />
                         <span className="absolute right-3 top-2 text-sm text-gray-500">원</span>
@@ -527,7 +527,7 @@ const PropertyForm = ({ isEditing = false }) => {
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-800 mb-2">
-                        월세 <span className="text-red-500">*</span>
+                        월세 <span className="text-primary">*</span>
                       </label>
                       <div className="relative">
                         <input
@@ -536,7 +536,7 @@ const PropertyForm = ({ isEditing = false }) => {
                           value={formik.values.price}
                           onChange={formik.handleChange}
                           onBlur={formik.handleBlur}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                           placeholder="예: 500000"
                         />
                         <span className="absolute right-3 top-2 text-sm text-gray-500">원</span>
@@ -553,7 +553,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   getTransactionTypeName(formik.values.transaction_type_id) === '단기임대') && (
                   <div>
                     <label className="block text-sm font-semibold text-gray-800 mb-2">
-                      일일요금 <span className="text-red-500">*</span>
+                      일일요금 <span className="text-primary">*</span>
                     </label>
                     <div className="relative">
                       <input
@@ -562,7 +562,7 @@ const PropertyForm = ({ isEditing = false }) => {
                         value={formik.values.price}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                         placeholder="예: 150000"
                       />
                       <span className="absolute right-3 top-2 text-sm text-gray-500">원/일</span>
@@ -596,7 +596,7 @@ const PropertyForm = ({ isEditing = false }) => {
                     value={formik.values.supply_area_sqm}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                     placeholder="예: 84.56"
                   />
                   <div className="text-sm text-gray-500 mt-1">
@@ -615,7 +615,7 @@ const PropertyForm = ({ isEditing = false }) => {
                     value={formik.values.private_area_sqm}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                     placeholder="예: 59.82"
                   />
                   <div className="text-sm text-gray-500 mt-1">
@@ -634,7 +634,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   name="floor_info"
                   value={formik.values.floor_info}
                   onChange={formik.handleChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                   placeholder="예: 15층/25층"
                 />
               </div>
@@ -646,7 +646,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   name="rooms_bathrooms"
                   value={formik.values.rooms_bathrooms}
                   onChange={formik.handleChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                   placeholder="예: 3개/2개"
                 />
               </div>
@@ -658,7 +658,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   name="direction"
                   value={formik.values.direction}
                   onChange={formik.handleChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                   placeholder="예: 남향"
                 />
               </div>
@@ -670,7 +670,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   name="maintenance_fee"
                   value={formik.values.maintenance_fee}
                   onChange={formik.handleChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                   placeholder="예: 15만원"
                 />
               </div>
@@ -682,7 +682,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   name="parking"
                   value={formik.values.parking}
                   onChange={formik.handleChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                   placeholder="예: 2대"
                 />
               </div>
@@ -694,7 +694,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   name="move_in_date"
                   value={formik.values.move_in_date}
                   onChange={formik.handleChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                   placeholder="예: 즉시입주"
                 />
               </div>
@@ -708,7 +708,7 @@ const PropertyForm = ({ isEditing = false }) => {
                     name="approval_date"
                     value={formik.values.approval_date}
                     onChange={formik.handleChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                     placeholder="예: 2022.05.20"
                   />
                 </div>
@@ -729,7 +729,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   value={formik.values.special_notes}
                   onChange={formik.handleChange}
                   rows="3"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                   placeholder="매물의 특이사항을 입력하세요"
                 ></textarea>
               </div>
@@ -743,7 +743,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   value={formik.values.manager_memo}
                   onChange={formik.handleChange}
                   rows="3"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                   placeholder="담당자만 볼 수 있는 내부 메모"
                 ></textarea>
               </div>
@@ -756,7 +756,7 @@ const PropertyForm = ({ isEditing = false }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-800 mb-2">
-                  고객 이름 <span className="text-red-500">*</span>
+                  고객 이름 <span className="text-primary">*</span>
                 </label>
                 <input
                   type="text"
@@ -764,7 +764,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   value={formik.values.customer_name}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                   placeholder="고객 이름을 입력하세요"
                 />
                 {formik.touched.customer_name && formik.errors.customer_name && (
@@ -774,7 +774,7 @@ const PropertyForm = ({ isEditing = false }) => {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-800 mb-2">
-                  전화번호 <span className="text-red-500">*</span>
+                  전화번호 <span className="text-primary">*</span>
                 </label>
                 <input
                   type="tel"
@@ -782,7 +782,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   value={formik.values.customer_phone}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                   placeholder="010-1234-5678"
                 />
                 {formik.touched.customer_phone && formik.errors.customer_phone && (
@@ -800,7 +800,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   value={formik.values.customer_email}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                   placeholder="customer@example.com"
                 />
                 {formik.touched.customer_email && formik.errors.customer_email && (
@@ -818,7 +818,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   value={formik.values.customer_address}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                   placeholder="고객 주소를 입력하세요"
                 />
               </div>
@@ -832,7 +832,7 @@ const PropertyForm = ({ isEditing = false }) => {
                   value={formik.values.customer_notes}
                   onChange={formik.handleChange}
                   rows="3"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm"
                   placeholder="고객 관련 메모사항을 입력하세요"
                 ></textarea>
               </div>
@@ -845,14 +845,14 @@ const PropertyForm = ({ isEditing = false }) => {
               type="button"
               onClick={() => navigate('/properties')}
               disabled={isSubmitting}
-              className="px-6 py-3 border border-gray-200 rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 disabled:opacity-50 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+              className="px-6 py-3 border border-primary text-primary bg-white hover:bg-pink-50 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
             >
               취소
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105"
+              className="px-8 py-3 bg-primary text-white rounded-xl hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105"
             >
               {isSubmitting ? (
                 <span className="flex items-center">

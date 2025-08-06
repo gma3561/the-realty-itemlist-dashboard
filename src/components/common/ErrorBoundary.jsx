@@ -18,8 +18,10 @@ class ErrorBoundary extends React.Component {
       errorInfo: errorInfo
     });
     
-    // 에러 로깅
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    // 에러 로깅 (프로덕션에서는 로깅 서비스로 전송)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('ErrorBoundary caught an error:', error, errorInfo);
+    }
   }
 
   render() {
@@ -30,8 +32,8 @@ class ErrorBoundary extends React.Component {
           <div className="sm:mx-auto sm:w-full sm:max-w-md">
             <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
               <div className="text-center">
-                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                  <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-pink-100">
+                  <svg className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
                 </div>
@@ -43,7 +45,7 @@ class ErrorBoundary extends React.Component {
                 <div className="mt-4">
                   <button
                     onClick={() => window.location.reload()}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                   >
                     페이지 새로고침
                   </button>

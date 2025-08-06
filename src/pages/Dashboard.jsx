@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { useAuth } from '../context/AuthContext';
@@ -50,7 +50,6 @@ const Dashboard = () => {
   const { data: properties = [], isLoading, error: propertiesError, refetch: refetchProperties } = useQuery(
     ['dashboard-properties', user?.email],
     async () => {
-      console.log('🔍 매물 데이터 조회 시작:', { userId: user?.id, userEmail: user?.email });
       const userInfo = {
         userId: user?.id,
         userEmail: user?.email,
@@ -58,15 +57,6 @@ const Dashboard = () => {
       };
       // 모든 매물 가져오기 (pagination 없이 호출하여 제한 우회)
       const { data, error } = await propertyService.getProperties({}, userInfo, null);
-      console.log('📊 매물 데이터 조회 결과:', { 
-        data: data?.length || 0, 
-        error,
-        sampleData: data?.slice(0, 5).map(p => ({
-          id: p.id,
-          name: p.property_name,
-          status: p.property_status
-        }))
-      });
       if (error) throw new Error(error);
       return data || [];
     },
@@ -104,7 +94,6 @@ const Dashboard = () => {
         .limit(20);
       
       if (error) {
-        console.error('최근 활동 조회 실패:', error);
         return [];
       }
       
@@ -134,7 +123,6 @@ const Dashboard = () => {
         .not('changed_by', 'ilike', '%dummy%'); // dummy 관련 제외
       
       if (error) {
-        console.error('주간 변경 통계 조회 실패:', error);
         return {};
       }
       
@@ -152,12 +140,32 @@ const Dashboard = () => {
     }
   );
   
-  // 모든 데이터 새로고침 함수
-  const refetchAll = () => {
+  // 모든 데이터 새로고침 함수 - useCallback으로 최적화
+  const refetchAll = useCallback(() => {
     refetchProperties();
     refetchLookup();
     refetchActivities();
-  };
+  }, [refetchProperties, refetchLookup, refetchActivities]);
+
+  // 자동 새로고침 토글 - useCallback으로 최적화
+  const handleAutoRefreshToggle = useCallback(() => {
+    setAutoRefresh(prev => !prev);
+  }, []);
+
+  // 활동 포맷팅 함수 - useCallback으로 최적화
+  const formatActivityCallback = useCallback((activity) => {
+    const time = format(new Date(activity.changed_at), 'HH:mm', { locale: ko });
+    const oldStatus = getStatusLabel(activity.old_status);
+    const newStatus = getStatusLabel(activity.new_status);
+    
+    return {
+      time,
+      user: activity.changed_by_name || activity.changed_by,
+      property: activity.property_name,
+      change: oldStatus ? `${oldStatus} → ${newStatus}` : `${newStatus}로 등록`,
+      isNew: !activity.old_status
+    };
+  }, [lookupData.propertyStatuses]);
   
   // 주간 데이터 필터링 (월요일~일요일)
   const getWeekRange = () => {
@@ -191,8 +199,6 @@ const Dashboard = () => {
       }
     });
     
-    console.log('📊 상태별 매물 수:', counts);
-    console.log('🔍 전체 매물 수:', properties.length);
     
     return counts;
   }, [properties]);
@@ -218,20 +224,6 @@ const Dashboard = () => {
     return status?.name || statusId;
   };
   
-  // 활동 피드 포맷팅
-  const formatActivity = (activity) => {
-    const time = format(new Date(activity.changed_at), 'HH:mm', { locale: ko });
-    const oldStatus = getStatusLabel(activity.old_status);
-    const newStatus = getStatusLabel(activity.new_status);
-    
-    return {
-      time,
-      user: activity.changed_by_name || activity.changed_by,
-      property: activity.property_name,
-      change: oldStatus ? `${oldStatus} → ${newStatus}` : `${newStatus}로 등록`,
-      isNew: !activity.old_status
-    };
-  };
 
   // 사용자 데이터 가져오기
   const { data: users = [], refetch: refetchUsers } = useQuery(
@@ -274,7 +266,6 @@ const Dashboard = () => {
         .gte('created_at', weekStart.toISOString());
       
       if (changesError || propsError) {
-        console.error('주간 사용자 통계 조회 실패');
         return [];
       }
       
@@ -345,7 +336,7 @@ const Dashboard = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         <p className="ml-2 text-gray-600">대시보드를 불러오는 중...</p>
       </div>
     );
@@ -384,7 +375,7 @@ const Dashboard = () => {
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <button
-                onClick={() => setAutoRefresh(!autoRefresh)}
+                onClick={handleAutoRefreshToggle}
                 className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 bg-white border border-gray-300 text-xs sm:text-sm rounded hover:bg-gray-50 transition-colors"
               >
                 <RefreshCw className={`w-3.5 sm:w-4 h-3.5 sm:h-4 mr-1 sm:mr-1.5 ${autoRefresh ? 'animate-spin' : ''}`} />
@@ -393,7 +384,7 @@ const Dashboard = () => {
               </button>
               <Link
                 to="/properties/new"
-                className="inline-flex items-center px-3 sm:px-3 py-1 sm:py-1.5 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center px-3 sm:px-3 py-1 sm:py-1.5 bg-primary text-white text-xs sm:text-sm rounded hover:bg-pink-600 transition-colors"
               >
                 <PlusCircle className="w-3.5 sm:w-4 h-3.5 sm:h-4 mr-1 sm:mr-1.5" />
                 매물 등록
@@ -428,13 +419,13 @@ const Dashboard = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
               <div className="flex-1">
                 <p className="text-xs sm:text-sm font-medium text-gray-600">계약중</p>
-                <p className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-semibold text-blue-600">
+                <p className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-semibold text-primary">
                   {currentStatusCounts.contract.toLocaleString()}
                 </p>
                 <p className="mt-0.5 sm:mt-1 text-xs text-gray-500 hidden sm:block">계약 진행중</p>
               </div>
-              <div className="hidden sm:flex p-2 sm:p-3 bg-blue-100 rounded-full">
-                <FileText className="h-5 sm:h-6 w-5 sm:w-6 text-blue-600" />
+              <div className="hidden sm:flex p-2 sm:p-3 bg-pink-100 rounded-full">
+                <FileText className="h-5 sm:h-6 w-5 sm:w-6 text-primary" />
               </div>
             </div>
           </div>
@@ -490,7 +481,7 @@ const Dashboard = () => {
           {/* 계약 진행 */}
           <div className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200">
             <div className="flex items-center justify-between mb-1 sm:mb-2">
-              <ArrowUpRight className="h-4 sm:h-5 w-4 sm:w-5 text-blue-500" />
+              <ArrowUpRight className="h-4 sm:h-5 w-4 sm:w-5 text-primary" />
               <span className="text-xs text-gray-500">계약</span>
             </div>
             <p className="text-xl sm:text-2xl font-semibold text-gray-900">{weeklyStats.contractStarted}</p>
@@ -542,7 +533,7 @@ const Dashboard = () => {
               <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-96 overflow-y-auto">
                 {recentActivities.length > 0 ? (
                   recentActivities.map((activity, index) => {
-                    const formatted = formatActivity(activity);
+                    const formatted = formatActivityCallback(activity);
                     return (
                       <div key={activity.id || index} className="flex items-start space-x-2 sm:space-x-3 p-2 sm:p-3 hover:bg-gray-50 rounded-lg">
                         <div className="flex-shrink-0">
@@ -623,9 +614,9 @@ const Dashboard = () => {
                   contentStyle={{ fontSize: '12px', padding: '8px' }}
                   labelStyle={{ fontSize: '12px' }}
                 />
-                <Line type="monotone" dataKey="신규" stroke="#10b981" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="계약" stroke="#3b82f6" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="완료" stroke="#8b5cf6" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="신규" stroke="#FF66B2" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="계약" stroke="#10b981" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="완료" stroke="#3b82f6" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>

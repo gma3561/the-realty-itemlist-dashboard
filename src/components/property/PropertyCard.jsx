@@ -117,7 +117,11 @@ const PropertyCard = ({ property, onEdit, onDelete, onView, showCustomerInfo = f
               <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded">
                 {getPropertyTypeDisplay(property.property_type)}
               </span>
-              <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">
+              <span className={`text-xs px-2 py-1 rounded ${
+                getTransactionTypeDisplay(property.transaction_type) === '매매' ? 'bg-yellow-100 text-yellow-800' :
+                getTransactionTypeDisplay(property.transaction_type) === '전세' ? 'bg-blue-100 text-blue-800' :
+                'bg-purple-100 text-purple-800'
+              }`}>
                 {getTransactionTypeDisplay(property.transaction_type)}
               </span>
             </div>
@@ -211,7 +215,7 @@ const PropertyCard = ({ property, onEdit, onDelete, onView, showCustomerInfo = f
                   e.stopPropagation();
                   onEdit && onEdit(property);
                 }}
-                className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium text-pink-600 bg-pink-100 rounded hover:bg-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500"
               >
                 <Edit className="w-3.5 sm:w-4 h-3.5 sm:h-4 mr-0.5 sm:mr-1" />
                 수정

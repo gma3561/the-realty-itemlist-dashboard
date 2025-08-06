@@ -5,7 +5,6 @@ import { supabase } from '../services/supabase';
 import { useAuth } from '../context/AuthContext';
 import { isHardcodedAdmin } from '../data/hardcodedAdmins';
 import { PlusCircle, Search, RefreshCw, Building2, MapPin, Calendar, Grid, List, User, Trash2, Hash } from 'lucide-react';
-import PropertyCard from '../components/property/PropertyCard';
 import propertyService from '../services/propertyService';
 import { getRealtorNameByEmail } from '../data/realtorNameMap';
 import ENV_CONFIG from '../config/env';
@@ -17,7 +16,6 @@ const PropertyList = () => {
     type: '',
     transactionType: ''
   });
-  const [viewMode, setViewMode] = useState('table'); // 'table' or 'card'
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, property: null });
   const navigate = useNavigate();
   const { user, userProfile } = useAuth();
@@ -203,17 +201,25 @@ const PropertyList = () => {
   });
 
   const formatPrice = (price) => {
-    if (price >= 100000000) {
+    if (!price || price === 0) return '-';
+    // 만원 단위로 표시
+    const manWon = Math.floor(price / 10000);
+    return manWon.toLocaleString();
+  };
+
+  const formatPriceDisplay = (price) => {
+    if (!price || price === 0) return '-';
+    if (price >= 10000) {
       const eok = Math.floor(price / 100000000);
       const man = Math.floor((price % 100000000) / 10000);
-      if (man > 0) {
-        return `${eok}억 ${man.toLocaleString()}만원`;
+      if (eok > 0 && man > 0) {
+        return `${eok}.${Math.floor(man/1000)}억`;
+      } else if (eok > 0) {
+        return `${eok}억`;
       }
-      return `${eok}억원`;
-    } else if (price >= 10000) {
-      return `${(price / 10000).toLocaleString()}만원`;
+      return `${man.toLocaleString()}`;
     }
-    return `${price.toLocaleString()}원`;
+    return price.toLocaleString();
   };
 
   const getDisplayPrice = (property) => {
@@ -226,15 +232,21 @@ const PropertyList = () => {
     } else if (transactionType === '월세') {
       const deposit = formatPrice(property.lease_price || 0);
       const monthly = formatPrice(property.monthly_rent || 0);
-      return `${deposit} / ${monthly}`;
+      return `${deposit}/${monthly}`;
     }
     return formatPrice(property.price || 0) || '-';
   };
 
   const formatArea = (sqm) => {
     if (!sqm) return '-';
-    const pyeong = (sqm * 0.3025).toFixed(1);
-    return `${sqm}㎡ (${pyeong}평)`;
+    const pyeong = (sqm * 0.3025).toFixed(2);
+    return pyeong;
+  };
+
+  const formatPropertyNumber = (id) => {
+    // ID의 앞 8자리를 숫자로 변환하여 A로 시작하는 형식으로
+    const numericPart = parseInt(id.replace(/-/g, '').substring(0, 7), 16);
+    return `A${numericPart.toString().padStart(7, '0')}`;
   };
 
   const canDeleteProperty = (property) => {
@@ -253,54 +265,27 @@ const PropertyList = () => {
 
   return (
     <div className="space-y-6">
-      {/* 헤더 */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">매물 목록</h1>
-          <p className="text-sm sm:text-base text-gray-600">
-            전체 {totalCount.toLocaleString()}개 {filteredProperties.length !== totalCount && `(필터: ${filteredProperties.length}개)`}
-          </p>
-        </div>
-        <div className="flex items-center space-x-2 sm:space-x-3">
-          {/* 뷰 모드 토글 - 모바일에서도 표시 */}
-          <div className="flex border border-gray-300 rounded-md">
-            <button
-              onClick={() => setViewMode('table')}
-              className={`px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-l-md ${
-                viewMode === 'table'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              <List className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('card')}
-              className={`px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-r-md ${
-                viewMode === 'card'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              <Grid className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-            </button>
+      {/* 헤더 영역 */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">매물장</h1>
+            <p className="text-sm text-gray-600 mt-1">*매물장의 정보를 간편하게 관리하세요.</p>
           </div>
-          
-          <Link
-            to="/properties/new"
-            className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white text-xs sm:text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          <button 
+            className="px-6 py-2 bg-pink-500 hover:bg-pink-600 text-white font-medium rounded-lg transition-colors"
+            onClick={() => navigate('/properties/new')}
           >
-            <PlusCircle className="w-4 sm:w-5 h-4 sm:h-5 mr-1.5 sm:mr-2" />
-            <span className="hidden sm:inline">새 매물 등록</span>
-            <span className="sm:hidden">등록</span>
-          </Link>
+            <PlusCircle className="w-4 h-4 inline mr-2" />
+            매물 등록
+          </button>
         </div>
       </div>
 
       {/* 로딩 및 에러 처리 */}
       {isLoading && (
         <div className="flex justify-center items-center h-64">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
           <p className="ml-2 text-gray-600">매물 목록을 불러오는 중...</p>
         </div>
       )}
@@ -321,220 +306,214 @@ const PropertyList = () => {
 
       {!isLoading && !error && (
         <>
-          {/* 필터 섹션 */}
-          <div className="bg-white shadow rounded-lg p-4 sm:p-6">
-            <h2 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">필터 및 검색</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  검색
-                </label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="매물명, 지역 검색"
-                    value={filters.search}
-                    onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                    className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+          {/* 매물 검색 */}
+          <div className="bg-gray-50 p-6 rounded-lg mb-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2">매물 검색</h3>
+              <p className="text-sm text-gray-600">매물 종류를 선택하시면 상세 검색이 가능합니다.</p>
+            </div>
+            
+            {/* 지역조회 */}
+            <div className="mb-6">
+              <h4 className="text-sm font-medium mb-3">지역조회</h4>
+              <div className="grid grid-cols-4 gap-3">
+                <select className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm">
+                  <option>매물종류</option>
+                </select>
+                <input type="text" placeholder="시/도" className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm" />
+                <input type="text" placeholder="구/군" className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm" />
+                <input type="text" placeholder="읍/면/동" className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm" />
+              </div>
+            </div>
+            
+            {/* 조건조회 */}
+            <div>
+              <h4 className="text-sm font-medium mb-3">조건조회</h4>
+              <div className="grid grid-cols-6 gap-3">
+                <select className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm">
+                  <option>거래유형</option>
+                </select>
+                <select className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm">
+                  <option>상태</option>
+                </select>
+                <div className="col-span-2">
+                  <label className="block text-xs text-gray-500 mb-1">매물가격 범위</label>
+                  <div className="flex items-center space-x-2">
+                    <input type="text" placeholder="최소 만원" className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm w-full" />
+                    <span className="text-sm text-gray-400">~</span>
+                    <input type="text" placeholder="최대 만원" className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm w-full" />
+                  </div>
                 </div>
+                <input type="text" placeholder="매물번호" className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm" />
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  진행상태
-                </label>
-                <select
-                  value={filters.status}
-                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">전체</option>
-                  {lookupData.propertyStatuses?.map(status => (
-                    <option key={status.id} value={status.name}>{status.name}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  매물종류
-                </label>
-                <select
-                  value={filters.type}
-                  onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">전체</option>
-                  {lookupData.propertyTypes?.map(type => (
-                    <option key={type.id} value={type.name}>{type.name}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  매물유형
-                </label>
-                <select
-                  value={filters.transactionType}
-                  onChange={(e) => setFilters({ ...filters, transactionType: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">전체</option>
-                  {lookupData.transactionTypes?.map(type => (
-                    <option key={type.id} value={type.name}>{type.name}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="flex items-end sm:col-span-1">
-                <button
-                  onClick={() => setFilters({ search: '', status: '', type: '', transactionType: '' })}
-                  className="w-full px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                >
-                  <RefreshCw className="w-3.5 sm:w-4 h-3.5 sm:h-4 mr-1.5 sm:mr-2 inline" />
-                  초기화
-                </button>
-              </div>
+            </div>
+            
+            {/* 버튼 */}
+            <div className="flex justify-center mt-6 space-x-3">
+              <button className="px-6 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-100 transition-colors">
+                <RefreshCw className="w-4 h-4 inline mr-2" />
+                초기화
+              </button>
+              <button className="px-8 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-sm font-medium transition-colors">
+                <Search className="w-4 h-4 inline mr-2" />
+                검색
+              </button>
             </div>
           </div>
 
-          {/* 매물 목록 */}
-          {filteredProperties.length === 0 ? (
-            <div className="bg-white shadow rounded-lg p-8 text-center text-gray-500">
-              <Building2 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-lg font-medium mb-2">매물이 없습니다</p>
-              <p className="text-sm">새로운 매물을 등록해보세요.</p>
-            </div>
-          ) : (
-            <>
-              <div className="bg-white shadow rounded-lg">
-                <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
-                  <h2 className="text-base sm:text-lg font-medium text-gray-900">
-                    매물 목록 ({filteredProperties.length.toLocaleString()}건)
-                  </h2>
+          {/* 매물 리스트 */}
+          <div className="bg-white">
+            <div className="px-4 py-3 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <button className="px-3 py-1 bg-pink-50 text-pink-700 border border-pink-200 text-sm rounded hover:bg-pink-100 transition-colors">
+                    삭제하기
+                  </button>
+                  <button className="px-3 py-1 bg-pink-50 text-pink-700 border border-pink-200 text-sm rounded hover:bg-pink-100 transition-colors">
+                    엑셀다운
+                  </button>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">최신순</span>
+                  <select className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500">
+                    <option>50개씩 보기</option>
+                    <option>100개씩 보기</option>
+                  </select>
                 </div>
               </div>
+            </div>
               
-              {/* 테이블 뷰 (데스크톱) */}
-              {viewMode === 'table' && (
-                <div className="hidden md:block bg-white shadow rounded-lg overflow-hidden">
+              {/* 테이블 뷰 */}
+              {filteredProperties.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  <Building2 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <p className="text-lg font-medium mb-2">매물이 없습니다</p>
+                  <p className="text-sm">새로운 매물을 등록해보세요.</p>
+                </div>
+              ) : (
+                <div className="overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            매물ID
+                          <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            체크박스
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            매물정보
+                          <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            즐겨찾기
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            위치
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            매물번호
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            매물유형
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            매물종류
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            가격
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            지역명/상세주소
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            면적
+                          </th>
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            가격유형/가격
+                          </th>
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             담당자
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             상태
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             등록일
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                             작업
                           </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {filteredProperties.map((property) => (
-                          <tr key={property.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/properties/${property.id}`)}>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center text-sm text-gray-500">
-                                <Hash className="w-4 h-4 mr-1" />
-                                <span className="font-mono text-xs">{property.id.slice(0, 8)}</span>
+                          <tr key={property.id} className="hover:bg-gray-50">
+                            <td className="px-3 py-4 whitespace-nowrap text-center">
+                              <input type="checkbox" className="rounded border-gray-300" />
+                            </td>
+                            <td className="px-3 py-4 whitespace-nowrap text-center">
+                              <button className="text-gray-400 hover:text-yellow-400">
+                                ☆
+                              </button>
+                            </td>
+                            <td className="px-3 py-4 whitespace-nowrap">
+                              <span className="inline-block px-3 py-1 text-sm font-semibold text-white bg-pink-500 rounded-full cursor-pointer hover:bg-pink-600 transition-colors" onClick={() => navigate(`/properties/${property.id}`)}>
+                                {formatPropertyNumber(property.id)}
+                              </span>
+                            </td>
+                            <td className="px-3 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {getDisplayPropertyType(property)}
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div>
-                                <div className="text-sm font-medium text-gray-900">
+                            <td className="px-3 py-4">
+                              <div className="text-sm">
+                                <div className="font-semibold text-gray-900">
+                                  {property.location}
+                                </div>
+                                <div className="text-gray-500 text-xs mt-1">
                                   {property.property_name}
                                 </div>
-                                <div className="text-sm text-gray-500">
-                                  {getDisplayPropertyType(property)} • {formatArea(property.supply_area_sqm)}
+                              </div>
+                            </td>
+                            <td className="px-3 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                <div>{property.supply_area_sqm}㎡ ({formatArea(property.supply_area_sqm)}평)</div>
+                              </div>
+                            </td>
+                            <td className="px-3 py-4 whitespace-nowrap">
+                              <div className="text-sm">
+                                <span className={
+                                  getDisplayTransactionType(property) === '매매' ? 'inline-block px-2 py-1 text-xs font-semibold rounded-full mb-1 bg-yellow-100 text-yellow-800' :
+                                  getDisplayTransactionType(property) === '전세' ? 'inline-block px-2 py-1 text-xs font-semibold rounded-full mb-1 bg-blue-100 text-blue-800' :
+                                  'inline-block px-2 py-1 text-xs font-semibold rounded-full mb-1 bg-purple-100 text-purple-800'
+                                }>
+                                  {getDisplayTransactionType(property)}
+                                </span>
+                                <div className="font-medium text-gray-900">
+                                  {getDisplayPrice(property)}
                                 </div>
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center text-sm text-gray-900">
-                                <MapPin className="w-4 h-4 mr-1 text-gray-400" />
-                                {property.location}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-3 py-4 whitespace-nowrap">
                               <div className="text-sm text-gray-900">
-                                {getDisplayTransactionType(property)}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center text-sm font-medium text-gray-900">
-                                {getDisplayPrice(property)}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center text-sm text-gray-900">
-                                <User className="w-4 h-4 mr-1 text-gray-400" />
                                 {getDisplayManager(property)}
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                getDisplayStatus(property) === '매물확보' || getDisplayStatus(property) === '광고진행'
-                                  ? 'bg-green-100 text-green-800'
-                                  : getDisplayStatus(property) === '거래완료'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}>
+                            <td className="px-3 py-4 whitespace-nowrap">
+                              <span className={
+                                getDisplayStatus(property) === '거래가능' ? 'inline-block px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800' :
+                                getDisplayStatus(property) === '거래완료' ? 'inline-block px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800' :
+                                'inline-block px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800'
+                              }>
                                 {getDisplayStatus(property)}
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center text-sm text-gray-500">
-                                <Calendar className="w-4 h-4 mr-1" />
-                                {new Date(property.created_at).toLocaleDateString()}
+                            <td className="px-3 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-500">
+                                {new Date(property.created_at).toLocaleDateString('ko-KR').replace(/\. /g, '.')}
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              <div className="flex space-x-2">
-                                <Link
-                                  to={`/properties/${property.id}`}
-                                  className="text-blue-600 hover:text-blue-800 font-medium"
+                            <td className="px-3 py-4 whitespace-nowrap text-center">
+                              <div className="flex space-x-1">
+                                <button 
+                                  className="px-2 py-1 text-xs bg-pink-100 text-pink-700 rounded hover:bg-pink-200 transition-colors"
+                                  onClick={() => navigate(`/properties/${property.id}`)}
                                 >
-                                  상세
-                                </Link>
-                                <Link
-                                  to={`/properties/${property.id}/edit`}
-                                  className="text-green-600 hover:text-green-800 font-medium"
+                                  보기
+                                </button>
+                                <button 
+                                  className="px-2 py-1 text-xs bg-pink-50 text-pink-700 border border-pink-200 rounded hover:bg-pink-100 transition-colors" 
+                                  onClick={() => navigate(`/properties/${property.id}/edit`)}
                                 >
                                   수정
-                                </Link>
-                                {canDeleteProperty(property) && (
-                                  <button
-                                    onClick={() => handleDeleteClick(property)}
-                                    className="text-red-600 hover:text-red-800 font-medium"
-                                    disabled={deleteMutation.isLoading}
-                                  >
-                                    삭제
-                                  </button>
-                                )}
+                                </button>
                               </div>
                             </td>
                           </tr>
@@ -545,60 +524,11 @@ const PropertyList = () => {
                 </div>
               )}
               
-              {/* 카드 뷰 */}
-              {viewMode === 'card' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-                  {filteredProperties.map((property) => (
-                    <PropertyCard
-                      key={property.id}
-                      property={property}
-                      onView={(prop) => navigate(`/properties/${prop.id}`)}
-                      onEdit={(prop) => navigate(`/properties/${prop.id}/edit`)}
-                      onDelete={canDeleteProperty(property) ? (prop) => handleDeleteClick(prop) : null}
-                    />
-                  ))}
-                </div>
-              )}
-              
-              {/* 모바일 리스트 뷰 (테이블 모드일 때 모바일에서만) */}
-              {viewMode === 'table' && (
-                <div className="md:hidden space-y-3">
-                  {filteredProperties.map((property) => (
-                    <div key={property.id} className="bg-white border border-gray-200 rounded-lg p-4" onClick={() => navigate(`/properties/${property.id}`)}>
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-sm font-semibold text-gray-900">{property.property_name}</h3>
-                        <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${
-                          getDisplayStatus(property) === '거래가능' 
-                            ? 'bg-green-100 text-green-800'
-                            : getDisplayStatus(property) === '거래완료'
-                            ? 'bg-gray-100 text-gray-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {getDisplayStatus(property)}
-                        </span>
-                      </div>
-                      <div className="space-y-1 text-xs text-gray-600">
-                        <div className="flex items-center">
-                          <MapPin className="w-3 h-3 mr-1" />
-                          {property.location}
-                        </div>
-                        <div>{getDisplayPropertyType(property)} · {getDisplayTransactionType(property)}</div>
-                        <div className="font-medium text-gray-900">{getDisplayPrice(property)}</div>
-                        <div className="flex items-center">
-                          <User className="w-3 h-3 mr-1" />
-                          {getDisplayManager(property)}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
               {/* 무한 스크롤 로더 */}
               <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
                 {isFetchingNextPage && (
                   <div className="flex items-center">
-                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
                     <p className="ml-2 text-gray-600">더 불러오는 중...</p>
                   </div>
                 )}
@@ -606,8 +536,7 @@ const PropertyList = () => {
                   <p className="text-gray-500">모든 매물을 불러왔습니다</p>
                 )}
               </div>
-            </>
-          )}
+          </div>
         </>
       )}
       
@@ -624,7 +553,7 @@ const PropertyList = () => {
               </h3>
               <div className="mt-2 px-7 py-3">
                 <p className="text-sm text-gray-500">
-                  '{deleteConfirm.property?.property_name}' 매물을 정말로 삭제하시겠습니까?
+                  &apos;{deleteConfirm.property?.property_name}&apos; 매물을 정말로 삭제하시겠습니까?
                 </p>
                 <p className="text-sm text-red-600 mt-2">
                   삭제된 매물은 복구할 수 없습니다.

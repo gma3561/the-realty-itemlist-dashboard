@@ -51,8 +51,7 @@ const PropertyDetail = () => {
         queryClient.invalidateQueries('properties');
         navigate('/properties');
       },
-      onError: (error) => {
-        console.error('Delete error:', error);
+      onError: () => {
         setIsDeleting(false);
       }
     }
@@ -74,7 +73,7 @@ const PropertyDetail = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         <p className="ml-2 text-gray-600">매물 정보를 불러오는 중...</p>
       </div>
     );

@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }) => {
     
     // 안전장치: 3초 후에도 로딩 중이면 강제로 로딩 완료
     const loadingTimeout = setTimeout(() => {
-      console.warn('AuthContext: Loading timeout reached, forcing loading to false');
+      // Loading timeout reached - forcing loading to false for better UX
       setLoading(false);
     }, 3000);
     
