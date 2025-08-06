@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA 아이콘 생성기</title>
+    <style>
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        .icon { margin: 20px; display: inline-block; text-align: center; }
+        .icon-canvas { border: 1px solid #ccc; }
+        button { margin: 10px; padding: 10px 20px; background: #3B82F6; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>PWA 아이콘 생성기</h1>
+    <p>각 아이콘을 우클릭 → 이미지를 다른 이름으로 저장하여 사용하세요.</p>
+    
+    <div class="icon">
+        <h3>192x192</h3>
+        <canvas id="icon192" class="icon-canvas" width="192" height="192"></canvas>
+        <br><button onclick="downloadIcon('icon192', 'logo_192.png')">다운로드</button>
+    </div>
+    
+    <div class="icon">
+        <h3>512x512</h3>
+        <canvas id="icon512" class="icon-canvas" width="512" height="512"></canvas>
+        <br><button onclick="downloadIcon('icon512', 'logo_512.png')">다운로드</button>
+    </div>
+    
+    <div class="icon">
+        <h3>64x64 (favicon)</h3>
+        <canvas id="favicon64" class="icon-canvas" width="64" height="64"></canvas>
+        <br><button onclick="downloadIcon('favicon64', 'favicon.png')">다운로드</button>
+    </div>
+
+    <script>
+        function drawIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // 배경
+            ctx.fillStyle = '#3B82F6';
+            ctx.fillRect(0, 0, size, size);
+            
+            // 둥근 모서리 (근사값)
+            ctx.fillStyle = '#F8FAFC';
+            const radius = size * 0.1;
+            
+            // 텍스트
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${size/6}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('TR', size/2, size/2);
+        }
+        
+        function downloadIcon(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // 페이지 로드 시 모든 아이콘 생성
+        drawIcon('icon192', 192);
+        drawIcon('icon512', 512);
+        drawIcon('favicon64', 64);
+    </script>
+</body>
+</html>

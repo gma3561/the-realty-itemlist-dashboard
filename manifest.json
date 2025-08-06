@@ -24,7 +24,7 @@
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "theme_color": "#3B82F6",
+  "theme_color": "#FF66B2",
   "background_color": "#F8FAFC",
   "categories": ["business", "productivity", "utilities"],
   "lang": "ko-KR",
